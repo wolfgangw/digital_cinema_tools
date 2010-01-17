@@ -8,14 +8,14 @@
 # Put the result into env variables like 
 #    export D65_to_DCI="0.976531394318377  -0.0154596619959494 ..."
 # to use with something like ImageMagick's "convert":
-#    $ convert gradient.tiff [more options] -recolor "$D65_toDCI" [...] dci-gradient.tiff
+#    $ convert gradient.tiff [more options] -recolor "$D65_to_DCI" [...] dci-gradient.tiff
 #
 # Math details: see http://www.brucelindbloom.com/
 #
 # Usage: chromatic_adaptation.rb --help
 #        chromatic_adaptation.rb -s d50
 #        chromatic_adaptation.rb -s d65 -d dci
-#        chromatic_adaptation.rb -s d65 -d dci -m bradford
+#        chromatic_adaptation.rb --source d65 --destination dci --method bradford
 
 require 'optparse'
 require 'ostruct'
