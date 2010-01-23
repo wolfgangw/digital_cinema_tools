@@ -90,6 +90,7 @@ DCI_Calibration_White_X, DCI_Calibration_White_Y, DCI_Calibration_White_Z = 0.89
 tmp_x, tmp_y, tmp_Y = t_to_xyY( 5900 )            # x = 0.324, y = 0.340
 K5900_X, K5900_Y, K5900_Z = xyY_to_XYZ( tmp_x, tmp_y, tmp_Y )
 
+# Cone response domain definitions, 3 methods:
 M_A_XYZScaling = Matrix[
   [1.0, 0.0, 0.0],
   [0.0, 1.0, 0.0],
