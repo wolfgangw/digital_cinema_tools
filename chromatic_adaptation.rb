@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 # chromatic_adaptation.rb 
 #
-# latest changes: XYZ_to_xyY, Rec.709 white point (to be confirmed)
+# latest changes: XYZ_to_xyY (unused), Rec.709 white point (to be confirmed)
 #
 # Calculate chromatic adaptation transformation matrix
 #
@@ -26,16 +26,16 @@ class Optparser
     # defaults
     options = OpenStruct.new
     options.source = "d65"
-    options.destination = "dci"
+    options.destination = "dci_calibration_white"
     options.crd_definition = "bradford"
 
     opts = OptionParser.new do |opts|
       opts.banner = "Usage: chromatic_adaptation.rb [ -s, --source | --d, --destination | -m, --method ]"
 
-      opts.on( "-s", "--source k5900 | d50 | d55 | d65 (Default) | rec709 | d75 | dci", "White point reference of source" ) do |ws|
+      opts.on( "-s", "--source k5900 | d50 | d55 | d65 (Default) | rec709 | d75 | dci_calibration_white", "White point reference of source" ) do |ws|
         options.source = ws
       end
-      opts.on( "-d", "--destination k5900 | d50 | d55 | d65 | rec709 | d75 | dci (Default)", "White point reference of destination" ) do |wd|
+      opts.on( "-d", "--destination k5900 | d50 | d55 | d65 | rec709 | d75 | dci_calibration_white (Default)", "White point reference of destination" ) do |wd|
         options.destination = wd
       end
       opts.on( "-m", "--method xyzscaling | bradford | vonkries", "Cone response domain definition" ) do |m|
@@ -76,18 +76,19 @@ def XYZ_to_xyY( _X, _Y, _Z )
   return x, y, _Y
 end
 
-# White points XYZ
+# White points. Take with a grain of salt wrt rounding errors (D65/ITU Rec. 709)
 EE_X, EE_Y, EE_Z    = 1.0,     1.0,     1.0
-D50_X, D50_Y, D50_Z = 0.96422, 1.00000, 0.82521
-D55_X, D55_Y, D55_Z = 0.95682, 1.00000, 0.92149
-D65_X, D65_Y, D65_Z = 0.95047, 1.00000, 1.08883
-# ITU Rec. 709: x=0.3127, y=0.3290 (close to but not exactly D65)
+D50_X, D50_Y, D50_Z = 0.96422, 1.00000, 0.82521   # x = 0.3457, y = 0.3585
+D55_X, D55_Y, D55_Z = 0.95682, 1.00000, 0.92149   # x = 0.3324, y = 0.3474
+D65_X, D65_Y, D65_Z = 0.95047, 1.00000, 1.08883   # x = 0.3127, y = 0.329
+                                    # ITU Rec. 709: x = 0.3127, y = 0.3290
 REC709_X, REC709_Y, REC709_Z = 0.950455927051672, 1.0, 1.08905775075988
 D75_X, D75_Y, D75_Z = 0.94972, 1.00000, 1.22638
-DCI_X, DCI_Y, DCI_Z = 0.894583, 1.00000, 0.954417 # xyY: x 0.314, y 0.351, Y 1.0 (48 cd/m**2)
+                           # DCI Calibration White: x = 0.3140, y = 0.3510, Y=1.0 (48 cd/m**2)
+DCI_Calibration_White_X, DCI_Calibration_White_Y, DCI_Calibration_White_Z = 0.894583, 1.00000, 0.954417
 # The following is (apparently) offered by Adobe CS4 ("DCDM X'Y'Z' (gamma 2.6) 5900K (by Adobe)")
-tmp_x, tmp_y, tmp_Y = t_to_xyY( 5900 )
-K5900_X, K5900_Y, K5900_Z = xyY_to_XYZ( tmp_x, tmp_y, tmp_Y ) # xyY: x 0.324, y 0.340, Y 1.0
+tmp_x, tmp_y, tmp_Y = t_to_xyY( 5900 )            # x = 0.324, y = 0.340
+K5900_X, K5900_Y, K5900_Z = xyY_to_XYZ( tmp_x, tmp_y, tmp_Y )
 
 M_A_XYZScaling = Matrix[
   [1.0, 0.0, 0.0],
@@ -112,7 +113,7 @@ case
   when options.source == "d65" then X_WS, Y_WS, Z_WS = D65_X, D65_Y, D65_Z
   when options.source == "rec709" then X_WS, Y_WS, Z_WS = REC709_X, REC709_Y, REC709_Z
   when options.source == "d75" then X_WS, Y_WS, Z_WS = D75_X, D75_Y, D75_Z
-  when options.source == "dci" then X_WS, Y_WS, Z_WS = DCI_X, DCI_Y, DCI_Z
+  when options.source == "dci_calibration_white" then X_WS, Y_WS, Z_WS = DCI_Calibration_White_X, DCI_Calibration_White_Y, DCI_Calibration_White_Z
 end
 case
   when options.destination == "k5900" then X_WD, Y_WD, Z_WD = K5900_X, K5900_Y, K5900_Z
@@ -121,7 +122,7 @@ case
   when options.destination == "d65" then X_WD, Y_WD, Z_WD = D65_X, D65_Y, D65_Z
   when options.destination == "rec709" then X_WD, Y_WD, Z_WD = REC709_X, REC709_Y, REC709_Z
   when options.destination == "d75" then X_WD, Y_WD, Z_WD = D75_X, D75_Y, D75_Z
-  when options.destination == "dci" then X_WD, Y_WD, Z_WD = DCI_X, DCI_Y, DCI_Z
+  when options.destination == "dci_calibration_white" then X_WD, Y_WD, Z_WD = DCI_Calibration_White_X, DCI_Calibration_White_Y, DCI_Calibration_White_Z
 end
 case
   when options.crd_definition == "xyzscaling" then M_A = M_A_XYZScaling
@@ -141,5 +142,5 @@ CAT = M_A ** -1 * Matrix[
                           [0, gamma_D / gamma_S, 0],
                           [0, 0, beta_D / beta_S] ]   * M_A
 
-puts "Chromatic adaptation transformation for #{options.source} -> #{options.destination} (CRD definition: #{options.crd_definition}): \n\t#{CAT.row(0).to_a.join('  ')}\n\t#{CAT.row(1).to_a.join('  ')}\n\t#{CAT.row(2).to_a.join('  ')}"
+puts "Chromatic adaptation transformation for #{options.source} -> #{options.destination} (CRD definition: #{options.crd_definition}): \n#{CAT.row(0).to_a.join('  ')}\n#{CAT.row(1).to_a.join('  ')}\n#{CAT.row(2).to_a.join('  ')}"
 
