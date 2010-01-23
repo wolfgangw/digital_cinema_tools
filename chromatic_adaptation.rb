@@ -6,9 +6,9 @@
 # Calculate chromatic adaptation transformation matrix
 #
 # Put the result into env variables like 
-#    export D65_to_DCI="0.976531394318377  -0.0154596619959494 ..."
+#    export D65_to_DCI_Calibration_White="0.976531394318377  -0.0154596619959494 ..."
 # to use with something like ImageMagick's "convert":
-#    $ convert gradient.tiff [more options] -recolor "$D65_to_DCI" [...] dci-gradient.tiff
+#    $ convert gradient.tiff [more options] -recolor "$D65_to_DCI_Calibration_White" [...] dci-gradient.tiff
 #
 # Math details: see http://www.brucelindbloom.com/
 #
