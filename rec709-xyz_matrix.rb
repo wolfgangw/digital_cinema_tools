@@ -2,6 +2,12 @@
 # rec709-xyz_matrix.rb
 #
 # For now this script produces 1 3x3 matrix (ITU Rec. 709 to XYZ) to verify numbers
+#
+# Output:
+# ITU Rec. 709 to XYZ matrix:
+# 0.412390799265959  0.357584339383878  0.180480788401834
+# 0.21263900587151  0.715168678767756  0.0721923153607337
+# 0.0193308187155918  0.119194779794626  0.950532152249661
 # 
 # Math details and notes: see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html
 
