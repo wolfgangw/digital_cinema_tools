@@ -1,0 +1,203 @@
+diff --unified --recursive opencinematools-1.1.2/build/unix/Makefile opencinematools-1.1.2-mpeg2_support/build/unix/Makefile
+--- opencinematools-1.1.2/build/unix/Makefile	2009-07-02 12:10:33.000000000 +0200
++++ opencinematools-1.1.2-mpeg2_support/build/unix/Makefile	2010-03-14 18:36:43.000000000 +0100
+@@ -1,5 +1,5 @@
+ CC = g++
+-LIBS = -lm -lopenjpeg -lexpat -lasdcp -lkumu -crypto
++LIBS = -lm -lopenjpeg -lexpat -lasdcp -lkumu -lcrypto
+ SRCS = ../../src/
+ BINS = ../../bin/
+ 
+@@ -7,7 +7,8 @@
+ 	$(CC) -o $(BINS)mkcpl $(SRCS)mkcpl.cpp $(LIBS)
+ 
+ mkpkl : $(SRCS)mkpkl.cpp
+-	$(CC) -o $(BINS)mkpkl $(SRCS)mkpkl.cpp $(LIBS)
++	$(CC) -o $(BINS)mkpkl $(SRCS)mkpkl.cpp $(LIBS) -D_FILE_OFFSET_BITS=64
+ 
+ mkmap : $(SRCS)mkmap.cpp
+-	$(CC) -o $(BINS)mkmap $(SRCS)mkmap.cpp $(LIBS)
+\ No newline at end of file
++	$(CC) -o $(BINS)mkmap $(SRCS)mkmap.cpp $(LIBS) -D_FILE_OFFSET_BITS=64
++
+diff --unified --recursive opencinematools-1.1.2/src/mkcpl.cpp opencinematools-1.1.2-mpeg2_support/src/mkcpl.cpp
+--- opencinematools-1.1.2/src/mkcpl.cpp	2009-06-17 18:11:39.000000000 +0200
++++ opencinematools-1.1.2-mpeg2_support/src/mkcpl.cpp	2010-03-14 18:47:54.000000000 +0100
+@@ -536,8 +536,42 @@
+       if (ASDCP_SUCCESS(result)) {
+ 	      switch (EssenceType) {
+           case ESS_MPEG2_VES:
+-	          fprintf(stderr, "%s: ESS_MPEG2_VES not supported.\n", *iter);
+-	          return 3;
++            {
++						MPEG2::MXFReader MPEG2Reader;
++						result = MPEG2Reader.OpenRead(*iter);              
++
++						if (ASDCP_SUCCESS(result)) {
++					  	MPEG2::VideoDescriptor VDesc;
++							MPEG2Reader.FillVideoDescriptor(VDesc);
++							WriterInfo WInfo;
++							MPEG2Reader.FillWriterInfo(WInfo);
++
++							PAssets.push_back(Asset());
++							PAssets.back().isStereo = false;
++							sprintf(buff, "%u %u", VDesc.EditRate.Numerator, VDesc.EditRate.Denominator);
++							PAssets.back().EditRate = buff;
++							if (VDesc.SampleRate.Numerator==0 || VDesc.SampleRate.Denominator==0) {
++								sprintf(buff, "%u %u", VDesc.EditRate.Numerator, VDesc.EditRate.Denominator);
++							} else {
++								sprintf(buff, "%u %u", VDesc.SampleRate.Numerator, VDesc.SampleRate.Denominator);
++							}
++							PAssets.back().FrameRate = buff;
++
++							if (Options.ratio == 0) {
++								sprintf(buff, "%u %u", VDesc.AspectRatio.Numerator, VDesc.AspectRatio.Denominator);
++								Info.AspectRatio = buff;
++							}
++
++							PAssets.back().IntrinsicDuration = VDesc.ContainerDuration;
++							PAssets.back().Duration = VDesc.ContainerDuration;
++							PAssets.back().EntryPoint = 0;
++							PAssets.back().IsCiphertext = WInfo.EncryptedEssence;
++							PAssets.back().AssetID.Set(WInfo.AssetUUID);
++						} else {
++							fprintf(stderr, "%s: Can't open file.\n", *iter);
++						}
++					}
++
+ 	          break;
+ 
+ 	        case ESS_JPEG_2000:
+diff --unified --recursive opencinematools-1.1.2/src/mkmap.cpp opencinematools-1.1.2-mpeg2_support/src/mkmap.cpp
+--- opencinematools-1.1.2/src/mkmap.cpp	2009-07-02 14:45:30.000000000 +0200
++++ opencinematools-1.1.2-mpeg2_support/src/mkmap.cpp	2010-03-14 18:50:50.000000000 +0100
+@@ -307,8 +307,39 @@
+     if (ASDCP_SUCCESS(result)) {
+       switch (EssenceType) {
+         case ESS_MPEG2_VES:
+-          fprintf(stderr, "%s: ESS_MPEG2_VES not supported.\n", *iter);
+-          return 3;
++          {
++            MPEG2::MXFReader     MPEG2Reader;
++            FileReader filereader;
++            ui32_t size = 0;
++
++            result = MPEG2Reader.OpenRead(*iter);
++            if (ASDCP_SUCCESS(result)) {
++              WriterInfo WInfo;
++              MPEG2Reader.FillWriterInfo(WInfo);
++
++              Info.AssetList.push_back(Asset());
++              Info.AssetList.back().AssetID.Set(WInfo.AssetUUID);
++            } else {
++              fprintf(stderr, "%s: Can't open file.\n", *iter);
++              return 7;
++            }
++            if (ASDCP_SUCCESS(result)) {
++              result = filereader.OpenRead(*iter);
++            } else {
++              fprintf(stderr, "%s: Can't open file.\n", *iter);
++              return 8;
++            }
++            if (ASDCP_SUCCESS(result)) {
++              Info.AssetList.back().FileSize = filereader.Size();         
++              Info.AssetList.back().isPackingList = false;
++            path = ""; // file:///";
++				    path += *iter;
++    			  Info.AssetList.back().Path = path;
++            }
++            if (filereader.IsOpen()) {
++              filereader.Close();
++            }
++          }
+           break;
+ 
+         case ESS_JPEG_2000:
+@@ -421,7 +452,7 @@
+           {
+             Info.AssetList.back().FileSize = filereader.Size();
+             Info.AssetList.back().isPackingList = false;
+-            path = "file:///";
++            path = ""; // file:///";
+ 			path += *iter;
+             Info.AssetList.back().Path = path;
+           }
+@@ -477,7 +508,7 @@
+         Info.AssetList.back().AssetID.DecodeHex(id->GetBody().substr(9).c_str());
+         Info.AssetList.back().FileSize = size;
+         Info.AssetList.back().isPackingList = (cpl.HasName("PackingList") != 0) ? true : false;
+-        path = "file:///";
++        path = ""; // file:///";
+ 		path += *iter;
+         Info.AssetList.back().Path = path;
+       }
+diff --unified --recursive opencinematools-1.1.2/src/mkpkl.cpp opencinematools-1.1.2-mpeg2_support/src/mkpkl.cpp
+--- opencinematools-1.1.2/src/mkpkl.cpp	2009-07-02 11:11:44.000000000 +0200
++++ opencinematools-1.1.2-mpeg2_support/src/mkpkl.cpp	2010-03-14 18:50:22.000000000 +0100
+@@ -287,8 +287,64 @@
+     if (ASDCP_SUCCESS(result)) {
+       switch (EssenceType) {
+         case ESS_MPEG2_VES:
+-          fprintf(stderr, "%s: ESS_MPEG2_VES not supported.\n", *iter);
+-          return 3;
++          {
++            MPEG2::MXFReader     MPEG2Reader;
++            FileReader filereader;
++            byte_t *filebuff = 0;
++            ui32_t size = 0;
++
++            result = MPEG2Reader.OpenRead(*iter);
++            if (ASDCP_SUCCESS(result)) {
++              WriterInfo WInfo;
++              MPEG2Reader.FillWriterInfo(WInfo);
++
++              Info.AssetList.push_back(Asset());
++              Info.AssetList.back().AssetID.Set(WInfo.AssetUUID);
++              //Info.AssetList.back().MIMEType = "application/x-smpte-mxf;asdcpKind=Picture";
++              Info.AssetList.back().MIMEType = "application/mxf";
++            } else {
++              fprintf(stderr, "%s: Can't open file.\n", *iter);
++              return 7;
++            }
++            if (ASDCP_SUCCESS(result)) {
++              result = filereader.OpenRead(*iter);
++            } else {
++                fprintf(stderr, "%s: Can't open file.\n", *iter);
++                return 8;
++              }
++              if (ASDCP_SUCCESS(result)) {
++                Info.AssetList.back().FileSize = filereader.Size();
++                filebuff = (byte_t*)malloc(READ_BUFFER_SIZE);
++                if (filebuff == 0) result = RESULT_ALLOC;
++              }
++              if (ASDCP_SUCCESS(result)) {
++                SHA_CTX c;
++                unsigned char md[SHA_DIGEST_LENGTH];
++                ui32_t readBytes = 0;
++                SHA1_Init(&c);
++
++                result = filereader.Read(filebuff, READ_BUFFER_SIZE, &readBytes);
++                while(ASDCP_SUCCESS(result)) {
++                  SHA1_Update(&c, filebuff, readBytes);
++                  result = filereader.Read(filebuff, READ_BUFFER_SIZE, &readBytes);
++                }
++                if (result != RESULT_ENDOFFILE) {
++                  fprintf(stderr, "%s: Error occured while reading file.\n", *iter);
++                  return 9;
++                }
++                SHA1_Final(md, &c);
++                
++                Info.AssetList.back().Digest = base64(md, SHA_DIGEST_LENGTH);//todo: check if need free
++              }
++
++              if (filebuff != 0) {
++                free(filebuff);
++                filebuff = 0;
++              }
++              if (filereader.IsOpen()) {
++                filereader.Close();
++              }
++            }
+           break;
+ 
+         case ESS_JPEG_2000:
