@@ -71,7 +71,7 @@ diff --unified --recursive opencinematools-1.1.2/src/mkcpl.cpp opencinematools-1
              {
 diff --unified --recursive opencinematools-1.1.2/src/mkmap.cpp opencinematools-1.1.2-mpeg2_support/src/mkmap.cpp
 --- opencinematools-1.1.2/src/mkmap.cpp	2009-07-02 14:45:30.000000000 +0200
-+++ opencinematools-1.1.2-mpeg2_support/src/mkmap.cpp	2010-03-21 18:26:51.000000000 +0100
++++ opencinematools-1.1.2-mpeg2_support/src/mkmap.cpp	2010-04-10 13:16:16.000000000 +0200
 @@ -307,8 +307,39 @@
      if (ASDCP_SUCCESS(result)) {
        switch (EssenceType) {
@@ -103,9 +103,9 @@ diff --unified --recursive opencinematools-1.1.2/src/mkmap.cpp opencinematools-1
 +            if (ASDCP_SUCCESS(result)) {
 +              Info.AssetList.back().FileSize = filereader.Size();         
 +              Info.AssetList.back().isPackingList = false;
-+            path = ""; // file:///";
-+				    path += *iter;
-+    			  Info.AssetList.back().Path = path;
++              path = ""; // path = "file:///";
++	      path += *iter;
++    	      Info.AssetList.back().Path = path;
 +            }
 +            if (filereader.IsOpen()) {
 +              filereader.Close();
@@ -114,24 +114,52 @@ diff --unified --recursive opencinematools-1.1.2/src/mkmap.cpp opencinematools-1
            break;
  
          case ESS_JPEG_2000:
-@@ -421,7 +452,7 @@
+@@ -337,9 +368,9 @@
+             if (ASDCP_SUCCESS(result)) {
+               Info.AssetList.back().FileSize = filereader.Size();         
+               Info.AssetList.back().isPackingList = false;
+-			  path = "file:///";
+-			  path += *iter;
+-			  Info.AssetList.back().Path = path;
++	      path = ""; // path = "file:///";
++	      path += *iter;
++	      Info.AssetList.back().Path = path;
+             }
+             if (filereader.IsOpen()) {
+               filereader.Close();
+@@ -373,8 +404,8 @@
+               if (ASDCP_SUCCESS(result)) {
+                 Info.AssetList.back().FileSize = filereader.Size();         
+                 Info.AssetList.back().isPackingList = false;
+-				path = "file:///";
+-				path += *iter;
++		path = ""; // path = "file:///";
++		path += *iter;
+                 Info.AssetList.back().Path = path;
+               }
+               if (filereader.IsOpen()) {
+@@ -421,8 +452,8 @@
            {
              Info.AssetList.back().FileSize = filereader.Size();
              Info.AssetList.back().isPackingList = false;
 -            path = "file:///";
-+            path = ""; // file:///";
- 			path += *iter;
+-			path += *iter;
++            path = ""; // path = "file:///";
++	    path += *iter;
              Info.AssetList.back().Path = path;
            }
-@@ -477,7 +508,7 @@
+           if (filereader.IsOpen())
+@@ -477,8 +508,8 @@
          Info.AssetList.back().AssetID.DecodeHex(id->GetBody().substr(9).c_str());
          Info.AssetList.back().FileSize = size;
          Info.AssetList.back().isPackingList = (cpl.HasName("PackingList") != 0) ? true : false;
 -        path = "file:///";
-+        path = ""; // file:///";
- 		path += *iter;
+-		path += *iter;
++        path = ""; // path = "file:///";
++        path += *iter;
          Info.AssetList.back().Path = path;
        }
+ 
 diff --unified --recursive opencinematools-1.1.2/src/mkpkl.cpp opencinematools-1.1.2-mpeg2_support/src/mkpkl.cpp
 --- opencinematools-1.1.2/src/mkpkl.cpp	2009-07-02 11:11:44.000000000 +0200
 +++ opencinematools-1.1.2-mpeg2_support/src/mkpkl.cpp	2010-03-21 18:26:57.000000000 +0100
