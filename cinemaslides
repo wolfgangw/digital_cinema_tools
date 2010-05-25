@@ -1,0 +1,829 @@
+#!/usr/bin/env ruby
+CinemaSlidesVersion = "v0.2010.05"
+Author = "Wolfgang Woehl".freeze
+#
+# Run "cinemaslides -h" to see options
+#
+# Export CINEMASLIDESDIR to point to the desired location for temporary files, asset depot etc.
+#   (or use the default location HOME/cinemaslidesdir)
+#
+# Requires:
+#   ruby, gem, bash
+#   ImageMagick, MPlayer
+#   OpenJPEG (http://code.google.com/p/openjpeg/downloads/list) or Kakadu (see the note on Kakadu's terms of use below)
+#   asdcplib (http://www.cinecert.com/asdcplib/) and opencinematools (http://code.google.com/p/opencinematools/)
+#   highline (gem install highline)
+#   nokogiri (gem install nokogiri, requires ruby-dev, libxml2-dev)
+#
+###
+#   Kakadu (http://www.kakadusoftware.com/index.php) is a proprietary JPEG2000 implementation, written by Dr. Taubman
+#   Kakadu Copyright is owned by NewSouth Innovations Proprietary Ltd, commercial arm of the University of New South Wales, Sydney, Australia
+#   Its feature set and performance are quite impressive. It is significantly faster than OpenJPEG's implementation.
+#   Kakadu is available for demonstration purposes (Windows, Mac, Linux).
+#   Please see "Downloadable Executables Copyright and Disclaimer" at 
+#   http://www.kakadusoftware.com/index.php?option=com_content&task=view&id=26&Itemid=22
+#   and make sure you respect these terms of use. Thank you.
+###
+#
+# Ruby geeks: If you value your sanity don't read beyond this line. I'm working on it ...
+
+require 'fileutils'
+require 'ftools' # File.copy. not needed (and not working) in ruby 1.9
+require 'optparse'
+require 'ostruct'
+require 'digest/md5'
+require 'pp'
+begin
+  require 'rubygems'
+rescue LoadError
+end
+require 'nokogiri'
+#require 'highline/import' # FIXME
+
+
+# FIXME catch missing parameters, false options, typos etc.
+class Optparser
+  def self.parse(args)
+    # defaults
+    options = OpenStruct.new
+    options.output_type = "preview"
+    options.size = "2k"
+    options.aspect = "flat"
+    
+    ###
+    # Please change options.encoder's default to "openjpeg" when using cinemaslides commercially.
+    # See head section of this file for details. Thanks for respecting Kakadu's terms of use.
+    options.encoder = "kakadu"
+    ###
+    
+    options.output_format = "jpg"
+    options.black = 0
+    options.title = "Cinemaslides test"
+    options.issuer = "Wolfgang Woehl"
+    options.annotation = "Cinemaslides test"
+    options.montage = FALSE
+    options.verbosity = "info"
+    options.transition_and_timing = Array.new
+    options.transition_and_timing << "fade"
+    options.transition_and_timing << 0 # fade_in_time
+    options.transition_and_timing << 5 # duration
+    options.transition_and_timing << 0 # fade_out_time
+
+    opts = OptionParser.new do |opts|
+      opts.banner = <<BANNER
+cinemaslides #{ CinemaSlidesVersion } (#{ Author })
+Export CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Defaults to HOME/cinemaslidesdir)
+
+Usage: #{ File.basename( $0 ) } [-t, --type | -k, --size | -a, --aspect | -x --transition_and_timing | -j, --encoder | -f, --output_format | -b, --black | -m, --montagepreview | -v, --verbosity | --title | --issuer | --annotation | --examples] image1 [ image2 ... ]
+
+BANNER
+
+      opts.on("-t", "--type type", String, "Use 'preview' (half size) or 'fullpreview' (full size) or 'dcp' (Default: preview)") do |p|
+        options.output_type = p.downcase
+      end
+      opts.on("-k", "--size resolution", String, "Use '2k' or '4k' (Default: 2k)") do |p|
+        options.size = p.downcase
+      end
+      opts.on("-a", "--aspect ratio", String, "Use 'flat' or 'scope' (Default: flat)") do |p|
+        options.aspect = p.downcase
+      end
+      opts.on( "-x", "--transition_and_timing transition,seconds,seconds,[seconds]", Array, "Use this option to specify the transition type ('fade' or 'crossfade') and timing parameters. Defaults to '-x #{ options.transition_and_timing.join(',') }' (fade in #{ options.transition_and_timing[ 1 ] } seconds, full level #{ options.transition_and_timing[ 2 ] } seconds, fade out #{ options.transition_and_timing[ 3 ] } seconds). Separate parameters with commas (no spaces)" ) do |p|
+        options.transition_and_timing = p
+      end
+      opts.on("-j", "--encoder codec", String, "Use 'openjpeg' or 'kakadu' for JPEG 2000 encoding (Default: kakadu. See http://www.kakadusoftware.com/ for Kakadu's terms of use.)") do |p|
+        options.encoder = p.downcase
+      end
+      opts.on("-f", "--output_format", String, "Use 'jpg' or any other image related suffix (Default: jpg for previews, tiff for DCPs)") do |p|
+        options.output_format = p
+      end
+      opts.on("-b", "--black seconds", Float, "Length of black leader and tail (Default: 0)") do |p|
+        options.black = p
+      end
+      opts.on("--title title", "DCP title tag", String) do |p|
+        options.title = p
+      end
+      opts.on("--issuer issuer", "DCP issuer tag", String) do |p|
+        options.issuer = p
+      end
+      opts.on("--annotation annotation", "DCP annotation tag", String) do |p|
+        options.annotation = p
+      end
+      opts.on("-m", "--montagepreview", "Display a montage of the images before processing") do
+        options.montage = TRUE
+      end
+      opts.on("-v", "--verbosity level", String, "Use 'quiet', 'info' or 'debug' (Default info)") do |p|
+        options.verbosity = p
+      end
+
+      opts.on_tail( '--examples', 'See some examples and explanations' ) do
+        app = File.basename( $0)
+        puts "Preview image (Cut transition, default duration 5 seconds):"
+        puts "\t#{ app } image.jpg"
+        puts "Preview images (Full size preview, transition crossfades for 1 second, 3 seconds at full level each)"
+        puts "\t#{ app } -t fullpreview -x crossfade,1,3 image1.tif image2.ppm"
+        puts "Create slideshow DCP (2K, 5 seconds black leader and tail)"
+        puts "\t#{ app } -t dcp -b 5 *.dpx"
+        puts "Create slideshow DCP (preview thumbnails, aspect ratio scope, specify title and issuer)"
+        puts "\t#{ app } *.raw -m -a scope -t dcp --title 'Slideshow Test' --issuer 'Facility'"
+        
+        exit
+      end
+      opts.on_tail( '-h', '--help', 'Display this screen' ) do
+        puts opts
+        exit
+      end
+
+    end
+    opts.parse!(args)
+    options
+  end # parse
+end # class
+options = Optparser.parse(ARGV)
+
+
+class Logger
+  attr_accessor :prefix
+  def initialize( prefix, verbosity )
+    @verbosity = verbosity
+    @critical = TRUE
+    case @verbosity
+    when "quiet"
+      @info = FALSE
+      @warn = FALSE
+      @debug = FALSE
+    when "info"
+      @info = TRUE
+      @warn = TRUE
+      @debug = FALSE
+    when "debug"
+      @info = TRUE
+      @warn = TRUE
+      @debug = TRUE
+    end
+    @prefix = prefix
+    @color = Hash.new
+    # these work ok on a black background:
+    @color[:info] = ''
+    @color[:debug] = '32'
+    @color[:warn] = '33'
+    @color[:critical] = '31'
+  end
+  def info( text )
+    to_console( @color[:info], text ) if @info == TRUE
+  end
+  def warn( text )
+    to_console( @color[:warn], text ) if @warn == TRUE
+  end
+  def debug( text )
+    to_console( @color[:debug], text ) if @debug == TRUE
+  end
+  def critical( text )
+    to_console( @color[:critical], text ) if @critical == TRUE
+  end
+  def cr( text, filename_legacy ) # use filename_legacy to debug sequence output
+    carriage_return( @color[:info], text, filename_legacy ) unless @verbosity == "quiet"
+  end
+  def carriage_return( color, text, filename_legacy )
+    printf "\033[#{ color }m      #{ text }\033[0m\r"; STDOUT.flush
+  end
+  def to_console( color, text )
+    printf "\033[#{ color }m#{ @prefix } #{ text }\033[0m\n"
+  end
+end
+@logger = Logger.new( '*', options.verbosity ) # prefix messages with '*'
+
+
+def check_requirements( requirements )
+  available_tools = Array.new
+  missing_tools   = Array.new
+  requirements.each do |tool|
+    exitstatus = system "which #{ tool } > /dev/null 2>&1"
+    case exitstatus
+    when TRUE
+      available_tools << tool
+    when FALSE
+      missing_tools << tool
+    end
+  end
+  return available_tools, missing_tools
+end
+
+
+def get_timestamp
+  t = Time.now
+  [t.year, '%02d' % t.month, '%02d' % t.day, '%02d' % t.hour, '%02d' % t.min, '%02d' % t.sec].join('_')
+end
+timestamp = get_timestamp
+
+
+def width_x_height
+  if @aspect == "flat"
+    if @output_type == "preview"
+      return "999x540"
+    elsif @output_type == "fullpreview"
+      return "1998x1080"
+    elsif @output_type == "dcp"
+      if @size == "2k"
+        return "1998x1080" # flat 2k
+      elsif @size == "4k"
+        return "3996x2160" # flat 4k
+      end
+    end
+  elsif @aspect == "scope"
+    if @output_type == "preview"
+      return "1024x429"
+    elsif @output_type == "fullpreview"
+      return "2048x858"
+    elsif @output_type == "dcp"
+      if @size == "2k"
+        return "2048x858" # scope 2k
+      elsif @size == "4k"
+        return "4096x1716" # scope 4k
+      end
+    end
+  end
+end
+
+
+def make_black_frame( filename )
+  if @output_type == "preview" or @output_type == "fullpreview"
+    `convert -type TrueColor -size #{ @dimensions } xc:black -depth 8 #{ filename }`
+  elsif @output_type == "dcp"
+    `convert -type TrueColor -size #{ @dimensions } xc:black -depth 12 #{ filename }`
+  end
+end
+
+
+def final_report( sequence_frames, fps, transition_and_timing )
+  sequence_duration = sequence_frames / fps
+  @logger.debug( "#{ sequence_frames } frames intended by numbers (#{ sprintf( '%.2f', sequence_duration ) } seconds)" )
+  @logger.debug( "#{ @framecount -1 } frames written" )
+  @logger.info( "Cinema Slideshow is #{ sprintf( '%.2f', ( @framecount -1 ) / fps.to_f ) } seconds long (#{ @source.length } image#{ "s" * ( @source.length == 1 ? 0 : 1 )} | #{ transition_and_timing.join(',').gsub(' ', '') } | #{ @framecount - 1 } frames)" )
+  @logger.info( "Pick up your files at #{ @workdir }/" )
+end
+
+
+def fade_in_hold_fade_out( image, fps, fade_in_time, duration, fade_out_time )
+  if fade_in_time > 0
+    fade_in( image, fps, fade_in_time )
+  end
+  if duration > 0
+    full_level( image, fps, duration )
+  end
+  if fade_out_time > 0
+    fade_out( image, fps, fade_out_time )
+  end
+end
+
+
+def link_to_last_real_file( info, seconds, fps, file )
+  ( 1..( seconds * fps - 1 ) ).each do # 1 file already written
+    link = sequencefile
+    # FIXME link available on all platforms?
+    # FIXME hardlinks answer "file" to ftype, so all files would be jpeg2000 encoded
+    File.symlink( file, link )
+    @framecount += 1
+  end
+end
+
+
+def full_level( image, fps, duration )
+  @logger.info( "--- Full level #{ imagecount_info( image ) }" )
+  level = 0
+  file = sequencefile
+  if ( 1 ..( duration * fps - 1 ) ).none? # only 1 image needed
+    @logger.debug( "Skip: Only 1 image needed here, skip convert2" )
+    File.cp( image, file )
+  else
+    convert2(image, level, file)
+  end
+  @framecount += 1
+  link_to_last_real_file( "full", duration, fps, file )
+end
+
+
+def crossfade( image1, image2, fps, seconds )
+  @logger.info( "XXX Crossfade #{ imagecount_info( image1 ) }" )
+  level = 100
+  step = 100 / ( seconds * fps )
+  case @output_type
+  when "dcp"
+    compress = "-compress none"
+    depth = "-depth 12"
+  when "preview", "fullpreview"
+    compress = ""
+    depth = "-depth 8"
+  end
+  @logger.debug( "Crossfade level before loop: #{level}" )
+  ( 1..( seconds * fps ) ).each do
+    output = sequencefile #
+    @logger.cr( sprintf( '%.2f', level ), output )
+    composite( image1, level, image2, depth, compress, output )
+    level = level - step
+    @framecount += 1
+  end
+  @logger.debug( "Crossfade level after loop: #{level + step}" )
+end
+
+
+def fade_in( image, fps, fade_in_time )
+  @logger.info( ">>> Fade in #{ imagecount_info( image ) }" )
+  level = -100
+  step = 100 / ( fade_in_time * fps )
+  fade( image, fade_in_time, fps, level, step )
+end
+
+
+def fade_out( image, fps, fade_out_time )
+  @logger.info( "<<< Fade out #{ imagecount_info( image ) }" )
+  level = 0
+  step = - ( 100 / ( fade_out_time * fps ) )
+  level += step
+  fade( image, fade_out_time, fps, level, step )
+end
+
+
+def fade( image, seconds, fps, level, step)
+  @logger.debug( "Fade frames level before loop: #{level}" )
+  ( 1..( seconds * fps ) ).each do
+    filename = sequencefile
+    @logger.cr( sprintf('%.2f', level), filename )
+    convert2( image, level, filename )
+    level = level + step
+    @framecount += 1
+  end
+  @logger.debug( "Fade frames level after loop: #{level - step}" )
+end
+
+
+def sign( value )
+  return ( value.to_f / value.to_f.abs ).to_i
+end
+
+
+def sigmoid( value, initial, final, center, rate )
+  if initial > final
+    base = final
+  else
+    base = initial
+  end
+  return ( initial - final ).abs / ( 1.0 + Math.exp( rate * sign( final - initial ) * ( -( value - center ).to_f ) ) ) + base
+end
+
+
+# FIXME image is an asset with digest filename, not useful here
+#return "(#{ boilerplate }#{ File.basename( image ) })"
+def imagecount_info( image )
+  "(#{ @imagecount } of #{ @source.length })"
+end
+
+
+def sequencefile
+  File.join( @convdir, "#{ '%06d' % @framecount }.#{ @output_format }" )
+end
+
+
+def fadetype( level )
+  "-modulate #{ level + 100 },#{ level + 100 }"
+  #"-brightness-contrast #{ level }x#{ level }" # not in ubuntu 10.04's im 6.5.7-8, current is 6.6.1-8
+end
+
+
+def composite( image1, level, image2, depth, compress, output ) # -compress none for kakadu
+  `composite -type TrueColor #{ image1 } -dissolve #{ level } #{ image2 } #{ depth } #{ compress } #{ output }`
+end
+
+
+def conform( image )
+  @logger.info( "Conform #{ image }" )
+  asset = File.join( @assetsdir, Digest::MD5.hexdigest( File.read( image ) ) + "_#{ @dimensions }_" + "." + @output_format )
+  if File.exists?( asset )
+    @logger.debug( "Skip: Asset exists (#{ image } -> #{ File.basename( asset ) })" )
+  else
+    convert( image, 0, asset )
+  end
+  return asset
+end
+
+
+def convert( image, level, filename )
+  case @output_type
+  when "preview", "fullpreview"
+    `convert #{image} \
+        -type TrueColor \
+        -alpha Off \
+        -gamma 0.454545454545455 \
+        -resize #{ @dimensions } \
+        -background black \
+        -gravity center \
+        -extent #{ @dimensions } \
+        #{ fadetype( level ) } \
+        -depth 8 \
+        -gamma 2.2 \
+      #{ filename }`
+  # kakadu needs uncompressed 12bpc files # FIXME make compress conditional
+  when "dcp"
+    `convert #{image} \
+        -type TrueColor \
+        -alpha Off \
+        -gamma 0.454545454545455 \
+        -resize #{ @dimensions } \
+        -background black \
+        -gravity center \
+        -extent #{ @dimensions } \
+        #{ fadetype( level ) } \
+        -recolor '#{ SRGB_TO_XYZ }' \
+        -depth 12 \
+        -gamma 2.6 \
+        -compress none \
+      #{ filename }`
+  else # reached with typo, duh!
+    puts "Use '-t preview' (half size) or '-t fullpreview' (full size) or '-t dcp'.\nDefaults to 'preview'."
+    exit
+  end
+end
+
+
+def convert2( image, level, filename )
+  if @output_type == "preview" or @output_type == "fullpreview"
+    `convert #{image} \
+        -type TrueColor \
+        -gamma 0.454545454545455 \
+        #{ fadetype( level ) } \
+        -gamma 2.2 \
+      #{ filename }`
+  elsif @output_type == "dcp" # -compress none for kakadu
+    `convert #{image} \
+        -type TrueColor \
+        -gamma 0.454545454545455 \
+        #{ fadetype( level ) } \
+        -depth 12 \
+        -gamma 2.6 \
+        -compress none \
+      #{ filename }`
+  end
+end
+###
+
+
+requirements = [ "convert", "montage", "display", "mplayer", "image_to_j2k", "kdu_compress", "asdcp-test", "mkcpl", "mkpkl", "mkmap" ]
+available_tools, missing_tools = check_requirements( requirements )
+if options.output_type == "dcp"
+  if missing_tools.include?( "kdu_compress" )
+    if missing_tools.include?( "image_to_j2k" ) # both openjpeg and kakadu not available
+      @logger.warn( "No JPEG2000 codec available (Needed for DCP creation). Check your installation." )
+    elsif options.encoder == "kakadu" # openjpeg is available, kakadu is not
+      options.encoder = "openjpeg"
+      @logger.warn( "kdu_compress is not available. Falling back to openjpeg" )
+    end
+  elsif missing_tools.include?( "image_to_j2k" ) # kakadu is available, openjpeg is not
+    if options.encoder == "openjpeg"
+      options.encoder = "kakadu"
+      @logger.warn( "image_to_j2k is not available. Falling back to kakadu" )
+    end
+  end
+end
+# boy-oh-boy-oh-boy
+if available_tools.size < requirements.size - 1 # all tools needed minus 1 codec alternative
+  @logger.info( "Missing tools: #{ missing_tools.join(', ') }" ) unless missing_tools.empty?
+  @logger.warn( "Check your tools" )
+  exit
+end
+@logger.debug( "Available tools: #{ available_tools.sort.join(', ') }" ) unless available_tools.empty?
+@logger.debug( "Missing tools: #{ missing_tools.join(', ') }" ) unless missing_tools.empty?
+@logger.debug( "All necessary tools available" ) if missing_tools.empty?
+
+
+### Get options and initialize
+@aspect = options.aspect
+@size = options.size
+@output_type = options.output_type
+@source = ARGV # FIXME check readable
+
+if @source.length == 0
+  puts "No image files specified.\nCall #{ File.basename( $0 ) } --help for options."
+  exit
+end
+
+options.transition_and_timing.first.downcase!
+if options.transition_and_timing.first == "fade" and options.transition_and_timing.length == 4
+  fade_in_time = options.transition_and_timing[1].to_f
+  duration = options.transition_and_timing[2].to_f
+  fade_out_time = options.transition_and_timing[3].to_f
+elsif options.transition_and_timing.first == "crossfade" and options.transition_and_timing.length == 3
+  crossfade_time = options.transition_and_timing[1].to_f
+  duration = options.transition_and_timing[2].to_f
+  if @source.length == 1
+    @logger.warn( "No way to crossfade 1 image (#{ @source.first })" )
+    @logger.info( "Either supply more than 1 image or change transition_and_timing to fade specs ('-x fade,a,b,c')" )
+    exit
+  end
+else
+  @logger.warn( "Malformed transition and timing specs" )
+  @logger.info( "Use '-x fade,a,b,c' or '-x crossfade,a,b' (a = fade in time/crossfade time, b = full level time, c = fade out time)" )
+  exit
+end
+
+fps = 24.0 # FIXME
+@framecount = 1
+@imagecount = 0
+if @output_type == "dcp"
+  @output_format = "tiff"
+  original_suffix = @output_format
+  SRGB_TO_XYZ = "0.4124564 0.3575761 0.1804375 0.2126729 0.7151522 0.0721750 0.0193339 0.1191920 0.9503041"
+else
+  @output_format = options.output_format
+end
+###
+
+### Work dirs
+CINEMASLIDESDIR = ENV['CINEMASLIDESDIR']
+if CINEMASLIDESDIR.nil?
+  @cinemaslidesdir = File.join( ENV[ 'HOME' ], "cinemaslidesdir" )
+  @logger.debug( "CINEMASLIDESDIR not set. Will use #{ @cinemaslidesdir }" )
+else
+  @logger.debug( "CINEMASLIDESDIR is set to #{ CINEMASLIDESDIR }" )
+  @cinemaslidesdir = CINEMASLIDESDIR
+end
+@workdir = File.join( @cinemaslidesdir, "#{ File.basename( $0 ) }_#{ timestamp }_#{ @output_type }" )
+@convdir = File.join( @workdir, "convert" )
+@thumbsdir = File.join( @cinemaslidesdir, "thumbs" )
+@assetsdir = File.join( @cinemaslidesdir, "assets" )
+###
+
+@dimensions = width_x_height
+x,y = @dimensions.split( 'x' ) # ugh
+x = x.to_i / 6 # ugh ugh
+y = y.to_i / 6 # ...
+@thumbs_dimensions = [ x,y ].join( 'x' ) # oh dear
+
+if @output_type == "dcp"
+  @logger.info( "Creating #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps }). Encoder: #{ options.encoder }" )
+  @logger.info( "Title: #{ options.title } #{timestamp}" )
+  @logger.info( "Annotation: #{ options.annotation } #{timestamp}" )
+  @logger.info( "Issuer: #{ options.issuer }" )
+elsif @output_type == "preview" or @output_type == "fullpreview"
+  @logger.info( "Creating #{ @output_type } (#{ @aspect } #{ @dimensions } @ #{ fps })" )
+end
+
+Dir.mkdir( @cinemaslidesdir ) unless File.exists?( @cinemaslidesdir )
+Dir.mkdir( @assetsdir ) unless File.exists?( @assetsdir )
+
+
+### Process all images
+
+# thumbs and minimontage
+if options.montage == TRUE
+  Dir.mkdir( @thumbsdir ) unless File.exists?( @thumbsdir )
+
+  @logger.info( "Create thumbnails" )
+  thumbs = Array.new
+  ( 0..( @source.length - 1 ) ).each do |i|
+    thumbfile = File.join( @thumbsdir, Digest::MD5.hexdigest( File.read( @source[ i ] ) ) + "_#{ @thumbs_dimensions }_" + ".jpg" )
+
+    if File.exists?( thumbfile )
+      @logger.debug( "Skip: #{ File.basename( thumbfile ) } exists" )
+      thumbs << thumbfile
+      next
+    else
+      @logger.info( "Thumb for #{ @source[ i ] }" )
+      `convert #{ @source[ i ] } \
+         -type TrueColor \
+         -resize #{ @thumbs_dimensions } \
+         -background black \
+         -gravity center \
+         -extent #{ @thumbs_dimensions } \
+         -depth 8 \
+       #{ thumbfile }`
+       thumbs << thumbfile
+     end
+  end
+  thumbs = thumbs.join(' ')
+  tiles_x = Math.sqrt( @source.length ).ceil
+  `montage #{ thumbs } \
+     -mode Concatenate \
+     -tile #{ tiles_x }x \
+     -frame 1 \
+     -geometry '#{ x }x#{ y }+5+5>' \
+     -bordercolor lightblue \
+   #{ @thumbsdir }/montage.jpg;`
+  if ENV[ "DISPLAY" ].nil?
+    @logger.warn( "DISPLAY not set. Skipping montage summary" )
+  else
+    @logger.warn( "Montage summary #{ @output_type }. Exit with ESC or 'q'" )
+    `display #{ @thumbsdir }/montage.jpg`
+  end
+  # FIXME
+  @logger.critical( "FIXME ask and wait for user" )
+  puts "1) Continue"
+  puts "2) Exit"
+end # montage
+
+
+### Create all frames
+Dir.mkdir( @workdir )
+Dir.mkdir( @convdir )
+
+
+# black leader
+if options.black > 0
+  @logger.info( "Black header: #{ options.black } seconds" )
+  blackfile = sequencefile
+  make_black_frame( blackfile )
+  @framecount += 1
+  link_to_last_real_file( "black", options.black, fps, blackfile )
+end
+
+### all images
+keeper = nil # keep a conform for the next crossfade (image2 will be image1, don't conform again)
+@source.each_index do |index|
+  case options.transition_and_timing.first
+  when "fade"
+    @imagecount += 1
+    image = conform( @source[ index  ] )
+    fade_in_hold_fade_out( image, fps, fade_in_time, duration, fade_out_time )
+  when "crossfade"
+    @imagecount += 1
+    case index
+    when 0 # first image
+      image1 = conform( @source[ index ] )
+      image2 = conform( @source[ index + 1 ] )
+      keeper = image2
+      fade_in( image1, fps, crossfade_time )
+      full_level( image1, fps, duration )
+      crossfade( image1, image2, fps, crossfade_time )
+    when @source.length - 1 # last image
+      image = keeper
+      full_level( image, fps, duration )
+      fade_out( image, fps, crossfade_time )
+    else # 2nd image or later but not last
+      image1 = keeper
+      image2 = conform( @source[ index + 1 ] )
+      keeper = image2
+      full_level( image1, fps, duration )
+      crossfade( image1, image2, fps, crossfade_time )
+    end
+  end
+end ###
+
+# black tail
+if options.black > 0
+  @logger.info( "Black tail: #{ options.black } seconds" )
+  filename = sequencefile
+  File.symlink( blackfile, filename )
+  @framecount += 1
+  link_to_last_real_file( "black", options.black, fps, blackfile )
+end
+###
+
+### Create preview/fullpreview
+if @output_type == "preview" or @output_type == "fullpreview"
+  sequence = File.join( "#{ @convdir }", "*.#{ @output_format }" )
+  if ENV[ "DISPLAY" ].nil?
+    @logger.warn( "DISPLAY not set. Skipping preview" )
+  else
+    @logger.warn( "Loop #{ @output_type }. Exit with ESC or 'q'" )
+    mplayer_vo = "-vo x11"
+    `mplayer -really-quiet mf://#{ sequence } -mf fps=#{ fps }:type=#{ @output_format } -loop 0 #{ mplayer_vo } > /dev/null 2>&1`
+  end
+  if options.transition_and_timing.first == "fade"
+    sequence_frames = ( 2 * options.black + @source.length * ( fade_in_time + duration + fade_out_time ) ) * fps
+  elsif options.transition_and_timing.first == "crossfade"
+    sequence_frames = ( 2 * options.black + crossfade_time + @source.length * ( crossfade_time + duration ) ) * fps # implicit fade in/out first/last when crossfading
+  end
+  final_report( sequence_frames, fps, options.transition_and_timing ) # FIXME
+  @logger.info( "Preview done" )
+  exit
+###
+
+### Create DCP (Encoding, asdcplib, oct)
+elsif @output_type == "dcp"
+  j2cdir = File.join(@workdir, "j2c")
+  dcpdir = File.join(@workdir, "dcp")
+  tmp_slidesmxf = File.join(dcpdir, 'tmp_j2c.mxf')
+  tmp_cpl = File.join(dcpdir, 'tmp_cpl.xml')
+  tmp_pkl = File.join(dcpdir, 'tmp_pkl.xml')
+
+  Dir.mkdir(j2cdir)
+  Dir.mkdir(dcpdir)
+
+  # JPEG 2000 encoding
+  filemask = File.join(@convdir, "*.#{@output_format}")
+  files = Dir.glob(filemask).sort
+  if @size == "2k"
+    kakadu_cinema_profile = "CINEMA2K"
+    openjpeg_cinema_profile = "cinema2K 24"
+  elsif @size == "4k"
+    kakadu_cinema_profile = "CINEMA4K"
+    openjpeg_cinema_profile = "cinema4K"
+  end
+  counter = 0
+  last_real_file = ""
+  files.each do |f|
+    #puts " f: #{f}"
+    type = File.ftype(f)
+    if type == "file" # encode
+      counter += 1
+      last_real_file = f + ".j2c"
+      if options.encoder == "openjpeg"
+        @logger.info( "openjpeg: #{ File.basename( f ) }" )
+        `image_to_j2k -#{ openjpeg_cinema_profile } -i #{f} -o #{f}.j2c > /dev/null 2>&1`
+      elsif options.encoder == "kakadu"
+        @logger.info( "kakadu: #{ File.basename( f ) }" )
+        `kdu_compress -i #{ f } -o #{ f }.j2c Sprofile=#{ kakadu_cinema_profile } Creslengths=1302083 Creslengths:C0=1302083,1041666 Creslengths:C1=1302083,1041666 Creslengths:C2=1302083,1041666`
+      else
+        @logger.critical( "No usable encoder specified ('#{ options.encoder }')" )
+        @logger.critical( "Sorry, shouldn't happen plus we're bailing out" )
+        @logger.info( "Pick up the pieces at #{ @workdir }" )
+        exit
+      end
+    elsif type == "link" # copy last real file
+      counter += 1
+      # For the time being (case dcp) we make tiffs, so there, see original_suffix
+      copy = File.join( @convdir, "#{ '%06d' % counter }.#{ original_suffix }.j2c" )
+      File.link( last_real_file, copy ) # asdcplib chokes on symlinks
+    else
+      @logger.critical( "Encountered an unusable file (#{ f }, type #{ type }" )
+      @logger.critical( "Sorry, bailing out" )
+      exit
+    end
+  end
+
+  `mv #{ File.join( @convdir, '*.j2c' ) } #{ j2cdir }`
+  @logger.info( "Write image trackfile ..." )
+  `asdcp-test -L -E -c #{ tmp_slidesmxf } #{ j2cdir } > /dev/null 2>&1`
+  # FIXME this will break when asdcp-test -i -H changes its output format
+  # ass backwards anyway, the following ...
+  slidesmxf_uuid = `asdcp-test -i -H #{ tmp_slidesmxf }`.grep( /AssetUUID/ ).first.split(": ").last.chomp
+  @logger.debug( "trackfile uuid: #{ slidesmxf_uuid }" )
+  slidesmxf = File.join( File.dirname( tmp_slidesmxf ), slidesmxf_uuid + "_j2c.mxf" )
+  File.rename( tmp_slidesmxf, slidesmxf )
+
+  @logger.info( "Write CPL" )
+  `mkcpl --kind test --norating --title '#{ options.title } #{ timestamp }' --annotation '#{ options.annotation } #{ timestamp }' --issuer '#{ options.issuer }' #{ slidesmxf } > #{ tmp_cpl }`
+  
+  cpl_uuid = Nokogiri::XML( File.open( tmp_cpl ) ).xpath( "//xmlns:CompositionPlaylist/xmlns:Id" ).text.split( 'urn:uuid:' ).last
+  @logger.debug( "cpl uuid      : #{ cpl_uuid }" )
+  cpl = File.join( File.dirname( tmp_cpl ), cpl_uuid + "_cpl.xml" )
+  File.rename( tmp_cpl, cpl )
+
+  @logger.info( "Write PKL" )
+  `mkpkl --issuer '#{ options.issuer }' --annotation '#{ options.annotation } #{ timestamp }' #{ slidesmxf } #{ cpl } > #{ tmp_pkl }`
+
+  pkl_uuid = Nokogiri::XML( File.open( tmp_pkl ) ).xpath( "//xmlns:PackingList/xmlns:Id" ).text.split( 'urn:uuid:' ).last
+  @logger.debug( "pkl uuid      : #{ pkl_uuid }" )
+  pkl = File.join( File.dirname( tmp_pkl ), pkl_uuid + "_pkl.xml" )
+  File.rename( tmp_pkl, pkl)
+  @logger.info( "Write ASSETMAP and VOLINDEX" )
+  `cd #{ dcpdir }; mkmap --issuer '#{ options.issuer }' #{File.basename( slidesmxf )} #{File.basename( cpl )} #{File.basename( pkl )}`
+
+  # FIXME report -> dry out
+  # report
+  if options.transition_and_timing.first == "fade"
+    sequence_frames = ( 2 * options.black + @source.length * ( fade_in_time + duration + fade_out_time ) ) * fps
+  elsif options.transition_and_timing.first == "crossfade"
+    sequence_frames = ( 2 * options.black + crossfade_time + @source.length * ( crossfade_time + duration ) ) * fps # implicit fade in/out first/last when crossfading
+  end
+  final_report( sequence_frames, fps, options.transition_and_timing )
+  @logger.info( "DCP done" )
+
+end # End Create DCP
+
+
+TODO = <<TODO
+FIXME assets depot: works for full level pre-encoding files (via conform) but we loose all knowledge about those files in the
+      encoding stage. so we would have to check digest of each file coming up (fades etc.) -- might take longer than churning through.
+      test and fix (make slideshow an object with self-consciousness)
+FIXME crossfades border case: 0.0416666666666667 (1/24) crossfade time -> level shoots off the roof
+FIXME gamma diff on resize: don't conform images with target dimensions
+FIXME how to detect the optimal -vo for mplayer?
+FIXME ask continue/exit after montage summary.
+FIXME options default for fps, right now it's hardcoded
+FIXME crossfade,5,0 [5 images] -> 720 frames intended 725 frames created
+FIXME cinemaslides multipage.pdf is somewhat borked because of assets creation (name), conforms to <digest>_<dimensions>_-<page_number>.jpg
+      which won't fly at pickup time
+FIXME pickup processing after fullpreview (reuse files)
+      
+FEATURE sparse assets via minimum mxfs and playlists
+FEATURE audio
+FEATURE 3D
+FEATURE custom preview sizes
+FEATURE custom aspect ratios
+FEATURE montage preview needs a border around thumbs (for white backgrounds of images etc.)
+FEATURE black/mono pause between slides
+FEATURE transition times and duration are global. make them file specific
+FEATURE DCP naming conventions
+FEATURE MPEG MXFI
+
+CODE dry out black header/tail
+CODE report method (also generalize transition types and timings)
+CODE options catch all
+CODE better way to check for and provide requirements alternatives ( mplayer|ffplay, openjpeg|kakadu etc. )
+
+mplayer crash with a710 jpgs. exif?
+update "Usage"
+check for image types/files
+thumbnail/minimontage annotation would be neat, gets tricky, though, with moved files etc:
+   thumbs are stored and checked for existance to speed thumbnailing up
+TODO
+
