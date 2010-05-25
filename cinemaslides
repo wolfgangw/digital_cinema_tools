@@ -371,8 +371,6 @@ def sigmoid( value, initial, final, center, rate )
 end
 
 
-# FIXME image is an asset with digest filename, not useful here
-#return "(#{ boilerplate }#{ File.basename( image ) })"
 def imagecount_info( image )
   "(#{ @imagecount } of #{ @source.length })"
 end
@@ -656,7 +654,7 @@ keeper = nil # keep a conform for the next crossfade (image2 will be image1, don
       image = keeper
       full_level( image, fps, duration )
       fade_out( image, fps, crossfade_time )
-    else # 2nd image or later but not last
+    else
       image1 = keeper
       image2 = conform( @source[ index + 1 ] )
       keeper = image2
@@ -664,7 +662,7 @@ keeper = nil # keep a conform for the next crossfade (image2 will be image1, don
       crossfade( image1, image2, fps, crossfade_time )
     end
   end
-end ###
+end
 
 # black tail
 if options.black > 0
