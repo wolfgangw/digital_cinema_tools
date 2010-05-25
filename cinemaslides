@@ -71,8 +71,7 @@ class Optparser
 
     opts = OptionParser.new do |opts|
       opts.banner = <<BANNER
-cinemaslides #{ CinemaSlidesVersion } (#{ Author })
-Export CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Defaults to HOME/cinemaslidesdir)
+cinemaslides #{ CinemaSlidesVersion } #{ ENV['CINEMASLIDESDIR'].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Defaults to HOME/cinemaslidesdir)" : "" }
 
 Usage: #{ File.basename( $0 ) } [-t, --type | -k, --size | -a, --aspect | -x --transition_and_timing | -j, --encoder | -f, --output_format | -b, --black | -m, --montagepreview | -v, --verbosity | --title | --issuer | --annotation | --examples] image1 [ image2 ... ]
 
