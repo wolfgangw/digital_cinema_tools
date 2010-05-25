@@ -435,7 +435,7 @@ def convert( image, level, filename )
         -gamma 2.6 \
         -compress none \
       #{ filename }`
-  else # reached with typo, duh!
+else # hello typo
     puts "Use '-t preview' (half size) or '-t fullpreview' (full size) or '-t dcp'.\nDefaults to 'preview'."
     exit
   end
@@ -718,7 +718,6 @@ elsif @output_type == "dcp"
   counter = 0
   last_real_file = ""
   files.each do |f|
-    #puts " f: #{f}"
     type = File.ftype(f)
     if type == "file" # encode
       counter += 1
@@ -820,8 +819,6 @@ CODE better way to check for and provide requirements alternatives ( mplayer|ffp
 
 mplayer crash with a710 jpgs. exif?
 update "Usage"
-check for image types/files
-thumbnail/minimontage annotation would be neat, gets tricky, though, with moved files etc:
-   thumbs are stored and checked for existance to speed thumbnailing up
+check image types/files
 TODO
 
