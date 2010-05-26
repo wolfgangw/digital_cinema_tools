@@ -376,7 +376,7 @@ end
 
 
 def sequencefile
-  File.join( @convdir, "#{ '%06d' % @framecount }.#{ @output_format }" )
+  File.join( @conformdir, "#{ '%06d' % @framecount }.#{ @output_format }" )
 end
 
 
@@ -418,7 +418,7 @@ def convert( image, level, filename )
         -depth 8 \
         -gamma 2.2 \
       #{ filename }`
-  # kakadu needs uncompressed 12bpc files # FIXME make compress conditional
+  # kakadu needs uncompressed 12bpc files # FIXME dep compress on options.encoder
   when "dcp"
     `convert #{image} \
         -type TrueColor \
@@ -543,7 +543,7 @@ else
   @cinemaslidesdir = CINEMASLIDESDIR
 end
 @workdir = File.join( @cinemaslidesdir, "#{ File.basename( $0 ) }_#{ timestamp }_#{ @output_type }" )
-@convdir = File.join( @workdir, "convert" )
+@conformdir = File.join( @workdir, "conform" )
 @thumbsdir = File.join( @cinemaslidesdir, "thumbs" )
 @assetsdir = File.join( @cinemaslidesdir, "assets" )
 ###
@@ -619,7 +619,7 @@ end # montage
 
 ### Create all frames
 Dir.mkdir( @workdir )
-Dir.mkdir( @convdir )
+Dir.mkdir( @conformdir )
 
 
 # black leader
@@ -675,7 +675,7 @@ end
 
 ### Create preview/fullpreview
 if @output_type == "preview" or @output_type == "fullpreview"
-  sequence = File.join( "#{ @convdir }", "*.#{ @output_format }" )
+  sequence = File.join( "#{ @conformdir }", "*.#{ @output_format }" )
   if ENV[ "DISPLAY" ].nil?
     @logger.warn( "DISPLAY not set. Skipping preview" )
   else
@@ -705,7 +705,7 @@ elsif @output_type == "dcp"
   Dir.mkdir(dcpdir)
 
   # JPEG 2000 encoding
-  filemask = File.join(@convdir, "*.#{@output_format}")
+  filemask = File.join(@conformdir, "*.#{@output_format}")
   files = Dir.glob(filemask).sort
   if @size == "2k"
     kakadu_cinema_profile = "CINEMA2K"
@@ -736,7 +736,7 @@ elsif @output_type == "dcp"
     elsif type == "link" # copy last real file
       counter += 1
       # For the time being (case dcp) we make tiffs, so there, see original_suffix
-      copy = File.join( @convdir, "#{ '%06d' % counter }.#{ original_suffix }.j2c" )
+      copy = File.join( @conformdir, "#{ '%06d' % counter }.#{ original_suffix }.j2c" )
       File.link( last_real_file, copy ) # asdcplib chokes on symlinks
     else
       @logger.critical( "Encountered an unusable file (#{ f }, type #{ type }" )
@@ -745,7 +745,7 @@ elsif @output_type == "dcp"
     end
   end
 
-  `mv #{ File.join( @convdir, '*.j2c' ) } #{ j2cdir }`
+  `mv #{ File.join( @conformdir, '*.j2c' ) } #{ j2cdir }`
   @logger.info( "Write image trackfile ..." )
   `asdcp-test -L -E -c #{ tmp_slidesmxf } #{ j2cdir } > /dev/null 2>&1`
   # FIXME this will break when asdcp-test -i -H changes its output format
