@@ -44,18 +44,13 @@ require 'nokogiri'
 # FIXME catch missing parameters, false options, typos etc.
 class Optparser
   def self.parse(args)
+    
     # defaults
     options = OpenStruct.new
     options.output_type = "preview"
     options.size = "2k"
     options.aspect = "flat"
-    
-    ###
-    # Please change options.encoder's default to "openjpeg" when using cinemaslides commercially.
-    # See head section of this file for details. Thanks for respecting Kakadu's terms of use.
-    options.encoder = "kakadu"
-    ###
-    
+    options.encoder = "openjpeg"
     options.output_format = "jpg"
     options.black = 0
     options.title = "Cinemaslides test"
@@ -89,7 +84,7 @@ BANNER
       opts.on( "-x", "--transition_and_timing transition,seconds,seconds,[seconds]", Array, "Use this option to specify the transition type ('fade' or 'crossfade') and timing parameters. Defaults to '-x #{ options.transition_and_timing.join(',') }' (fade in #{ options.transition_and_timing[ 1 ] } seconds, full level #{ options.transition_and_timing[ 2 ] } seconds, fade out #{ options.transition_and_timing[ 3 ] } seconds). Separate parameters with commas (no spaces)" ) do |p|
         options.transition_and_timing = p
       end
-      opts.on("-j", "--encoder codec", String, "Use 'openjpeg' or 'kakadu' for JPEG 2000 encoding (Default: kakadu. See http://www.kakadusoftware.com/ for Kakadu's terms of use.)") do |p|
+      opts.on("-j", "--encoder codec", String, "Use 'openjpeg' or 'kakadu' for JPEG 2000 encoding (Default: openjpeg)") do |p|
         options.encoder = p.downcase
       end
       opts.on("-f", "--output_format", String, "Use 'jpg' or any other image related suffix (Default: jpg for previews, tiff for DCPs)") do |p|
