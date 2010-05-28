@@ -51,6 +51,7 @@ class Optparser
     options.size = "2k"
     options.aspect = "flat"
     options.encoder = "openjpeg"
+    options.encoder_choices = [ "openjpeg", "kakadu" ]
     options.output_format = "jpg"
     options.black = 0
     options.title = "Cinemaslides test"
@@ -68,7 +69,7 @@ class Optparser
       opts.banner = <<BANNER
 cinemaslides #{ CinemaSlidesVersion } #{ ENV['CINEMASLIDESDIR'].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Defaults to HOME/cinemaslidesdir)" : "" }
 
-Usage: #{ File.basename( $0 ) } [-t, --type | -k, --size | -a, --aspect | -x --transition_and_timing | -j, --encoder | -f, --output_format | -b, --black | -m, --montagepreview | -v, --verbosity | --title | --issuer | --annotation | --examples] image1 [ image2 ... ]
+Usage: #{ File.basename( $0 ) } [-t, --type <type> | -k, --size <DCP resolution> | -a, --aspect <aspect name> | -x --transition_and_timing <type,a,b[,c]> | -j, --encoder <encoder> | -f, --output_format <image suffix> | -b, --black <seconds> | -m, --montagepreview | -v, --verbosity <level> | --title <DCP title> | --issuer <DCP issuer> | --annotation <DCP annotation> | --examples] image1 [ image2 ... ]
 
 BANNER
 
@@ -105,7 +106,7 @@ BANNER
       opts.on("-m", "--montagepreview", "Display a montage of the images before processing") do
         options.montage = TRUE
       end
-      opts.on("-v", "--verbosity level", String, "Use 'quiet', 'info' or 'debug' (Default info)") do |p|
+      opts.on("-v", "--verbosity level", String, "Use 'quiet', 'info' or 'debug' (Default: info)") do |p|
         options.verbosity = p
       end
 
@@ -270,7 +271,7 @@ def fade_in_hold_fade_out( image, fps, fade_in_time, duration, fade_out_time )
 end
 
 
-def link_to_last_real_file( info, seconds, fps, file )
+def link_to_last_encoded_file( info, seconds, fps, file )
   ( 1..( seconds * fps - 1 ) ).each do # 1 file already written
     link = sequencefile
     # FIXME link available on all platforms?
@@ -288,11 +289,11 @@ def full_level( image, fps, duration )
   if ( 1 ..( duration * fps - 1 ) ).none? # only 1 image needed
     @logger.debug( "Skip: Only 1 image needed here, skip convert2" )
     File.cp( image, file )
-  else
+w  else
     convert2(image, level, file)
   end
   @framecount += 1
-  link_to_last_real_file( "full", duration, fps, file )
+  link_to_last_encoded_file( "full", duration, fps, file )
 end
 
 
@@ -492,11 +493,21 @@ end
 @output_type = options.output_type
 @source = ARGV # FIXME check readable
 
+# check whether we have files to work on
 if @source.length == 0
   puts "No image files specified.\nCall #{ File.basename( $0 ) } --help for options."
   exit
 end
 
+# check options.encoder
+if @output_type == "dcp"
+  unless options.encoder_choices.include?( options.encoder )
+    @logger.critical( "Not a usable encoder: '#{ options.encoder }'" )
+    exit
+  end
+end
+
+# check options.transition_and_timing
 options.transition_and_timing.first.downcase!
 if options.transition_and_timing.first == "fade" and options.transition_and_timing.length == 4
   fade_in_time = options.transition_and_timing[1].to_f
@@ -526,9 +537,8 @@ if @output_type == "dcp"
 else
   @output_format = options.output_format
 end
-###
 
-### Work dirs
+# Work dirs
 CINEMASLIDESDIR = ENV['CINEMASLIDESDIR']
 if CINEMASLIDESDIR.nil?
   @cinemaslidesdir = File.join( ENV[ 'HOME' ], "cinemaslidesdir" )
@@ -557,6 +567,7 @@ if @output_type == "dcp"
 elsif @output_type == "preview" or @output_type == "fullpreview"
   @logger.info( "Creating #{ @output_type } (#{ @aspect } #{ @dimensions } @ #{ fps })" )
 end
+
 
 Dir.mkdir( @cinemaslidesdir ) unless File.exists?( @cinemaslidesdir )
 Dir.mkdir( @assetsdir ) unless File.exists?( @assetsdir )
@@ -623,7 +634,7 @@ if options.black > 0
   blackfile = sequencefile
   make_black_frame( blackfile )
   @framecount += 1
-  link_to_last_real_file( "black", options.black, fps, blackfile )
+  link_to_last_encoded_file( "black", options.black, fps, blackfile )
 end
 
 ### all images
@@ -664,9 +675,10 @@ if options.black > 0
   filename = sequencefile
   File.symlink( blackfile, filename )
   @framecount += 1
-  link_to_last_real_file( "black", options.black, fps, blackfile )
+  link_to_last_encoded_file( "black", options.black, fps, blackfile )
 end
 ###
+
 
 ### Create preview/fullpreview
 if @output_type == "preview" or @output_type == "fullpreview"
@@ -688,20 +700,21 @@ if @output_type == "preview" or @output_type == "fullpreview"
   exit
 ###
 
+
 ### Create DCP (Encoding, asdcplib, oct)
 elsif @output_type == "dcp"
-  j2cdir = File.join(@workdir, "j2c")
-  dcpdir = File.join(@workdir, "dcp")
-  tmp_slidesmxf = File.join(dcpdir, 'tmp_j2c.mxf')
-  tmp_cpl = File.join(dcpdir, 'tmp_cpl.xml')
-  tmp_pkl = File.join(dcpdir, 'tmp_pkl.xml')
+  j2cdir = File.join( @workdir, "j2c" )
+  dcpdir = File.join( @workdir, "dcp" )
+  tmp_slidesmxf = File.join( dcpdir, 'tmp_j2c.mxf' )
+  tmp_cpl = File.join( dcpdir, 'tmp_cpl.xml' )
+  tmp_pkl = File.join( dcpdir, 'tmp_pkl.xml' )
 
-  Dir.mkdir(j2cdir)
-  Dir.mkdir(dcpdir)
+  Dir.mkdir( j2cdir )
+  Dir.mkdir( dcpdir )
 
   # JPEG 2000 encoding
-  filemask = File.join(@conformdir, "*.#{@output_format}")
-  files = Dir.glob(filemask).sort
+  filemask = File.join( @conformdir, "*.#{@output_format}" )
+  files = Dir.glob( filemask ).sort
   if @size == "2k"
     kakadu_cinema_profile = "CINEMA2K"
     openjpeg_cinema_profile = "cinema2K 24"
@@ -710,29 +723,29 @@ elsif @output_type == "dcp"
     openjpeg_cinema_profile = "cinema4K"
   end
   counter = 0
-  last_real_file = ""
+  last_encoded_file = ""
   files.each do |f|
-    type = File.ftype(f)
+    type = File.ftype( f )
     if type == "file" # encode
       counter += 1
-      last_real_file = f + ".j2c"
+      last_encoded_file = f + ".j2c"
       if options.encoder == "openjpeg"
-        @logger.info( "openjpeg: #{ File.basename( f ) }" )
+        @logger.info( "openjpeg: #{ File.basename( f ) } (#{ counter } of #{ files.size })" )
         `image_to_j2k -#{ openjpeg_cinema_profile } -i #{f} -o #{f}.j2c > /dev/null 2>&1`
       elsif options.encoder == "kakadu"
-        @logger.info( "kakadu: #{ File.basename( f ) }" )
+        @logger.info( "kakadu: #{ File.basename( f ) } (#{ counter } of #{ files.size })" )
         `kdu_compress -i #{ f } -o #{ f }.j2c Sprofile=#{ kakadu_cinema_profile } Creslengths=1302083 Creslengths:C0=1302083,1041666 Creslengths:C1=1302083,1041666 Creslengths:C2=1302083,1041666`
-      else
+    else # not reached
         @logger.critical( "No usable encoder specified ('#{ options.encoder }')" )
         @logger.critical( "Sorry, shouldn't happen plus we're bailing out" )
         @logger.info( "Pick up the pieces at #{ @workdir }" )
         exit
       end
-    elsif type == "link" # copy last real file
+  elsif type == "link" # link to last encoded file
       counter += 1
       # For the time being (case dcp) we make tiffs, so there, see original_suffix
-      copy = File.join( @conformdir, "#{ '%06d' % counter }.#{ original_suffix }.j2c" )
-      File.link( last_real_file, copy ) # asdcplib chokes on symlinks
+      link = File.join( @conformdir, "#{ '%06d' % counter }.#{ original_suffix }.j2c" )
+      File.link( last_encoded_file, link ) # asdcplib chokes on symlinks
     else
       @logger.critical( "Encountered an unusable file (#{ f }, type #{ type }" )
       @logger.critical( "Sorry, bailing out" )
@@ -747,7 +760,7 @@ elsif @output_type == "dcp"
   # ass backwards anyway, the following ...
   slidesmxf_uuid = `asdcp-test -i -H #{ tmp_slidesmxf }`.grep( /AssetUUID/ ).first.split(": ").last.chomp
   @logger.debug( "trackfile uuid: #{ slidesmxf_uuid }" )
-  slidesmxf = File.join( File.dirname( tmp_slidesmxf ), slidesmxf_uuid + "_j2c.mxf" )
+  slidesmxf = File.join( File.dirname( tmp_slidesmxf ), "j2c_" + slidesmxf_uuid + "_.mxf" )
   File.rename( tmp_slidesmxf, slidesmxf )
 
   @logger.info( "Write CPL" )
@@ -755,7 +768,7 @@ elsif @output_type == "dcp"
   
   cpl_uuid = Nokogiri::XML( File.open( tmp_cpl ) ).xpath( "//xmlns:CompositionPlaylist/xmlns:Id" ).text.split( 'urn:uuid:' ).last
   @logger.debug( "cpl uuid      : #{ cpl_uuid }" )
-  cpl = File.join( File.dirname( tmp_cpl ), cpl_uuid + "_cpl.xml" )
+  cpl = File.join( File.dirname( tmp_cpl ), "cpl_" + cpl_uuid + "_.xml" )
   File.rename( tmp_cpl, cpl )
 
   @logger.info( "Write PKL" )
@@ -763,7 +776,7 @@ elsif @output_type == "dcp"
 
   pkl_uuid = Nokogiri::XML( File.open( tmp_pkl ) ).xpath( "//xmlns:PackingList/xmlns:Id" ).text.split( 'urn:uuid:' ).last
   @logger.debug( "pkl uuid      : #{ pkl_uuid }" )
-  pkl = File.join( File.dirname( tmp_pkl ), pkl_uuid + "_pkl.xml" )
+  pkl = File.join( File.dirname( tmp_pkl ), "pkl_" + pkl_uuid + "_.xml" )
   File.rename( tmp_pkl, pkl)
   @logger.info( "Write ASSETMAP and VOLINDEX" )
   `cd #{ dcpdir }; mkmap --issuer '#{ options.issuer }' #{File.basename( slidesmxf )} #{File.basename( cpl )} #{File.basename( pkl )}`
