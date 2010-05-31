@@ -289,7 +289,7 @@ def full_level( image, fps, duration )
   if ( 1 ..( duration * fps - 1 ) ).none? # only 1 image needed
     @logger.debug( "Skip: Only 1 image needed here, skip convert2" )
     File.cp( image, file )
-w  else
+  else
     convert2(image, level, file)
   end
   @framecount += 1
@@ -800,7 +800,7 @@ FIXME assets depot: works for full level pre-encoding files (via conform) but we
       test and fix (make slideshow an object with self-consciousness)
 FIXME crossfades border case: 0.0416666666666667 (1/24) crossfade time -> level shoots off the roof
 FIXME gamma diff on resize: don't conform images with target dimensions
-FIXME how to detect the optimal -vo for mplayer?
+FIXME how to detect optimal -vo for mplayer?
 FIXME ask continue/exit after montage summary.
 FIXME options default for fps, right now it's hardcoded
 FIXME crossfade,5,0 [5 images] -> 720 frames intended 725 frames created
@@ -823,6 +823,7 @@ CODE dry out black header/tail
 CODE report method (also generalize transition types and timings)
 CODE options catch all
 CODE better way to check for and provide requirements alternatives ( mplayer|ffplay, openjpeg|kakadu etc. )
+CODE check images(s)/dir(s) given on the commandline. put check into @logger.debug
 
 mplayer crash with a710 jpgs. exif?
 update "Usage"
