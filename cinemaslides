@@ -67,7 +67,7 @@ class Optparser
 
     opts = OptionParser.new do |opts|
       opts.banner = <<BANNER
-cinemaslides #{ CinemaSlidesVersion } #{ ENV['CINEMASLIDESDIR'].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Defaults to HOME/cinemaslidesdir)" : "" }
+cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Defaults to HOME/cinemaslidesdir)" : "\n#{ File.basename( $0 ) } working directory is set to #{ ENV[ 'CINEMASLIDESDIR' ] }" }
 
 Usage: #{ File.basename( $0 ) } [-t, --type <type> | -k, --size <DCP resolution> | -a, --aspect <aspect name> | -x --transition_and_timing <type,a,b[,c]> | -j, --encoder <encoder> | -f, --output_format <image suffix> | -b, --black <seconds> | -m, --montagepreview | -v, --verbosity <level> | --title <DCP title> | --issuer <DCP issuer> | --annotation <DCP annotation> | --examples] image1 [ image2 ... ]
 
@@ -110,7 +110,7 @@ BANNER
         options.verbosity = p
       end
 
-      opts.on_tail( '--examples', 'See some examples and explanations' ) do
+      opts.on_tail( '--examples', 'Some examples and explanations' ) do
         app = File.basename( $0)
         puts "Preview image (Cut transition, default duration 5 seconds):"
         puts "\t#{ app } image.jpg"
@@ -120,6 +120,8 @@ BANNER
         puts "\t#{ app } -t dcp -b 5 *.dpx"
         puts "Create slideshow DCP (preview thumbnails, aspect ratio scope, specify title and issuer)"
         puts "\t#{ app } *.raw -m -a scope -t dcp --title 'Slideshow Test' --issuer 'Facility'"
+        puts "Slideshow of your truetype fonts"
+        puts "\t#{ app } -x crossfade,2,2 `find /usr/share/fonts/truetype/ -name '*ttf' -type f`"
         
         exit
       end
@@ -290,7 +292,7 @@ def full_level( image, fps, duration )
     @logger.debug( "Skip: Only 1 image needed here, skip convert2" )
     File.cp( image, file )
   else
-    convert2(image, level, file)
+    convert2( image, level, file )
   end
   @framecount += 1
   link_to_last_encoded_file( "full", duration, fps, file )
