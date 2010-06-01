@@ -731,7 +731,7 @@ elsif @output_type == "dcp"
   files = Dir.glob( filemask ).sort
   if @size == "2k"
     kakadu_cinema_profile = "CINEMA2K"
-    openjpeg_cinema_profile = "cinema2K 24"
+    openjpeg_cinema_profile = "cinema2K #{ fps }"
   elsif @size == "4k"
     kakadu_cinema_profile = "CINEMA4K"
     openjpeg_cinema_profile = "cinema4K"
@@ -748,8 +748,13 @@ elsif @output_type == "dcp"
         `image_to_j2k -#{ openjpeg_cinema_profile } -i #{f} -o #{f}.j2c > /dev/null 2>&1`
       elsif options.encoder == "kakadu"
         @logger.info( "kakadu: #{ File.basename( f ) } (#{ counter } of #{ files.size })" )
-        `kdu_compress -i #{ f } -o #{ f }.j2c Sprofile=#{ kakadu_cinema_profile } Creslengths=1302083 Creslengths:C0=1302083,1041666 Creslengths:C1=1302083,1041666 Creslengths:C2=1302083,1041666`
-    else # not reached
+        if fps == 24 # 1302083 / 1041666 = ~1.25
+          `kdu_compress -i #{ f } -o #{ f }.j2c Sprofile=#{ kakadu_cinema_profile } Creslengths=1302083 Creslengths:C0=1302083,1041666 Creslengths:C1=1302083,1041666 Creslengths:C2=1302083,1041666`
+        # FIXME broken for 4K:
+        elsif fps == 48 # 651041 / 520832 = ~1.25
+          `kdu_compress -i #{ f } -o #{ f }.j2c Sprofile=#{ kakadu_cinema_profile } Creslengths=651041 Creslengths:C0=651041,520832 Creslengths:C1=651041,520832 Creslengths:C2=651041,520832`
+        end
+      else # not reached
         @logger.critical( "No usable encoder specified ('#{ options.encoder }')" )
         @logger.critical( "Sorry, shouldn't happen plus we're bailing out" )
         @logger.info( "Pick up the pieces at #{ @workdir }" )
