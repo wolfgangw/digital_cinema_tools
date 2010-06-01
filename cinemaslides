@@ -50,6 +50,9 @@ class Optparser
     options.output_type = "preview"
     options.size = "2k"
     options.aspect = "flat"
+    options.fps = 24
+    options.fps_dcp_choices = [ 24, 48 ] # FIXME jpeg2000 rate control for 25, 30, 50, 60?
+    options.fps_asdcp_choices = [ 23, 24, 25, 30, 48, 50, 60 ]
     options.encoder = "openjpeg"
     options.encoder_choices = [ "openjpeg", "kakadu" ]
     options.output_format = "jpg"
@@ -69,7 +72,7 @@ class Optparser
       opts.banner = <<BANNER
 cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Defaults to HOME/cinemaslidesdir)" : "\n#{ File.basename( $0 ) } working directory is set to #{ ENV[ 'CINEMASLIDESDIR' ] }" }
 
-Usage: #{ File.basename( $0 ) } [-t, --type <type> | -k, --size <DCP resolution> | -a, --aspect <aspect name> | -x --transition_and_timing <type,a,b[,c]> | -j, --encoder <encoder> | -f, --output_format <image suffix> | -b, --black <seconds> | -m, --montagepreview | -v, --verbosity <level> | --title <DCP title> | --issuer <DCP issuer> | --annotation <DCP annotation> | --examples] image1 [ image2 ... ]
+Usage: #{ File.basename( $0 ) } [-t, --type <type> | -k, --size <DCP resolution> | -a, --aspect <aspect name> | --fps <fps> | -x --transition_and_timing <type,a,b[,c]> | -j, --encoder <encoder> | -f, --output_format <image suffix> | -b, --black <seconds> | -m, --montagepreview | -v, --verbosity <level> | --title <DCP title> | --issuer <DCP issuer> | --annotation <DCP annotation> | --examples] image1 [ image2 ... ]
 
 BANNER
 
@@ -81,6 +84,9 @@ BANNER
       end
       opts.on("-a", "--aspect ratio", String, "Use 'flat' or 'scope' (Default: flat)") do |p|
         options.aspect = p.downcase
+      end
+      opts.on("--fps fps", "Framerate (Default: 24)", Float) do |p|
+        options.fps = p
       end
       opts.on( "-x", "--transition_and_timing transition,seconds,seconds,[seconds]", Array, "Use this option to specify the transition type ('fade' or 'crossfade') and timing parameters. Defaults to '-x #{ options.transition_and_timing.join(',') }' (fade in #{ options.transition_and_timing[ 1 ] } seconds, full level #{ options.transition_and_timing[ 2 ] } seconds, fade out #{ options.transition_and_timing[ 3 ] } seconds). Separate parameters with commas (no spaces)" ) do |p|
         options.transition_and_timing = p
@@ -273,56 +279,6 @@ def fade_in_hold_fade_out( image, fps, fade_in_time, duration, fade_out_time )
 end
 
 
-def link_to_last_encoded_file( info, seconds, fps, file )
-  ( 1..( seconds * fps - 1 ) ).each do # 1 file already written
-    link = sequencefile
-    # FIXME link available on all platforms?
-    # FIXME hardlinks answer "file" to ftype, so all files would be jpeg2000 encoded
-    File.symlink( file, link )
-    @framecount += 1
-  end
-end
-
-
-def full_level( image, fps, duration )
-  @logger.info( "--- Full level #{ imagecount_info( image ) }" )
-  level = 0
-  file = sequencefile
-  if ( 1 ..( duration * fps - 1 ) ).none? # only 1 image needed
-    @logger.debug( "Skip: Only 1 image needed here, skip convert2" )
-    File.cp( image, file )
-  else
-    convert2( image, level, file )
-  end
-  @framecount += 1
-  link_to_last_encoded_file( "full", duration, fps, file )
-end
-
-
-def crossfade( image1, image2, fps, seconds )
-  @logger.info( "XXX Crossfade #{ imagecount_info( image1 ) }" )
-  level = 100
-  step = 100 / ( seconds * fps )
-  case @output_type
-  when "dcp"
-    compress = "-compress none"
-    depth = "-depth 12"
-  when "preview", "fullpreview"
-    compress = ""
-    depth = "-depth 8"
-  end
-  @logger.debug( "Crossfade level before loop: #{level}" )
-  ( 1..( seconds * fps ) ).each do
-    output = sequencefile #
-    @logger.cr( sprintf( '%.2f', level ), output )
-    composite( image1, level, image2, depth, compress, output )
-    level = level - step
-    @framecount += 1
-  end
-  @logger.debug( "Crossfade level after loop: #{level + step}" )
-end
-
-
 def fade_in( image, fps, fade_in_time )
   @logger.info( ">>> Fade in #{ imagecount_info( image ) }" )
   level = -100
@@ -350,6 +306,56 @@ def fade( image, seconds, fps, level, step)
     @framecount += 1
   end
   @logger.debug( "Fade frames level after loop: #{level - step}" )
+end
+
+
+def full_level( image, fps, duration )
+  @logger.info( "--- Full level #{ imagecount_info( image ) }" )
+  level = 0
+  file = sequencefile
+  if ( 1 ..( duration * fps - 1 ) ).none? # only 1 image needed
+    @logger.debug( "Skip: Only 1 image needed here, skip convert2" )
+    File.cp( image, file )
+  else
+    convert2( image, level, file )
+  end
+  @framecount += 1
+  link_to_last_encoded_file( "full", duration, fps, file )
+end
+
+
+def link_to_last_encoded_file( info, seconds, fps, file )
+  ( 1..( seconds * fps - 1 ) ).each do # 1 file already written
+    link = sequencefile
+    # FIXME link available on all platforms?
+    # FIXME hardlinks answer "file" to ftype, so all files would be jpeg2000 encoded
+    File.symlink( file, link )
+    @framecount += 1
+  end
+end
+
+
+def crossfade( image1, image2, fps, seconds )
+  @logger.info( "XXX Crossfade #{ imagecount_info( image1 ) }" )
+  level = 100
+  step = 100 / ( seconds * fps )
+  case @output_type
+  when "dcp"
+    compress = "-compress none"
+    depth = "-depth 12"
+  when "preview", "fullpreview"
+    compress = ""
+    depth = "-depth 8"
+  end
+  @logger.debug( "Crossfade level before loop: #{level}" )
+  ( 1..( seconds * fps ) ).each do
+    output = sequencefile #
+    @logger.cr( sprintf( '%.2f', level ), output )
+    composite( image1, level, image2, depth, compress, output )
+    level = level - step
+    @framecount += 1
+  end
+  @logger.debug( "Crossfade level after loop: #{level + step}" )
 end
 
 
@@ -432,7 +438,7 @@ def convert( image, level, filename )
         -gamma 2.6 \
         -compress none \
       #{ filename }`
-else # hello typo
+  else # hello typo
     puts "Use '-t preview' (half size) or '-t fullpreview' (full size) or '-t dcp'.\nDefaults to 'preview'."
     exit
   end
@@ -440,14 +446,15 @@ end
 
 
 def convert2( image, level, filename )
-  if @output_type == "preview" or @output_type == "fullpreview"
+  case @output_type
+  when "preview", "fullpreview"
     `convert #{image} \
         -type TrueColor \
         -gamma 0.454545454545455 \
         #{ fadetype( level ) } \
         -gamma 2.2 \
       #{ filename }`
-  elsif @output_type == "dcp" # -compress none for kakadu
+  when "dcp" # -compress none for kakadu
     `convert #{image} \
         -type TrueColor \
         -gamma 0.454545454545455 \
@@ -495,18 +502,23 @@ end
 @output_type = options.output_type
 @source = ARGV # FIXME check readable
 
-# check whether we have files to work on
+# check for files to work on # FIXME real file checks
 if @source.length == 0
   puts "No image files specified.\nCall #{ File.basename( $0 ) } --help for options."
   exit
 end
 
-# check options.encoder
+# check dcp related options
 if @output_type == "dcp"
   unless options.encoder_choices.include?( options.encoder )
     @logger.critical( "Not a usable encoder: '#{ options.encoder }'" )
     exit
   end
+  unless options.fps_dcp_choices.include?( options.fps )
+    @logger.critical( "Not implemented: #{ options.fps } fps" )
+    exit
+  end
+  @logger.debug( "DCP related options ok" )
 end
 
 # check options.transition_and_timing
@@ -529,7 +541,7 @@ else
   exit
 end
 
-fps = 24.0 # FIXME
+fps = options.fps
 @framecount = 1
 @imagecount = 0
 if @output_type == "dcp"
@@ -562,7 +574,7 @@ y = y.to_i / 6 # ...
 @thumbs_dimensions = [ x,y ].join( 'x' ) # oh dear
 
 if @output_type == "dcp"
-  @logger.info( "Creating #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps }). Encoder: #{ options.encoder }" )
+  @logger.info( "Creating #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
   @logger.info( "Title: #{ options.title } #{timestamp}" )
   @logger.info( "Annotation: #{ options.annotation } #{timestamp}" )
   @logger.info( "Issuer: #{ options.issuer }" )
@@ -757,7 +769,7 @@ elsif @output_type == "dcp"
 
   `mv #{ File.join( @conformdir, '*.j2c' ) } #{ j2cdir }`
   @logger.info( "Write image trackfile ..." )
-  `asdcp-test -L -E -c #{ tmp_slidesmxf } #{ j2cdir } > /dev/null 2>&1`
+  `asdcp-test -L -E -p #{ fps } -c #{ tmp_slidesmxf } #{ j2cdir } > /dev/null 2>&1`
   # FIXME this will break when asdcp-test -i -H changes its output format
   # ass backwards anyway, the following ...
   slidesmxf_uuid = `asdcp-test -i -H #{ tmp_slidesmxf }`.grep( /AssetUUID/ ).first.split(": ").last.chomp
