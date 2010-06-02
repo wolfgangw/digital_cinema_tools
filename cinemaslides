@@ -62,6 +62,7 @@ class Optparser
     options.annotation = "Cinemaslides test"
     options.montage = FALSE
     options.verbosity = "info"
+    options.verbosity_choices = [ "quiet", "info", "debug" ]
     options.transition_and_timing = Array.new
     options.transition_and_timing << "fade"
     options.transition_and_timing << 0 # fade_in_time
@@ -70,7 +71,7 @@ class Optparser
 
     opts = OptionParser.new do |opts|
       opts.banner = <<BANNER
-cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Defaults to HOME/cinemaslidesdir)" : "\n#{ File.basename( $0 ) } working directory is set to #{ ENV[ 'CINEMASLIDESDIR' ] }" }
+cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
 
 Usage: #{ File.basename( $0 ) } [-t, --type <type> | -k, --size <DCP resolution> | -a, --aspect <aspect name> | --fps <fps> | -x --transition_and_timing <type,a,b[,c]> | -j, --encoder <encoder> | -f, --output_format <image suffix> | -b, --black <seconds> | -m, --montagepreview | -v, --verbosity <level> | --title <DCP title> | --issuer <DCP issuer> | --annotation <DCP annotation> | --examples] image1 [ image2 ... ]
 
@@ -113,7 +114,11 @@ BANNER
         options.montage = TRUE
       end
       opts.on("-v", "--verbosity level", String, "Use 'quiet', 'info' or 'debug' (Default: info)") do |p|
-        options.verbosity = p
+        if options.verbosity_choices.include?( p )
+          options.verbosity = p
+        else
+          options.verbosity = "info"
+        end
       end
 
       opts.on_tail( '--examples', 'Some examples and explanations' ) do
@@ -169,7 +174,7 @@ class Logger
     @color[:info] = ''
     @color[:debug] = '32'
     @color[:warn] = '33'
-    @color[:critical] = '31'
+    @color[:critical] = '1'
   end
   def info( text )
     to_console( @color[:info], text ) if @info == TRUE
@@ -500,12 +505,29 @@ end
 @aspect = options.aspect
 @size = options.size
 @output_type = options.output_type
-@source = ARGV # FIXME check readable
+
 
 # check for files to work on # FIXME real file checks
+@source = ARGV
 if @source.length == 0
-  puts "No image files specified.\nCall #{ File.basename( $0 ) } --help for options."
+  @logger.critical( "No image files specified" )
   exit
+end
+martians = Array.new
+@source.each do |file|
+  if File.exists?( file )
+    @logger.debug( "Readable: #{ file }" )
+  else
+    martians << file
+    @logger.debug( "Not readable: #{ file }" )
+  end
+end
+if martians.size > 0
+  @logger.critical( martians.size == 1 ? "This file doesn't exist: #{ martians.to_s }" : "These files don't exist: #{ martians.join( ', ' ) }" )
+  @logger.critical( "Check your files" )
+  exit
+elsif martians.size == 0
+  @logger.debug( "All files readable" )
 end
 
 # check dcp related options
