@@ -325,11 +325,11 @@ def full_level( image, fps, duration )
     convert2( image, level, file )
   end
   @framecount += 1
-  link_to_last_encoded_file( "full", duration, fps, file )
+  link_to_latest_encoded_file( "full", duration, fps, file )
 end
 
 
-def link_to_last_encoded_file( info, seconds, fps, file )
+def link_to_latest_encoded_file( info, seconds, fps, file )
   ( 1..( seconds * fps - 1 ) ).each do # 1 file already written
     link = sequencefile
     # FIXME link available on all platforms?
@@ -402,13 +402,24 @@ end
 
 def conform( image )
   @logger.info( "Conform #{ image }" )
-  asset = File.join( @assetsdir, Digest::MD5.hexdigest( File.read( image ) ) + "_#{ @dimensions }_" + "." + @output_format )
-  if File.exists?( asset )
-    @logger.debug( "Skip: Asset exists (#{ image } -> #{ File.basename( asset ) })" )
-  else
-    convert( image, 0, asset )
+  asset, todo = check_for_asset( image, @output_format )
+  if todo
+    convert( image, 0, asset ) # full level
   end
   return asset
+end
+
+
+def check_for_asset( filename, suffix )
+  #assetname = File.join( @assetsdir, Digest::MD5.hexdigest( File.read( filename ) ) + "_" + @dimensions + "_" + "." + target_suffix )
+  assetname = File.join( @assetsdir, `identify -format '%#' #{ filename }`.chomp + "_#{ @dimensions }#{ @output_type == 'dcp' ? '_' + @encoder_id : '_pre' }_.#{ suffix }" )
+  if File.exists?( assetname )
+    @logger.debug( "Skip: Asset exists (#{ File.basename( filename ) } -> #{ File.basename( assetname ) })" )
+    todo = FALSE
+  else
+    todo = TRUE
+  end
+  return assetname, todo
 end
 
 
@@ -530,11 +541,20 @@ elsif martians.size == 0
   @logger.debug( "All files readable" )
 end
 
+
 # check dcp related options
 if @output_type == "dcp"
   unless options.encoder_choices.include?( options.encoder )
     @logger.critical( "Not a usable encoder: '#{ options.encoder }'" )
     exit
+  end
+  case options.encoder # in order not to mix up asset retrieval
+  when 'openjpeg'
+    @encoder_id = 'opj'
+  when 'kakadu'
+    @encoder_id = 'kdu'
+  else
+    @encoder_id = 'xxx'
   end
   unless options.fps_dcp_choices.include?( options.fps )
     @logger.critical( "Not implemented: #{ options.fps } fps" )
@@ -542,6 +562,7 @@ if @output_type == "dcp"
   end
   @logger.debug( "DCP related options ok" )
 end
+
 
 # check options.transition_and_timing
 options.transition_and_timing.first.downcase!
@@ -553,7 +574,7 @@ elsif options.transition_and_timing.first == "crossfade" and options.transition_
   crossfade_time = options.transition_and_timing[1].to_f
   duration = options.transition_and_timing[2].to_f
   if @source.length == 1
-    @logger.warn( "No way to crossfade 1 image (#{ @source.first })" )
+    @logger.warn( "Can't crossfade 1 image (#{ @source.first })" )
     @logger.info( "Either supply more than 1 image or change transition_and_timing to fade specs ('-x fade,a,b,c')" )
     exit
   end
@@ -562,6 +583,7 @@ else
   @logger.info( "Use '-x fade,a,b,c' or '-x crossfade,a,b' (a = fade in time/crossfade time, b = full level time, c = fade out time)" )
   exit
 end
+
 
 fps = options.fps
 @framecount = 1
@@ -573,6 +595,7 @@ if @output_type == "dcp"
 else
   @output_format = options.output_format
 end
+
 
 # Work dirs
 CINEMASLIDESDIR = ENV['CINEMASLIDESDIR']
@@ -589,11 +612,13 @@ end
 @assetsdir = File.join( @cinemaslidesdir, "assets" )
 ###
 
+
 @dimensions = width_x_height
 x,y = @dimensions.split( 'x' ) # ugh
 x = x.to_i / 6 # ugh ugh
 y = y.to_i / 6 # ...
 @thumbs_dimensions = [ x,y ].join( 'x' ) # oh dear
+
 
 if @output_type == "dcp"
   @logger.info( "Creating #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
@@ -670,11 +695,11 @@ if options.black > 0
   blackfile = sequencefile
   make_black_frame( blackfile )
   @framecount += 1
-  link_to_last_encoded_file( "black", options.black, fps, blackfile )
+  link_to_latest_encoded_file( "black", options.black, fps, blackfile )
 end
 
 ### all images
-keeper = nil # keep a conform for the next crossfade (image2 will be image1, don't conform again)
+keeper = nil # keep a conform for the next crossfade (2nd will be 1st then, don't conform again)
 @source.each_index do |index|
   case options.transition_and_timing.first
   when "fade"
@@ -711,7 +736,7 @@ if options.black > 0
   filename = sequencefile
   File.symlink( blackfile, filename )
   @framecount += 1
-  link_to_last_encoded_file( "black", options.black, fps, blackfile )
+  link_to_latest_encoded_file( "black", options.black, fps, blackfile )
 end
 ###
 
@@ -749,8 +774,11 @@ elsif @output_type == "dcp"
   Dir.mkdir( dcpdir )
 
   # JPEG 2000 encoding
+  @logger.info( "Encode to JPEG 2000" )
   filemask = File.join( @conformdir, "*.#{@output_format}" )
   files = Dir.glob( filemask ).sort
+  
+  # keep in mind: openjpeg's profiles imply rate constraints, kakadu's don't
   if @size == "2k"
     kakadu_cinema_profile = "CINEMA2K"
     openjpeg_cinema_profile = "cinema2K #{ fps }"
@@ -759,36 +787,42 @@ elsif @output_type == "dcp"
     openjpeg_cinema_profile = "cinema4K"
   end
   counter = 0
-  last_encoded_file = ""
-  files.each do |f|
-    type = File.ftype( f )
-    if type == "file" # encode
+  latest_encoded_file = ""
+  files.each do |file|
+    type = File.ftype( file )
+
+    if type == "file" # check for asset / encode
       counter += 1
-      last_encoded_file = f + ".j2c"
-      if options.encoder == "openjpeg"
-        @logger.info( "openjpeg: #{ File.basename( f ) } (#{ counter } of #{ files.size })" )
-        `image_to_j2k -#{ openjpeg_cinema_profile } -i #{f} -o #{f}.j2c > /dev/null 2>&1`
-      elsif options.encoder == "kakadu"
-        @logger.info( "kakadu: #{ File.basename( f ) } (#{ counter } of #{ files.size })" )
-        if fps == 24 # 1302083 / 1041666 = ~1.25
-          `kdu_compress -i #{ f } -o #{ f }.j2c Sprofile=#{ kakadu_cinema_profile } Creslengths=1302083 Creslengths:C0=1302083,1041666 Creslengths:C1=1302083,1041666 Creslengths:C2=1302083,1041666`
-        # FIXME broken for 4K:
-        elsif fps == 48 # 651041 / 520832 = ~1.25
-          `kdu_compress -i #{ f } -o #{ f }.j2c Sprofile=#{ kakadu_cinema_profile } Creslengths=651041 Creslengths:C0=651041,520832 Creslengths:C1=651041,520832 Creslengths:C2=651041,520832`
+      latest_encoded_file = file + ".j2c"
+      asset, todo = check_for_asset ( file, "j2c" ) # openjpeg needs a hint for output
+      if todo == TRUE
+        if options.encoder == "openjpeg"
+          @logger.info( "openjpeg: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
+          `image_to_j2k -#{ openjpeg_cinema_profile } -i #{ file } -o #{ asset }`# > /dev/null 2>&1`
+        elsif options.encoder == "kakadu"
+          @logger.info( "kakadu: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
+          if fps == 24 # max codestream length / max color component size: 1302083 / 1041666 = ~1.25
+            `kdu_compress -i #{ file } -o #{ asset } Sprofile=#{ kakadu_cinema_profile } Creslengths=1302083 Creslengths:C0=1302083,1041666 Creslengths:C1=1302083,1041666 Creslengths:C2=1302083,1041666`
+          # FIXME broken for 4K (maximum 4K @ 30 fps?):
+          elsif fps == 48 # 651041 / 520832 = ~1.25
+            `kdu_compress -i #{ file } -o #{ asset } Sprofile=#{ kakadu_cinema_profile } Creslengths=651041 Creslengths:C0=651041,520832 Creslengths:C1=651041,520832 Creslengths:C2=651041,520832`
+          end
+        else # not reached
+          @logger.critical( "No usable encoder specified ('#{ options.encoder }')" )
+          @logger.critical( "Sorry, shouldn't happen plus we're bailing out" )
+          @logger.info( "Pick up the pieces at #{ @workdir }" )
+          exit
         end
-      else # not reached
-        @logger.critical( "No usable encoder specified ('#{ options.encoder }')" )
-        @logger.critical( "Sorry, shouldn't happen plus we're bailing out" )
-        @logger.info( "Pick up the pieces at #{ @workdir }" )
-        exit
       end
-  elsif type == "link" # link to last encoded file
+      File.link( asset, latest_encoded_file )
+        
+    elsif type == "link" # link to last encoded file
       counter += 1
       # For the time being (case dcp) we make tiffs, so there, see original_suffix
       link = File.join( @conformdir, "#{ '%06d' % counter }.#{ original_suffix }.j2c" )
-      File.link( last_encoded_file, link ) # asdcplib chokes on symlinks
+      File.link( latest_encoded_file, link ) # asdcplib chokes on symlinks
     else
-      @logger.critical( "Encountered an unusable file (#{ f }, type #{ type }" )
+      @logger.critical( "Encountered an unusable file (#{ file }, type #{ type }" )
       @logger.critical( "Sorry, bailing out" )
       exit
     end
