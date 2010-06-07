@@ -38,7 +38,7 @@ begin
 rescue LoadError
 end
 require 'nokogiri'
-#require 'highline/import' # FIXME
+require 'highline/import'
 
 
 # FIXME catch missing parameters, false options, typos etc.
@@ -47,24 +47,25 @@ class Optparser
     
     # defaults
     options = OpenStruct.new
-    options.output_type = "preview"
-    options.size = "2k"
-    options.aspect = "flat"
+    options.output_type = 'preview'
+    options.size = '2k'
+    options.aspect = 'flat'
     options.fps = 24
     options.fps_dcp_choices = [ 24, 48 ] # FIXME jpeg2000 rate control for 25, 30, 50, 60?
     options.fps_asdcp_choices = [ 23, 24, 25, 30, 48, 50, 60 ]
-    options.encoder = "openjpeg"
-    options.encoder_choices = [ "openjpeg", "kakadu" ]
-    options.output_format = "jpg"
+    options.encoder = 'openjpeg'
+    options.encoder_choices = [ 'openjpeg', 'kakadu' ]
+    options.output_format = 'jpg'
     options.black = 0
-    options.title = "Cinemaslides test"
-    options.issuer = "Wolfgang Woehl"
-    options.annotation = "Cinemaslides test"
+    options.title = 'Cinemaslides test'
+    options.issuer = 'Wolfgang Woehl'
+    options.annotation = 'Cinemaslides test'
     options.montage = FALSE
-    options.verbosity = "info"
-    options.verbosity_choices = [ "quiet", "info", "debug" ]
+    options.keep = FALSE
+    options.verbosity = 'info'
+    options.verbosity_choices = [ 'quiet', 'info', 'debug' ]
     options.transition_and_timing = Array.new
-    options.transition_and_timing << "fade"
+    options.transition_and_timing << 'fade'
     options.transition_and_timing << 0 # fade_in_time
     options.transition_and_timing << 5 # duration
     options.transition_and_timing << 0 # fade_out_time
@@ -73,7 +74,7 @@ class Optparser
       opts.banner = <<BANNER
 cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
 
-Usage: #{ File.basename( $0 ) } [-t, --type <type> | -k, --size <DCP resolution> | -a, --aspect <aspect name> | --fps <fps> | -x --transition_and_timing <type,a,b[,c]> | -j, --encoder <encoder> | -f, --output_format <image suffix> | -b, --black <seconds> | -m, --montagepreview | -v, --verbosity <level> | --title <DCP title> | --issuer <DCP issuer> | --annotation <DCP annotation> | --examples] image1 [ image2 ... ]
+Usage: #{ File.basename( $0 ) } [ -t, --type <type> | -k, --size <DCP resolution> | -a, --aspect <aspect name> | --fps <fps> | -x --transition_and_timing <type,a,b[,c]> | -j, --encoder <encoder> | -f, --output_format <image suffix> | -b, --black <seconds> | -m, --montagepreview | -v, --verbosity <level> | --title <DCP title> | --issuer <DCP issuer> | --annotation <DCP annotation> | --examples | --keep ] image1 [ image2 ... ]
 
 BANNER
 
@@ -135,6 +136,9 @@ BANNER
         puts "\t#{ app } -x crossfade,2,2 `find /usr/share/fonts/truetype/ -name '*ttf' -type f`"
         
         exit
+      end
+      opts.on( '--keep', 'Do not remove preview/temporary files' ) do
+        options.keep = TRUE
       end
       opts.on_tail( '-h', '--help', 'Display this screen' ) do
         puts opts
@@ -217,6 +221,31 @@ def check_requirements( requirements )
 end
 
 
+def final_report( sequence_frames, fps, transition_and_timing, keep )
+  sequence_duration = sequence_frames / fps
+  @logger.debug( "#{ sequence_frames } frames intended by numbers (#{ sprintf( '%.2f', sequence_duration ) } seconds)" )
+  @logger.debug( "#{ @framecount -1 } frames written" )
+  @logger.info( "Cinema Slideshow is #{ sprintf( '%.2f', ( @framecount -1 ) / fps.to_f ) } seconds long (#{ @source.length } image#{ "s" * ( @source.length == 1 ? 0 : 1 )} | #{ transition_and_timing.join(',').gsub(' ', '') } | #{ @framecount - 1 } frames)" )
+  @logger.info( "Pick up your files at #{ @workdir }/" ) if keep == TRUE
+end
+
+
+def cleanup_workdir( keep )
+  case keep
+  when FALSE
+    case @output_type
+    when 'preview', 'fullpreview'
+      @logger.info( "Removing preview files (Say '--keep' to keep them)" )
+      `rm -rf #{ @workdir }`
+    when 'dcp'
+      @logger.info( "Removing temporary files (Say '--keep' to keep them)" )
+      `rm -rf #{ @conformdir }`
+      `rm -rf #{ @j2cdir }`
+    end
+  end
+end
+
+
 def get_timestamp
   t = Time.now
   [t.year, '%02d' % t.month, '%02d' % t.day, '%02d' % t.hour, '%02d' % t.min, '%02d' % t.sec].join('_')
@@ -259,15 +288,6 @@ def make_black_frame( filename )
   elsif @output_type == "dcp"
     `convert -type TrueColor -size #{ @dimensions } xc:black -depth 12 #{ filename }`
   end
-end
-
-
-def final_report( sequence_frames, fps, transition_and_timing )
-  sequence_duration = sequence_frames / fps
-  @logger.debug( "#{ sequence_frames } frames intended by numbers (#{ sprintf( '%.2f', sequence_duration ) } seconds)" )
-  @logger.debug( "#{ @framecount -1 } frames written" )
-  @logger.info( "Cinema Slideshow is #{ sprintf( '%.2f', ( @framecount -1 ) / fps.to_f ) } seconds long (#{ @source.length } image#{ "s" * ( @source.length == 1 ? 0 : 1 )} | #{ transition_and_timing.join(',').gsub(' ', '') } | #{ @framecount - 1 } frames)" )
-  @logger.info( "Pick up your files at #{ @workdir }/" )
 end
 
 
@@ -756,7 +776,8 @@ if @output_type == "preview" or @output_type == "fullpreview"
   elsif options.transition_and_timing.first == "crossfade"
     sequence_frames = ( 2 * options.black + crossfade_time + @source.length * ( crossfade_time + duration ) ) * fps # implicit fade in/out first/last when crossfading
   end
-  final_report( sequence_frames, fps, options.transition_and_timing ) # FIXME
+  final_report( sequence_frames, fps, options.transition_and_timing, options.keep ) # FIXME
+  cleanup_workdir( options.keep )
   @logger.info( "Preview done" )
   exit
 ###
@@ -764,18 +785,18 @@ if @output_type == "preview" or @output_type == "fullpreview"
 
 ### Create DCP (Encoding, asdcplib, oct)
 elsif @output_type == "dcp"
-  j2cdir = File.join( @workdir, "j2c" )
-  dcpdir = File.join( @workdir, "dcp" )
-  tmp_slidesmxf = File.join( dcpdir, 'tmp_j2c.mxf' )
-  tmp_cpl = File.join( dcpdir, 'tmp_cpl.xml' )
-  tmp_pkl = File.join( dcpdir, 'tmp_pkl.xml' )
+  @j2cdir = File.join( @workdir, "j2c" )
+  @dcpdir = File.join( @workdir, "dcp" )
+  tmp_slidesmxf = File.join( @dcpdir, 'tmp_j2c.mxf' )
+  tmp_cpl = File.join( @dcpdir, 'tmp_cpl.xml' )
+  tmp_pkl = File.join( @dcpdir, 'tmp_pkl.xml' )
 
-  Dir.mkdir( j2cdir )
-  Dir.mkdir( dcpdir )
+  Dir.mkdir( @j2cdir )
+  Dir.mkdir( @dcpdir )
 
   # JPEG 2000 encoding
   @logger.info( "Encode to JPEG 2000" )
-  filemask = File.join( @conformdir, "*.#{@output_format}" )
+  filemask = File.join( @conformdir, "*.#{ @output_format }" )
   files = Dir.glob( filemask ).sort
   
   # keep in mind: openjpeg's profiles imply rate constraints, kakadu's don't
@@ -794,11 +815,11 @@ elsif @output_type == "dcp"
     if type == "file" # check for asset / encode
       counter += 1
       latest_encoded_file = file + ".j2c"
-      asset, todo = check_for_asset ( file, "j2c" ) # openjpeg needs a hint for output
+      asset, todo = check_for_asset( file, "j2c" ) # openjpeg needs a hint for output
       if todo == TRUE
         if options.encoder == "openjpeg"
           @logger.info( "openjpeg: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
-          `image_to_j2k -#{ openjpeg_cinema_profile } -i #{ file } -o #{ asset }`# > /dev/null 2>&1`
+          `image_to_j2k -#{ openjpeg_cinema_profile } -i #{ file } -o #{ asset } > /dev/null 2>&1`
         elsif options.encoder == "kakadu"
           @logger.info( "kakadu: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
           if fps == 24 # max codestream length / max color component size: 1302083 / 1041666 = ~1.25
@@ -828,9 +849,9 @@ elsif @output_type == "dcp"
     end
   end
 
-  `mv #{ File.join( @conformdir, '*.j2c' ) } #{ j2cdir }`
+  `mv #{ File.join( @conformdir, '*.j2c' ) } #{ @j2cdir }`
   @logger.info( "Write image trackfile ..." )
-  `asdcp-test -L -E -p #{ fps } -c #{ tmp_slidesmxf } #{ j2cdir } > /dev/null 2>&1`
+  `asdcp-test -L -E -p #{ fps } -c #{ tmp_slidesmxf } #{ @j2cdir } > /dev/null 2>&1`
   # FIXME this will break when asdcp-test -i -H changes its output format
   # ass backwards anyway, the following ...
   slidesmxf_uuid = `asdcp-test -i -H #{ tmp_slidesmxf }`.grep( /AssetUUID/ ).first.split(": ").last.chomp
@@ -854,7 +875,7 @@ elsif @output_type == "dcp"
   pkl = File.join( File.dirname( tmp_pkl ), "pkl_" + pkl_uuid + "_.xml" )
   File.rename( tmp_pkl, pkl)
   @logger.info( "Write ASSETMAP and VOLINDEX" )
-  `cd #{ dcpdir }; mkmap --issuer '#{ options.issuer }' #{File.basename( slidesmxf )} #{File.basename( cpl )} #{File.basename( pkl )}`
+  `cd #{ @dcpdir }; mkmap --issuer '#{ options.issuer }' #{File.basename( slidesmxf )} #{File.basename( cpl )} #{File.basename( pkl )}`
 
   # FIXME report -> dry out
   # report
@@ -863,7 +884,8 @@ elsif @output_type == "dcp"
   elsif options.transition_and_timing.first == "crossfade"
     sequence_frames = ( 2 * options.black + crossfade_time + @source.length * ( crossfade_time + duration ) ) * fps # implicit fade in/out first/last when crossfading
   end
-  final_report( sequence_frames, fps, options.transition_and_timing )
+  final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
+  cleanup_workdir( options.keep )
   @logger.info( "DCP done" )
 
 end # End Create DCP
