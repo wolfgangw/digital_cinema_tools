@@ -123,18 +123,32 @@ BANNER
       end
 
       opts.on_tail( '--examples', 'Some examples and explanations' ) do
-        app = File.basename( $0)
-        puts "Preview image (Cut transition, default duration 5 seconds):"
-        puts "\t#{ app } image.jpg"
-        puts "Preview images (Full size preview, transition crossfades for 1 second, 3 seconds at full level each)"
-        puts "\t#{ app } -t fullpreview -x crossfade,1,3 image1.tif image2.ppm"
-        puts "Create slideshow DCP (2K, 5 seconds black leader and tail)"
-        puts "\t#{ app } -t dcp -b 5 *.dpx"
-        puts "Create slideshow DCP (preview thumbnails, aspect ratio scope, specify title and issuer)"
-        puts "\t#{ app } *.raw -m -a scope -t dcp --title 'Slideshow Test' --issuer 'Facility'"
-        puts "Slideshow of your truetype fonts"
-        puts "\t#{ app } -x crossfade,2,2 `find /usr/share/fonts/truetype/ -name '*ttf' -type f`"
-        
+        app = File.basename( $0 )
+        examples = <<EXAMPLES
+cinemaslides #{ CinemaSlidesVersion }
+
+Specify options in any order. Order of images matters. 
+
+  Preview slideshow (Half sized preview. Cut transition. Default duration: 5 seconds each):
+$ #{ app } image1.jpg image2.tiff
+
+  Preview slideshow (Full sized preview. Transition: crossfades for 1 second, 3 seconds at full level each):
+$ #{ app } -t fullpreview -x crossfade,1,3 image1.tif image2.ppm
+
+  Create slideshow DCP (Resolution: 2K. 5 seconds black leader and tail):
+$ #{ app } -t dcp --size 2k --black 5 slides/*.tiff
+
+  Create slideshow DCP (Preview thumbnails. Aspect ratio: scope):
+$ #{ app } *.raw -m -a scope -t dcp --title 'Slideshow Test' --issuer 'Facility'
+
+  Some kind of timing control:
+$ #{ app } -x fade,0,3,0    title.tiff title.tiff title.tiff 1st_slide.tiff 2nd_slide.tiff disclaimer.tiff disclaimer.tiff
+$ #{ app } -x crossfade,1,3 title.tiff title.tiff title.tiff 1st_slide.tiff 2nd_slide.tiff disclaimer.tiff disclaimer.tiff
+
+  Slideshow of your truetype fonts:
+$ #{ app } -x crossfade,2,2 `find /usr/share/fonts/truetype/ -name '*ttf' -type f`
+EXAMPLES
+        puts examples
         exit
       end
       opts.on( '--keep', 'Do not remove preview/temporary files' ) do
