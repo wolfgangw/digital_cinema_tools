@@ -62,6 +62,7 @@ class Optparser
     options.annotation = 'Cinemaslides test'
     options.montage = FALSE
     options.keep = FALSE
+    options.dont_drop = FALSE
     options.verbosity = 'info'
     options.verbosity_choices = [ 'quiet', 'info', 'debug' ]
     options.transition_and_timing = Array.new
@@ -74,7 +75,7 @@ class Optparser
       opts.banner = <<BANNER
 cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
 
-Usage: #{ File.basename( $0 ) } [ -t, --type <type> | -k, --size <DCP resolution> | -a, --aspect <aspect name> | --fps <fps> | -x --transition_and_timing <type,a,b[,c]> | -j, --encoder <encoder> | -f, --output_format <image suffix> | -b, --black <seconds> | -m, --montagepreview | -v, --verbosity <level> | --title <DCP title> | --issuer <DCP issuer> | --annotation <DCP annotation> | --examples | --keep ] image1 [ image2 ... ]
+Usage: #{ File.basename( $0 ) } [ -t, --type <type> | -k, --size <DCP resolution> | -a, --aspect <aspect name> | --fps <fps> | -x --transition_and_timing <type,a,b[,c]> | -j, --encoder <encoder> | -f, --output_format <image suffix> | -b, --black <seconds> | -m, --montagepreview | -v, --verbosity <level> | --title <DCP title> | --issuer <DCP issuer> | --annotation <DCP annotation> | --examples | --keep | --dont-drop ] image1 [ image2 ... ]
 
 BANNER
 
@@ -114,6 +115,12 @@ BANNER
       opts.on("-m", "--montagepreview", "Display a montage of the images before processing") do
         options.montage = TRUE
       end
+      opts.on( '--keep', 'Do not remove preview/temporary files' ) do
+        options.keep = TRUE
+      end
+      opts.on( '--dont-drop', 'Do not drop and ignore unreadable files or files ImageMagick cannot decode but nag and exit instead' ) do
+        options.dont_drop = TRUE
+      end
       opts.on("-v", "--verbosity level", String, "Use 'quiet', 'info' or 'debug' (Default: info)") do |p|
         if options.verbosity_choices.include?( p )
           options.verbosity = p
@@ -122,7 +129,7 @@ BANNER
         end
       end
 
-      opts.on_tail( '--examples', 'Some examples and explanations' ) do
+      opts.on( '--examples', 'Some examples and explanations' ) do
         app = File.basename( $0 )
         examples = <<EXAMPLES
 cinemaslides #{ CinemaSlidesVersion }
@@ -150,9 +157,6 @@ $ #{ app } -x crossfade,2,2 `find /usr/share/fonts/truetype/ -name '*ttf' -type 
 EXAMPLES
         puts examples
         exit
-      end
-      opts.on( '--keep', 'Do not remove preview/temporary files' ) do
-        options.keep = TRUE
       end
       opts.on_tail( '-h', '--help', 'Display this screen' ) do
         puts opts
@@ -425,7 +429,7 @@ end
 
 def fadetype( level )
   "-modulate #{ level + 100 },#{ level + 100 }"
-  #"-brightness-contrast #{ level }x#{ level }" # not in ubuntu 10.04's im 6.5.7-8, current is 6.6.1-8
+  #"-brightness-contrast #{ level }x#{ level }" # not in ubuntu 10.04's im 6.5.7-8
 end
 
 
@@ -445,7 +449,6 @@ end
 
 
 def check_for_asset( filename, suffix )
-  #assetname = File.join( @assetsdir, Digest::MD5.hexdigest( File.read( filename ) ) + "_" + @dimensions + "_" + "." + target_suffix )
   assetname = File.join( @assetsdir, `identify -format '%#' #{ filename }`.chomp + "_#{ @dimensions }#{ @output_type == 'dcp' ? '_' + @encoder_id : '_pre' }_.#{ suffix }" )
   if File.exists?( assetname )
     @logger.debug( "Skip: Asset exists (#{ File.basename( filename ) } -> #{ File.basename( assetname ) })" )
@@ -518,7 +521,7 @@ end
 ###
 
 
-requirements = [ "convert", "montage", "display", "mplayer", "image_to_j2k", "kdu_compress", "asdcp-test", "mkcpl", "mkpkl", "mkmap" ]
+requirements = [ "convert", "identify", "montage", "display", "mplayer", "image_to_j2k", "kdu_compress", "asdcp-test", "mkcpl", "mkpkl", "mkmap" ]
 available_tools, missing_tools = check_requirements( requirements )
 if options.output_type == "dcp"
   if missing_tools.include?( "kdu_compress" )
@@ -552,28 +555,70 @@ end
 @output_type = options.output_type
 
 
-# check for files to work on # FIXME real file checks
+# check files
+not_readable = Array.new
+no_decode_delegate = Array.new
+drops = FALSE
 @source = ARGV
-if @source.length == 0
-  @logger.critical( "No image files specified" )
-  exit
-end
-martians = Array.new
-@source.each do |file|
-  if File.exists?( file )
-    @logger.debug( "Readable: #{ file }" )
+# glob dirs
+@source_tmp = Array.new
+@source.each do |element|
+  if File.exists?( element )
+    ftype = File.ftype( element )
+    if ftype == 'directory'
+      more = Dir.glob( "#{ element }/*" ).sort # this breaks fast (subdirs)
+      @source_tmp << more
+    else
+      @source_tmp << element
+    end
   else
-    martians << file
-    @logger.debug( "Not readable: #{ file }" )
+    not_readable << element
+    @logger.debug( "Not readable: #{ element }" )
   end
 end
-if martians.size > 0
-  @logger.critical( martians.size == 1 ? "This file doesn't exist: #{ martians.to_s }" : "These files don't exist: #{ martians.join( ', ' ) }" )
-  @logger.critical( "Check your files" )
-  exit
-elsif martians.size == 0
+@source = @source_tmp.flatten.compact.dup
+@source_tmp = @source.clone
+@source.each do |file|
+  identify = `identify -format '%m' #{ file } 2>/dev/null`.chomp
+  if identify.empty?
+    no_decode_delegate << file
+    @source_tmp.delete( file )
+    @logger.debug( "#{ file }: No decode delegate" )
+  elsif identify == "SVG"
+    xml = Nokogiri::XML( File.open( file ) )
+    if xml.search( 'svg' ).empty?
+      no_decode_delegate << file
+      @source_tmp.delete( file )
+      @logger.debug( "No <svg> node: #{ file }" )
+    else # svg maybe useable
+      @logger.debug( "#{ identify }: #{ file }" )
+    end
+  else # file is useable
+    @logger.debug( "#{ identify }: #{ file }" )
+  end
+end
+if not_readable.size > 0
+  drops = TRUE
+  @logger.debug( "Not readable: #{ not_readable.join( ', ' ) }" )
+elsif not_readable.size == 0
   @logger.debug( "All files readable" )
 end
+if no_decode_delegate.size > 0
+  drops = TRUE
+  @logger.debug( "ImageMagick has no code delegate for #{ no_decode_delegate.join( ', ' ) }" )
+end
+if @source_tmp.length == 0
+  @logger.info( drops == FALSE ? "No image files specified" : "No useable image files remaining")
+  exit
+end
+if drops == TRUE
+  if options.dont_drop == FALSE
+    @logger.debug( "Dropped some unuseable files. Say '--dont-drop' to exit in that case." )
+  else
+    exit
+  end
+end
+@source = @source_tmp.dup
 
 
 # check dcp related options
@@ -631,7 +676,7 @@ else
 end
 
 
-# Work dirs
+# set up work dirs
 CINEMASLIDESDIR = ENV['CINEMASLIDESDIR']
 if CINEMASLIDESDIR.nil?
   @cinemaslidesdir = File.join( ENV[ 'HOME' ], "cinemaslidesdir" )
@@ -782,7 +827,7 @@ if @output_type == "preview" or @output_type == "fullpreview"
     @logger.warn( "DISPLAY not set. Skipping preview" )
   else
     @logger.warn( "Loop #{ @output_type }. Exit with ESC or 'q'" )
-    mplayer_vo = "-vo x11"
+    mplayer_vo = ""
     `mplayer -really-quiet mf://#{ sequence } -mf fps=#{ fps }:type=#{ @output_format } -loop 0 #{ mplayer_vo } > /dev/null 2>&1`
   end
   if options.transition_and_timing.first == "fade"
@@ -913,7 +958,6 @@ FIXME crossfades border case: 0.0416666666666667 (1/24) crossfade time -> level 
 FIXME gamma diff on resize: don't conform images with target dimensions
 FIXME how to detect optimal -vo for mplayer?
 FIXME ask continue/exit after montage summary.
-FIXME options default for fps, right now it's hardcoded
 FIXME crossfade,5,0 [5 images] -> 720 frames intended 725 frames created
 FIXME cinemaslides multipage.pdf is somewhat borked because of assets creation (name), conforms to <digest>_<dimensions>_-<page_number>.jpg
       which won't fly at pickup time
@@ -934,10 +978,7 @@ CODE dry out black header/tail
 CODE report method (also generalize transition types and timings)
 CODE options catch all
 CODE better way to check for and provide requirements alternatives ( mplayer|ffplay, openjpeg|kakadu etc. )
-CODE check images(s)/dir(s) given on the commandline. put check into @logger.debug
 
-mplayer crash with a710 jpgs. exif?
-update "Usage"
-check image types/files
+mplayer crash with some a710 jpgs. exif? portrait orientation + conform size exceed?
 TODO
 
