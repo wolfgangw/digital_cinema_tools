@@ -225,7 +225,7 @@ end
 
 def check_requirements( requirements )
   available_tools = Array.new
-  missing_tools   = Array.new
+  missing_tools = Array.new
   requirements.each do |tool|
     exitstatus = system "which #{ tool } > /dev/null 2>&1"
     case exitstatus
@@ -340,7 +340,7 @@ end
 
 
 def fade( image, seconds, fps, level, step)
-  @logger.debug( "Fade frames level before loop: #{level}" )
+  @logger.debug( "Fade frames level before loop: #{ level }" )
   ( 1..( seconds * fps ) ).each do
     filename = sequencefile
     @logger.cr( sprintf('%.2f', level), filename )
@@ -348,7 +348,7 @@ def fade( image, seconds, fps, level, step)
     level = level + step
     @framecount += 1
   end
-  @logger.debug( "Fade frames level after loop: #{level - step}" )
+  @logger.debug( "Fade frames level after loop: #{ level - step }" )
 end
 
 
@@ -718,12 +718,10 @@ Dir.mkdir( @assetsdir ) unless File.exists?( @assetsdir )
 # thumbs and minimontage
 if options.montage == TRUE
   Dir.mkdir( @thumbsdir ) unless File.exists?( @thumbsdir )
-
   @logger.info( "Create thumbnails" )
   thumbs = Array.new
   ( 0..( @source.length - 1 ) ).each do |i|
     thumbfile = File.join( @thumbsdir, Digest::MD5.hexdigest( File.read( @source[ i ] ) ) + "_#{ @thumbs_dimensions }_" + ".jpg" )
-
     if File.exists?( thumbfile )
       @logger.debug( "Skip: #{ File.basename( thumbfile ) } exists" )
       thumbs << thumbfile
@@ -756,10 +754,7 @@ if options.montage == TRUE
     @logger.warn( "Montage summary #{ @output_type }. Exit with ESC or 'q'" )
     `display #{ @thumbsdir }/montage.jpg`
   end
-  # FIXME
-  @logger.critical( "FIXME ask and wait for user" )
-  puts "1) Continue"
-  puts "2) Exit"
+  exit if agree( "Continue? " ) == FALSE
 end # montage
 
 
