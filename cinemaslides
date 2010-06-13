@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.06.12"
+CinemaSlidesVersion = "v0.2010.06.13"
 Author = "Wolfgang Woehl".freeze
 #
 # Run "cinemaslides -h" to see options
@@ -600,7 +600,7 @@ end
 if not_readable.size > 0
   drops = TRUE
   @logger.debug( "Not readable: #{ not_readable.join( ', ' ) }" )
-elsif not_readable.size == 0
+elsif not_readable.size == 0 and @source_tmp.size > 0
   @logger.debug( "All files readable" )
 end
 if no_decode_delegate.size > 0
@@ -608,14 +608,14 @@ if no_decode_delegate.size > 0
   @logger.debug( "ImageMagick has no code delegate for #{ no_decode_delegate.join( ', ' ) }" )
 end
 if @source_tmp.length == 0
-  @logger.info( drops == FALSE ? "No image files specified" : "No useable image files remaining")
+  @logger.info( drops == FALSE ? "No image files specified" : "No useable image files")
   exit
 end
 if drops == TRUE
-  if options.dont_drop == FALSE
-    @logger.debug( "Dropped some unuseable files. Say '--dont-drop' to exit in that case." )
-  else
+  if options.dont_drop == TRUE
     exit
+  else
+    @logger.debug( "Dropped some unuseable files. Say '--dont-drop' to exit in that case." )
   end
 end
 @source = @source_tmp.dup
