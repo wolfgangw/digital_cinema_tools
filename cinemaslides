@@ -740,19 +740,25 @@ if options.montage == TRUE
      end
   end
   thumbs = thumbs.join(' ')
-  tiles_x = Math.sqrt( @source.length ).ceil
-  `montage #{ thumbs } \
-     -mode Concatenate \
-     -tile #{ tiles_x }x \
-     -frame 1 \
-     -geometry '#{ x }x#{ y }+5+5>' \
-     -bordercolor lightblue \
-   #{ @thumbsdir }/montage.jpg;`
+  # cache montages, wacky-hacky using string of all thumbnail filenames to match
+  thumbs_asset = File.join( @thumbsdir, Digest::MD5.hexdigest( thumbs ) + '_montage_.jpg' )
+  if File.exists?( thumbs_asset )
+    @logger.debug( "Skip: Montage exists (#{ File.basename( thumbs_asset ) })" )
+  else
+    tiles_x = Math.sqrt( @source.length ).ceil
+    `montage #{ thumbs } \
+       -mode Concatenate \
+       -tile #{ tiles_x }x \
+       -frame 1 \
+       -geometry '#{ x }x#{ y }+5+5>' \
+       -bordercolor lightblue \
+    #{ thumbs_asset }`
+  end
   if ENV[ "DISPLAY" ].nil?
     @logger.warn( "DISPLAY not set. Skipping montage summary" )
   else
     @logger.warn( "Montage summary #{ @output_type }. Exit with ESC or 'q'" )
-    `display #{ @thumbsdir }/montage.jpg`
+    `display #{ thumbs_asset }`
   end
   exit if agree( "Continue? " ) == FALSE
 end # montage
