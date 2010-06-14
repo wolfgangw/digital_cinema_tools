@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.06.13"
+CinemaSlidesVersion = "v0.2010.06.14"
 Author = "Wolfgang Woehl".freeze
 #
 # Run "cinemaslides -h" to see options
