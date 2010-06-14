@@ -51,6 +51,7 @@ class Optparser
     options.size = '2k'
     options.aspect = 'flat'
     options.aspect_choices = [ 'flat', 'scope', 'hd', Regexp.new('\d+(\.\d+)?x\d+(\.\d+)?') ] # custom aspect ratios: match '<numeric>x<numeric>'
+    options.aspect_malformed = FALSE
     options.fps = 24
     options.fps_dcp_choices = [ 24, 48 ] # FIXME jpeg2000 rate control for 25, 30, 50, 60?
     options.fps_asdcp_choices = [ 23, 24, 25, 30, 48, 50, 60 ]
@@ -91,6 +92,8 @@ BANNER
           options.aspect = p.downcase
         elsif p.match( options.aspect_choices.last )
           options.aspect = 'Custom aspect ratio: ' + p
+        else
+          options.aspect_malformed = TRUE
         end
       end
       opts.on("--fps fps", "Framerate (Default: 24)", Float) do |p|
@@ -573,7 +576,21 @@ end
 
 
 ### Get options and initialize
-@aspect = options.aspect
+case options.aspect_malformed
+when TRUE
+  @logger.info( "Malformed aspect ratio. Use #{ options.aspect_choices[ 0, options.aspect_choices.size - 1 ].join( ', ' ) } or <width>x<height>" )
+  exit
+when FALSE
+  @aspect = options.aspect
+  w, h = @aspect.split( 'Custom aspect ratio: ' ).last.match( options.aspect_choices.last ).to_s.split( 'x' )
+  if ! h.nil?
+    if w.to_f == 0 or h.to_f == 0
+      @logger.info( "Zero in aspect ratio specs. Doesn't compute" )
+      exit
+    end
+  end
+end
+
 @output_type = options.output_type
 case @output_type
 when 'preview'
@@ -1001,7 +1018,7 @@ FEATURE MPEG MXFI
 
 CODE dry out black header/tail
 CODE report method (also generalize transition types and timings)
-CODE options catch all
+CODE options catch all (missing arguments trace back deep)
 CODE better way to check for and provide requirements alternatives ( mplayer|ffplay, openjpeg|kakadu etc. )
 
 mplayer crash with some a710 jpgs. exif? portrait orientation + conform size exceed?
