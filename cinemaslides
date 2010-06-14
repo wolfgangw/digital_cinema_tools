@@ -239,11 +239,25 @@ def check_requirements( requirements )
 end
 
 
+def hrs_min_sec( seconds )
+  t = seconds
+  hrs = ( ( t / 3600 ) ).to_i
+  min = ( ( t / 60 ) % 60 ).to_i
+  sec = t % 60
+  return [
+    hrs > 0 ? hrs.to_s + " hour#{ 's' * ( hrs > 1 ? 1 : 0 ) }" : nil ,
+    min > 0 ? min.to_s + " minute#{ 's' * ( min > 1 ? 1 : 0 ) }" : nil ,
+    sec > 0 ? sec.to_s + " seconds" : '0 seconds' ,
+    t > 60 ? "(#{ t } seconds)" : nil
+  ].compact.join( ' ' )
+end
+
+
 def final_report( sequence_frames, fps, transition_and_timing, keep )
   sequence_duration = sequence_frames / fps
-  @logger.debug( "#{ sequence_frames } frames intended by numbers (#{ sprintf( '%.2f', sequence_duration ) } seconds)" )
+  @logger.debug( "#{ sequence_frames } frames intended by numbers (#{ hrs_min_sec( sequence_duration ) })" )
   @logger.debug( "#{ @framecount -1 } frames written" )
-  @logger.info( "Cinema Slideshow is #{ sprintf( '%.2f', ( @framecount -1 ) / fps.to_f ) } seconds long (#{ @source.length } image#{ "s" * ( @source.length == 1 ? 0 : 1 )} | #{ transition_and_timing.join(',').gsub(' ', '') } | #{ @framecount - 1 } frames)" )
+  @logger.info( "Cinema Slideshow is #{ hrs_min_sec( ( @framecount - 1 ) / fps.to_f ) } long (#{ @source.length } image#{ 's' * ( @source.length == 1 ? 0 : 1 )} | #{ transition_and_timing.join(',').gsub(' ', '') } | #{ @framecount - 1 } frames)" )
   @logger.info( "Pick up your files at #{ @workdir }/" ) if keep == TRUE
 end
 
