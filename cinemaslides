@@ -50,6 +50,7 @@ class Optparser
     options.output_type = 'preview'
     options.size = '2k'
     options.aspect = 'flat'
+    options.aspect_choices = [ 'flat', 'scope', 'hd', Regexp.new('\d+(\.\d+)?x\d+(\.\d+)?') ] # custom aspect ratios: match '<numeric>x<numeric>'
     options.fps = 24
     options.fps_dcp_choices = [ 24, 48 ] # FIXME jpeg2000 rate control for 25, 30, 50, 60?
     options.fps_asdcp_choices = [ 23, 24, 25, 30, 48, 50, 60 ]
@@ -75,7 +76,7 @@ class Optparser
       opts.banner = <<BANNER
 cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
 
-Usage: #{ File.basename( $0 ) } [ -t, --type <type> | -k, --size <DCP resolution> | -a, --aspect <aspect name> | --fps <fps> | -x --transition_and_timing <type,a,b[,c]> | -j, --encoder <encoder> | -f, --output_format <image suffix> | -b, --black <seconds> | -m, --montagepreview | -v, --verbosity <level> | --title <DCP title> | --issuer <DCP issuer> | --annotation <DCP annotation> | --examples | --keep | --dont-drop ] image1 [ image2 ... ]
+Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [-m, --montagepreview] [-v, --verbosity <level>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--examples] [--keep] [--dont-drop] image1 [image2 ...]
 
 BANNER
 
@@ -85,8 +86,12 @@ BANNER
       opts.on("-k", "--size resolution", String, "Use '2k' or '4k' (Default: 2k)") do |p|
         options.size = p.downcase
       end
-      opts.on("-a", "--aspect ratio", String, "Use 'flat' or 'scope' (Default: flat)") do |p|
-        options.aspect = p.downcase
+      opts.on("-a", "--aspect ratio", String, "For standard aspect ratios use 'flat', 'scope' or 'hd' (Default: flat). You can also experiment with custom aspect ratios by saying '<width>x<height>'. The numbers given will be scaled to fit into the target container specified with '--size'.") do |p|
+        if options.aspect_choices.include?( p.downcase )
+          options.aspect = p.downcase
+        elsif p.match( options.aspect_choices.last )
+          options.aspect = 'Custom aspect ratio: ' + p
+        end
       end
       opts.on("--fps fps", "Framerate (Default: 24)", Float) do |p|
         options.fps = p
@@ -142,15 +147,15 @@ $ #{ app } image1.jpg image2.tiff
   Preview slideshow (Full sized preview. Transition: crossfades for 1 second, 3 seconds at full level each):
 $ #{ app } -t fullpreview -x crossfade,1,3 image1.tif image2.ppm
 
-  Create slideshow DCP (Resolution: 2K. 5 seconds black leader and tail):
-$ #{ app } -t dcp --size 2k --black 5 slides/*.tiff
+  Create slideshow DCP, use all image files in directory 'slides' (Resolution: 2K. 5 seconds black leader and tail):
+$ #{ app } -t dcp --size 2k --black 5 slides/
 
   Create slideshow DCP (Preview thumbnails. Aspect ratio: scope):
 $ #{ app } *.raw -m -a scope -t dcp --title 'Slideshow Test' --issuer 'Facility'
 
   Some kind of timing control:
-$ #{ app } -x fade,0,3,0    title.tiff title.tiff title.tiff 1st_slide.tiff 2nd_slide.tiff disclaimer.tiff disclaimer.tiff
-$ #{ app } -x crossfade,1,3 title.tiff title.tiff title.tiff 1st_slide.tiff 2nd_slide.tiff disclaimer.tiff disclaimer.tiff
+$ #{ app } -x fade,0,3,0    title title title 1st_slide 2nd_slide disclaimer disclaimer
+$ #{ app } -x crossfade,1,3 title title title 1st_slide 2nd_slide disclaimer disclaimer
 
   Slideshow of your truetype fonts:
 $ #{ app } -x crossfade,2,2 `find /usr/share/fonts/truetype/ -name '*ttf' -type f`
@@ -285,39 +290,43 @@ end
 timestamp = get_timestamp
 
 
+def scale_to_fit_container( width, height, container_width, container_height )
+  factor = container_height / container_width > height / width ? container_width / width : container_height / height
+  @logger.debug( "Scaling factor to fit custom aspect ratio #{ width } x #{ height } in #{ @size } container: #{ factor }" )
+  width_scaled = width * factor
+  height_scaled = height * factor
+  return width_scaled.floor, height_scaled.floor
+end
+
+
 def width_x_height
-  if @aspect == "flat"
-    if @output_type == "preview"
-      return "999x540"
-    elsif @output_type == "fullpreview"
-      return "1998x1080"
-    elsif @output_type == "dcp"
-      if @size == "2k"
-        return "1998x1080" # flat 2k
-      elsif @size == "4k"
-        return "3996x2160" # flat 4k
-      end
-    end
-  elsif @aspect == "scope"
-    if @output_type == "preview"
-      return "1024x429"
-    elsif @output_type == "fullpreview"
-      return "2048x858"
-    elsif @output_type == "dcp"
-      if @size == "2k"
-        return "2048x858" # scope 2k
-      elsif @size == "4k"
-        return "4096x1716" # scope 4k
-      end
-    end
+  container_multiplier = @size.split( '' ).first.to_i
+  container_width = 1024.0 * container_multiplier
+  container_height = 540.0 * container_multiplier
+  @logger.debug( "Container: #{ container_width } x #{ container_height } (1k multiplier: #{ container_multiplier })" )
+  case @aspect
+  when 'flat' # 1.85 : 1
+    width, height = 999, 540
+  when 'scope' # 2.39 : 1 (2.38694638694639)
+    width, height = 1024, 429
+  when 'hd' # 1.77 : 1 (1.77777777777778)
+    width, height = 960, 540
+  else # Custom aspect ratio
+    custom_width, custom_height = @aspect.split( 'Custom aspect ratio: ' ).last.split( 'x' )
+    width, height = scale_to_fit_container( custom_width.to_f, custom_height.to_f, container_width, container_height )
+    return [ width, height ].join( 'x' )
   end
+  width *= container_multiplier
+  height *= container_multiplier
+  return [ width, height ].join( 'x' )
 end
 
 
 def make_black_frame( filename )
-  if @output_type == "preview" or @output_type == "fullpreview"
+  case @output_type
+  when 'preview', 'fullpreview'
     `convert -type TrueColor -size #{ @dimensions } xc:black -depth 8 #{ filename }`
-  elsif @output_type == "dcp"
+  when 'dcp'
     `convert -type TrueColor -size #{ @dimensions } xc:black -depth 12 #{ filename }`
   end
 end
@@ -543,12 +552,12 @@ if options.output_type == "dcp"
       @logger.warn( "No JPEG2000 codec available (Needed for DCP creation). Check your installation." )
     elsif options.encoder == "kakadu" # openjpeg is available, kakadu is not
       options.encoder = "openjpeg"
-      @logger.warn( "kdu_compress is not available. Falling back to openjpeg" )
+      @logger.warn( "kakadu's kdu_compress is not available. Falling back to openjpeg" )
     end
   elsif missing_tools.include?( "image_to_j2k" ) # kakadu is available, openjpeg is not
     if options.encoder == "openjpeg"
       options.encoder = "kakadu"
-      @logger.warn( "image_to_j2k is not available. Falling back to kakadu" )
+      @logger.warn( "openjpeg's image_to_j2k is not available. Falling back to kakadu" )
     end
   end
 end
@@ -565,9 +574,13 @@ end
 
 ### Get options and initialize
 @aspect = options.aspect
-@size = options.size
 @output_type = options.output_type
-
+case @output_type
+when 'preview'
+  @size = '1k'
+else
+  @size = options.size
+end
 
 # check files
 not_readable = Array.new
@@ -641,7 +654,7 @@ if @output_type == "dcp"
     @logger.critical( "Not a usable encoder: '#{ options.encoder }'" )
     exit
   end
-  case options.encoder # in order not to mix up asset retrieval
+  case options.encoder # in order not to mix up asset retrieval, encoding results are not identical
   when 'openjpeg'
     @encoder_id = 'opj'
   when 'kakadu'
@@ -650,7 +663,7 @@ if @output_type == "dcp"
     @encoder_id = 'xxx'
   end
   unless options.fps_dcp_choices.include?( options.fps )
-    @logger.critical( "Not implemented: #{ options.fps } fps" )
+    @logger.critical( "Not yet implemented: #{ options.fps } fps" )
     exit
   end
   @logger.debug( "DCP related options ok" )
@@ -713,12 +726,13 @@ y = y.to_i / 6 # ...
 @thumbs_dimensions = [ x,y ].join( 'x' ) # oh dear
 
 
-if @output_type == "dcp"
+case @output_type
+when "dcp"
   @logger.info( "Creating #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
   @logger.info( "Title: #{ options.title } #{timestamp}" )
   @logger.info( "Annotation: #{ options.annotation } #{timestamp}" )
   @logger.info( "Issuer: #{ options.issuer }" )
-elsif @output_type == "preview" or @output_type == "fullpreview"
+when "preview", "fullpreview"
   @logger.info( "Creating #{ @output_type } (#{ @aspect } #{ @dimensions } @ #{ fps })" )
 end
 
@@ -836,7 +850,8 @@ end
 
 
 ### Create preview/fullpreview
-if @output_type == "preview" or @output_type == "fullpreview"
+case @output_type
+when "preview", "fullpreview"
   sequence = File.join( "#{ @conformdir }", "*.#{ @output_format }" )
   if ENV[ "DISPLAY" ].nil?
     @logger.warn( "DISPLAY not set. Skipping preview" )
@@ -858,7 +873,7 @@ if @output_type == "preview" or @output_type == "fullpreview"
 
 
 ### Create DCP (Encoding, asdcplib, oct)
-elsif @output_type == "dcp"
+when "dcp"
   @j2cdir = File.join( @workdir, "j2c" )
   @dcpdir = File.join( @workdir, "dcp" )
   tmp_slidesmxf = File.join( @dcpdir, 'tmp_j2c.mxf' )
@@ -966,24 +981,19 @@ end # End Create DCP
 
 
 TODO = <<TODO
-FIXME assets depot: works for full level pre-encoding files (via conform) but we loose all knowledge about those files in the
-      encoding stage. so we would have to check digest of each file coming up (fades etc.) -- might take longer than churning through.
-      test and fix (make slideshow an object with self-consciousness)
+FIXME slideshow objects
 FIXME crossfades border case: 0.0416666666666667 (1/24) crossfade time -> level shoots off the roof
 FIXME gamma diff on resize: don't conform images with target dimensions
 FIXME how to detect optimal -vo for mplayer?
-FIXME ask continue/exit after montage summary.
 FIXME crossfade,5,0 [5 images] -> 720 frames intended 725 frames created
 FIXME cinemaslides multipage.pdf is somewhat borked because of assets creation (name), conforms to <digest>_<dimensions>_-<page_number>.jpg
       which won't fly at pickup time
-FIXME pickup processing after fullpreview (reuse files)
-      
+FIXME montage preview needs a border around thumbs (for white backgrounds of images etc.). Not working
+
 FEATURE sparse assets via minimum mxfs and playlists
 FEATURE audio
 FEATURE 3D
 FEATURE custom preview sizes
-FEATURE custom aspect ratios
-FEATURE montage preview needs a border around thumbs (for white backgrounds of images etc.)
 FEATURE black/mono pause between slides
 FEATURE transition times and duration are global. make them file specific
 FEATURE DCP naming conventions
