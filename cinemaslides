@@ -49,6 +49,7 @@ class Optparser
     options = OpenStruct.new
     options.output_type = 'preview'
     options.size = '2k'
+    options.size_choices = [ '2k', '4k' ]
     options.aspect = 'flat'
     options.aspect_choices = [ 'flat', 'scope', 'hd', Regexp.new('\d+(\.\d+)?x\d+(\.\d+)?') ] # custom aspect ratios: match '<numeric>x<numeric>'
     options.aspect_malformed = FALSE
@@ -85,7 +86,11 @@ BANNER
         options.output_type = p.downcase
       end
       opts.on("-k", "--size resolution", String, "Use '2k' or '4k' (Default: 2k)") do |p|
-        options.size = p.downcase
+        if options.size_choices.include?( p.downcase )
+          options.size = p.downcase
+        else
+          options.size = 'catch:' + p.downcase
+        end
       end
       opts.on("-a", "--aspect ratio", String, "For standard aspect ratios use 'flat', 'scope' or 'hd' (Default: flat). You can also experiment with custom aspect ratios by saying '<width>x<height>'. The numbers given will be scaled to fit into the target container specified with '--size'.") do |p|
         if options.aspect_choices.include?( p.downcase )
@@ -96,7 +101,7 @@ BANNER
           options.aspect_malformed = TRUE
         end
       end
-      opts.on("--fps fps", "Framerate (Default: 24)", Float) do |p|
+      opts.on("--fps fps", "Framerate (Default: 24)", Float) do |p| # float cast needed for fps-based calculations. actual non-integer values won't fly so don't do that. FIXME
         options.fps = p
       end
       opts.on( "-x", "--transition_and_timing transition,seconds,seconds,[seconds]", Array, "Use this option to specify the transition type ('fade' or 'crossfade') and timing parameters. Defaults to '-x #{ options.transition_and_timing.join(',') }' (fade in #{ options.transition_and_timing[ 1 ] } seconds, full level #{ options.transition_and_timing[ 2 ] } seconds, fade out #{ options.transition_and_timing[ 3 ] } seconds). Separate parameters with commas (no spaces)" ) do |p|
@@ -221,14 +226,14 @@ class Logger
   def critical( text )
     to_console( @color[:critical], text ) if @critical == TRUE
   end
-  def cr( text, filename_legacy ) # use filename_legacy to debug sequence output
-    carriage_return( @color[:info], text, filename_legacy ) unless @verbosity == "quiet"
+  def cr( text )
+    carriage_return( @color[:info], text ) unless @verbosity == "quiet"
   end
-  def carriage_return( color, text, filename_legacy )
-    printf "\033[#{ color }m      #{ text }\033[0m\r"; STDOUT.flush
+  def carriage_return( color, text )
+    printf "\033[#{ color }m#{ @prefix } #{ text }\033[0m#{ ' ' * 24 }\r"; STDOUT.flush
   end
   def to_console( color, text )
-    printf "\033[#{ color }m#{ @prefix } #{ text }\033[0m\n"
+    printf "\033[#{ color }m#{ @prefix } #{ text }\033[0m#{ ' ' * 24 }\n"
   end
 end
 @logger = Logger.new( '*', options.verbosity ) # prefix messages with '*'
@@ -268,8 +273,10 @@ def final_report( sequence_frames, fps, transition_and_timing, keep )
   sequence_duration = sequence_frames / fps
   @logger.debug( "#{ sequence_frames } frames intended by numbers (#{ hrs_min_sec( sequence_duration ) })" )
   @logger.debug( "#{ @framecount -1 } frames written" )
-  @logger.info( "Cinema Slideshow is #{ hrs_min_sec( ( @framecount - 1 ) / fps.to_f ) } long (#{ @source.length } image#{ 's' * ( @source.length == 1 ? 0 : 1 )} | #{ transition_and_timing.join(',').gsub(' ', '') } | #{ @framecount - 1 } frames)" )
-  @logger.info( "Pick up your files at #{ @workdir }/" ) if keep == TRUE
+  @logger.info( "Cinema Slideshow is #{ hrs_min_sec( ( @framecount - 1 ) / fps ) } long (#{ @source.length } image#{ 's' * ( @source.length == 1 ? 0 : 1 )} | #{ transition_and_timing.join(',').gsub(' ', '') } | #{ @framecount - 1 } frames | #{ fps } fps)" )
+  @logger.info( "Pick up preview files at #{ @workdir }/" ) if ( keep == TRUE and @output_type != 'dcp' )
+  @logger.info( "Pick up temporary files at #{ @workdir }/" ) if ( keep == TRUE and @output_type == 'dcp' )
+  @logger.info( "Pick up DCP at #{ @dcpdir }" ) if @output_type == 'dcp'
 end
 
 
@@ -296,6 +303,7 @@ end
 timestamp = get_timestamp
 
 
+# fit custom aspect ratios into the target container dimensions (1k for preview, 2k/4k for fullpreview/dcp)
 def scale_to_fit_container( width, height, container_width, container_height )
   factor = container_height / container_width > height / width ? container_width / width : container_height / height
   @logger.debug( "Scaling factor to fit custom aspect ratio #{ width } x #{ height } in #{ @size } container: #{ factor }" )
@@ -374,7 +382,7 @@ def fade( image, seconds, fps, level, step)
   @logger.debug( "Fade frames level before loop: #{ level }" )
   ( 1..( seconds * fps ) ).each do
     filename = sequencefile
-    @logger.cr( sprintf('%.2f', level), filename )
+    @logger.cr( sprintf('%.2f', level) )
     convert2( image, level, filename )
     level = level + step
     @framecount += 1
@@ -394,11 +402,11 @@ def full_level( image, fps, duration )
     convert2( image, level, file )
   end
   @framecount += 1
-  link_to_latest_encoded_file( "full", duration, fps, file )
+  sequence_links_to_last_encoded_file( "full", duration, fps, file )
 end
 
 
-def link_to_latest_encoded_file( info, seconds, fps, file )
+def sequence_links_to_last_encoded_file( info, seconds, fps, file )
   ( 1..( seconds * fps - 1 ) ).each do # 1 file already written
     link = sequencefile
     # FIXME link available on all platforms?
@@ -423,8 +431,8 @@ def crossfade( image1, image2, fps, seconds )
   end
   @logger.debug( "Crossfade level before loop: #{level}" )
   ( 1..( seconds * fps ) ).each do
-    output = sequencefile #
-    @logger.cr( sprintf( '%.2f', level ), output )
+    output = sequencefile
+    @logger.cr( sprintf( '%.2f', level ) )
     composite( image1, level, image2, depth, compress, output )
     level = level - step
     @framecount += 1
@@ -479,8 +487,9 @@ def conform( image )
 end
 
 
+# asset match is based on a /conform's/ IM signature + dimensions + (encoder + fps if jpeg2000 codestream is requested) + suffix
 def check_for_asset( filename, suffix )
-  assetname = File.join( @assetsdir, `identify -format '%#' #{ filename }`.chomp + "_#{ @dimensions }#{ @output_type == 'dcp' ? '_' + @encoder_id : '_pre' }_.#{ suffix }" )
+  assetname = File.join( @assetsdir, `identify -format '%#' #{ filename }`.chomp + "_#{ @dimensions }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' + @fps.floor.to_s : '' : '_pre' }_.#{ suffix }" )
   if File.exists?( assetname )
     @logger.debug( "Skip: Asset exists (#{ File.basename( filename ) } -> #{ File.basename( assetname ) })" )
     todo = FALSE
@@ -551,6 +560,14 @@ def convert2( image, level, filename )
       #{ filename }`
   end
 end
+
+
+def jpeg2000_dcp_rate_constraints( fps ) # returns bytes
+  dcp_max_bps = 250000000
+  max_per_image = ( dcp_max_bps / 8 / fps ).floor
+  max_per_component = ( max_per_image / 1.25 ).floor
+  return max_per_image, max_per_component
+end
 ###
 
 
@@ -596,6 +613,16 @@ when FALSE
       exit
     end
   end
+end
+
+m = options.size.match(/catch:(.*)/)
+unless m.nil? 
+  if m[1] == 'eep'
+    @logger.info( "Optparser tango, did you mean to say --keep?" )
+  else
+    @logger.info( "Can't understand -k's parameter" )
+  end
+  exit
 end
 
 @output_type = options.output_type
@@ -684,7 +711,7 @@ if @output_type == "dcp"
   when 'kakadu'
     @encoder_id = 'kdu'
   else
-    @encoder_id = 'xxx'
+    @encoder_id = 'xxx' # FIXME
   end
   unless options.fps_dcp_choices.include?( options.fps )
     @logger.critical( "Not yet implemented: #{ options.fps } fps" )
@@ -715,7 +742,8 @@ else
 end
 
 
-fps = options.fps
+fps = options.fps # used in a million places
+@fps = fps # need fps in asset's filenames, too, but passing it to check_for_asset() just doesn't sound right =:] FIXME
 @framecount = 1
 @imagecount = 0
 if @output_type == "dcp"
@@ -753,11 +781,11 @@ y = y.to_i / 6 # ...
 case @output_type
 when "dcp"
   @logger.info( "Creating #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
-  @logger.info( "Title: #{ options.title } #{timestamp}" )
+  @logger.info( "Title:      #{ options.title } #{timestamp}" )
   @logger.info( "Annotation: #{ options.annotation } #{timestamp}" )
-  @logger.info( "Issuer: #{ options.issuer }" )
+  @logger.info( "Issuer:     #{ options.issuer }" )
 when "preview", "fullpreview"
-  @logger.info( "Creating #{ @output_type } (#{ @aspect } #{ @dimensions } @ #{ fps })" )
+  @logger.info( "Creating #{ @output_type } (#{ @aspect } #{ @dimensions } @ #{ fps } fps)" )
 end
 
 
@@ -792,7 +820,7 @@ if options.montage == TRUE
      end
   end
   thumbs = thumbs.join(' ')
-  # cache montages, wacky-hacky using string of all thumbnail filenames to match
+  # cache montages, wacky-hacky using string of all thumbnail filenames (md5 hexdigest and some) to match
   thumbs_asset = File.join( @thumbsdir, Digest::MD5.hexdigest( thumbs ) + '_montage_.jpg' )
   if File.exists?( thumbs_asset )
     @logger.debug( "Skip: Montage exists (#{ File.basename( thumbs_asset ) })" )
@@ -827,7 +855,7 @@ if options.black > 0
   blackfile = sequencefile
   make_black_frame( blackfile )
   @framecount += 1
-  link_to_latest_encoded_file( "black", options.black, fps, blackfile )
+  sequence_links_to_last_encoded_file( "black", options.black, fps, blackfile )
 end
 
 ### all images
@@ -868,7 +896,7 @@ if options.black > 0
   filename = sequencefile
   File.symlink( blackfile, filename )
   @framecount += 1
-  link_to_latest_encoded_file( "black", options.black, fps, blackfile )
+  sequence_links_to_last_encoded_file( "black", options.black, fps, blackfile )
 end
 ###
 
@@ -912,7 +940,8 @@ when "dcp"
   filemask = File.join( @conformdir, "*.#{ @output_format }" )
   files = Dir.glob( filemask ).sort
   
-  # keep in mind: openjpeg's profiles imply rate constraints, kakadu's don't
+  # openjpeg's profiles imply rate constraints, kakadu's don't
+  max_bytes_per_image, max_bytes_per_component = jpeg2000_dcp_rate_constraints( fps )
   if @size == "2k"
     kakadu_cinema_profile = "CINEMA2K"
     openjpeg_cinema_profile = "cinema2K #{ fps }"
@@ -921,26 +950,21 @@ when "dcp"
     openjpeg_cinema_profile = "cinema4K"
   end
   counter = 0
-  latest_encoded_file = ""
+  last_encoded_file = ""
   files.each do |file|
     type = File.ftype( file )
 
     if type == "file" # check for asset / encode
       counter += 1
-      latest_encoded_file = file + ".j2c"
-      asset, todo = check_for_asset( file, "j2c" ) # openjpeg needs a hint for output
+      last_encoded_file = file + ".j2c"
+      asset, todo = check_for_asset( file, "j2c" )
       if todo == TRUE
-        if options.encoder == "openjpeg"
-          @logger.info( "openjpeg: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
+        @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
+        case options.encoder
+        when 'openjpeg'
           `image_to_j2k -#{ openjpeg_cinema_profile } -i #{ file } -o #{ asset } > /dev/null 2>&1`
-        elsif options.encoder == "kakadu"
-          @logger.info( "kakadu: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
-          if fps == 24 # max codestream length / max color component size: 1302083 / 1041666 = ~1.25
-            `kdu_compress -i #{ file } -o #{ asset } Sprofile=#{ kakadu_cinema_profile } Creslengths=1302083 Creslengths:C0=1302083,1041666 Creslengths:C1=1302083,1041666 Creslengths:C2=1302083,1041666`
-          # FIXME broken for 4K (maximum 4K @ 30 fps?):
-          elsif fps == 48 # 651041 / 520832 = ~1.25
-            `kdu_compress -i #{ file } -o #{ asset } Sprofile=#{ kakadu_cinema_profile } Creslengths=651041 Creslengths:C0=651041,520832 Creslengths:C1=651041,520832 Creslengths:C2=651041,520832`
-          end
+        when 'kakadu'
+          `kdu_compress -i #{ file } -o #{ asset } Sprofile=#{ kakadu_cinema_profile } Creslengths=#{ max_bytes_per_image } Creslengths:C0=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C1=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C2=#{ max_bytes_per_image },#{ max_bytes_per_component }`
         else # not reached
           @logger.critical( "No usable encoder specified ('#{ options.encoder }')" )
           @logger.critical( "Sorry, shouldn't happen plus we're bailing out" )
@@ -948,16 +972,18 @@ when "dcp"
           exit
         end
       end
-      File.link( asset, latest_encoded_file )
+      File.link( asset, last_encoded_file )
         
     elsif type == "link" # link to last encoded file
       counter += 1
       # For the time being (case dcp) we make tiffs, so there, see original_suffix
       link = File.join( @conformdir, "#{ '%06d' % counter }.#{ original_suffix }.j2c" )
-      File.link( latest_encoded_file, link ) # asdcplib chokes on symlinks
+      @logger.cr( "Link (#{ counter } of #{ files.size })" )
+      File.link( last_encoded_file, link ) # asdcplib chokes on symlinks
     else
       @logger.critical( "Encountered an unusable file (#{ file }, type #{ type }" )
-      @logger.critical( "Sorry, bailing out" )
+      @logger.critical( "Workdir: #{ @workdir }" )
+      @logger.critical( "Sorry, being baffled and bailing out" )
       exit
     end
   end
