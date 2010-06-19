@@ -65,6 +65,7 @@ class Optparser
     options.annotation = 'Cinemaslides test'
     options.montage = FALSE
     options.keep = FALSE
+    options.dont_check = FALSE
     options.dont_drop = FALSE
     options.verbosity = 'info'
     options.verbosity_choices = [ 'quiet', 'info', 'debug' ]
@@ -78,7 +79,7 @@ class Optparser
       opts.banner = <<BANNER
 cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
 
-Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [-m, --montagepreview] [-v, --verbosity <level>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--examples] [--keep] [--dont-drop] image1 [image2 ...]
+Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [-m, --montagepreview] [-v, --verbosity <level>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--examples] [--keep] [ --dont-check ] [--dont-drop] image1 [image2 ...]
 
 BANNER
 
@@ -92,7 +93,7 @@ BANNER
           options.size = 'catch:' + p.downcase
         end
       end
-      opts.on("-a", "--aspect ratio", String, "For standard aspect ratios use 'flat', 'scope' or 'hd' (Default: flat). You can also experiment with custom aspect ratios by saying '<width>x<height>'. The numbers given will be scaled to fit into the target container specified with '--size'.") do |p|
+      opts.on("-a", "--aspect ratio", String, "For standard aspect ratios use 'flat', 'scope' or 'hd' (Default: flat). You can also experiment with custom aspect ratios by saying '<width>x<height>'. The numbers given will be scaled to fit into the target container (Default size or specified with '--size').") do |p|
         if options.aspect_choices.include?( p.downcase )
           options.aspect = p.downcase
         elsif p.match( options.aspect_choices.last )
@@ -130,6 +131,9 @@ BANNER
       end
       opts.on( '--keep', 'Do not remove preview/temporary files' ) do
         options.keep = TRUE
+      end
+      opts.on( '--dont-check', 'Do not check files' ) do
+        options.dont_check = TRUE
       end
       opts.on( '--dont-drop', 'Do not drop and ignore unreadable files or files ImageMagick cannot decode but nag and exit instead' ) do
         options.dont_drop = TRUE
@@ -573,6 +577,11 @@ def jpeg2000_dcp_rate_constraints( fps ) # returns bytes
   max_per_component = ( max_per_image / 1.25 ).floor
   return max_per_image, max_per_component
 end
+
+
+def sequence?( filelist )
+  
+end
 ###
 
 
@@ -638,71 +647,72 @@ else
   @size = options.size
 end
 
-# check files
-not_readable = Array.new
-no_decode_delegate = Array.new
-drops = FALSE
 @source = ARGV
-# glob dirs
-@source_tmp = Array.new
-@source.each do |element|
-  if File.exists?( element )
-    ftype = File.ftype( element )
-    if ftype == 'directory'
-      more = Dir.glob( "#{ element }/*" ).sort # this breaks fast (subdirs)
-      @source_tmp << more
+unless options.dont_check == TRUE
+  # glob dirs
+  not_readable = Array.new
+  @source_tmp = Array.new
+  @source.each do |element|
+    if File.exists?( element )
+      ftype = File.ftype( element )
+      if ftype == 'directory'
+        more = Dir.glob( "#{ element }/*" ).sort # this breaks fast (subdirs)
+        @source_tmp << more
+      else
+        @source_tmp << element
+      end
     else
-      @source_tmp << element
+      not_readable << element
+      @logger.debug( "Not readable: #{ element }" )
     end
-  else
-    not_readable << element
-    @logger.debug( "Not readable: #{ element }" )
   end
-end
-@source = @source_tmp.flatten.compact.dup
-@source_tmp = @source.clone
-@source.each do |file|
-  identify = `identify -format '%m' #{ file } 2>/dev/null`.chomp
-  if identify.empty?
-    no_decode_delegate << file
-    @source_tmp.delete( file )
-    @logger.debug( "#{ file }: No decode delegate" )
-  elsif identify == "SVG"
-    xml = Nokogiri::XML( File.open( file ) )
-    if xml.search( 'svg' ).empty?
+  @source = @source_tmp.flatten.compact.dup
+  # check files
+  no_decode_delegate = Array.new
+  drops = FALSE
+  @source_tmp = @source.clone
+  @source.each do |file|
+    identify = `identify -format '%m' #{ file } 2>/dev/null`.chomp
+    if identify.empty?
       no_decode_delegate << file
       @source_tmp.delete( file )
-      @logger.debug( "No <svg> node: #{ file }" )
-    else # svg maybe useable
+      @logger.debug( "#{ file }: No decode delegate" )
+    elsif identify == "SVG"
+      xml = Nokogiri::XML( File.open( file ) )
+      if xml.search( 'svg' ).empty?
+        no_decode_delegate << file
+        @source_tmp.delete( file )
+        @logger.debug( "No <svg> node: #{ file }" )
+      else # svg maybe useable
+        @logger.debug( "#{ identify }: #{ file }" )
+      end
+    else # file is useable
       @logger.debug( "#{ identify }: #{ file }" )
     end
-  else # file is useable
-    @logger.debug( "#{ identify }: #{ file }" )
   end
-end
-if not_readable.size > 0
-  drops = TRUE
-  @logger.debug( "Not readable: #{ not_readable.join( ', ' ) }" )
-elsif not_readable.size == 0 and @source_tmp.size > 0
-  @logger.debug( "All files readable" )
-end
-if no_decode_delegate.size > 0
-  drops = TRUE
-  @logger.debug( "ImageMagick has no code delegate for #{ no_decode_delegate.join( ', ' ) }" )
-end
-if @source_tmp.length == 0
-  @logger.info( drops == FALSE ? "No image files specified" : "No useable image files")
-  exit
-end
-if drops == TRUE
-  if options.dont_drop == TRUE
+  if not_readable.size > 0
+    drops = TRUE
+    @logger.debug( "Not readable: #{ not_readable.join( ', ' ) }" )
+  elsif not_readable.size == 0 and @source_tmp.size > 0
+    @logger.debug( "All files readable" )
+  end
+  if no_decode_delegate.size > 0
+    drops = TRUE
+    @logger.debug( "ImageMagick has no code delegate for #{ no_decode_delegate.join( ', ' ) }" )
+  end
+  if @source_tmp.length == 0
+    @logger.info( drops == FALSE ? "No image files specified" : "No useable image files")
     exit
-  else
-    @logger.debug( "Dropped some unuseable files. Say '--dont-drop' to exit in that case." )
   end
+  if drops == TRUE
+    if options.dont_drop == TRUE
+      exit
+    else
+      @logger.debug( "Dropped some unuseable files. Say '--dont-drop' to exit in that case." )
+    end
+  end
+  @source = @source_tmp.dup
 end
-@source = @source_tmp.dup
-
 
 # check dcp related options
 if @output_type == "dcp"
