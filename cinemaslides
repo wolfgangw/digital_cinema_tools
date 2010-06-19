@@ -55,7 +55,7 @@ class Optparser
     options.aspect_malformed = FALSE
     options.fps = 24
     options.fps_dcp_choices = [ 24, 48 ] # FIXME jpeg2000 rate control for 25, 30, 50, 60?
-    options.fps_asdcp_choices = [ 23, 24, 25, 30, 48, 50, 60 ]
+    options.fps_asdcp_choices = [ 23.976, 24, 25, 30, 48, 50, 60 ]
     options.encoder = 'openjpeg'
     options.encoder_choices = [ 'openjpeg', 'kakadu' ]
     options.output_format = 'jpg'
@@ -397,9 +397,14 @@ def full_level( image, fps, duration )
   file = sequencefile
   if ( 1 ..( duration * fps - 1 ) ).none? # only 1 image needed
     @logger.debug( "Skip: Only 1 image needed here, skip convert2" )
-    File.cp( image, file )
+    File.symlink( image, file )
   else
-    convert2( image, level, file )
+    case level
+    when 0
+      File.symlink( image, file )
+    else
+      convert2( image, level, file )
+    end
   end
   @framecount += 1
   sequence_links_to_last_encoded_file( "full", duration, fps, file )
@@ -477,10 +482,10 @@ def composite( image1, level, image2, depth, compress, output ) # -compress none
 end
 
 
-def conform( image )
+def conform( image, fps )
   @logger.info( "Conform #{ image }" )
-  asset, todo = check_for_asset( image, @output_format )
-  if todo
+  asset, todo = check_for_asset( image, @output_format, fps )
+  if todo == TRUE
     convert( image, 0, asset ) # full level
   end
   return asset
@@ -488,8 +493,8 @@ end
 
 
 # asset match is based on a /conform's/ IM signature + dimensions + (encoder + fps if jpeg2000 codestream is requested) + suffix
-def check_for_asset( filename, suffix )
-  assetname = File.join( @assetsdir, `identify -format '%#' #{ filename }`.chomp + "_#{ @dimensions }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' + @fps.floor.to_s : '' : '_pre' }_.#{ suffix }" )
+def check_for_asset( filename, suffix, fps )
+  assetname = File.join( @assetsdir, `identify -format '%#' #{ filename }`.chomp + "_#{ @dimensions }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' + fps.floor.to_s : '' : '_pre' }_.#{ suffix }" )
   if File.exists?( assetname )
     @logger.debug( "Skip: Asset exists (#{ File.basename( filename ) } -> #{ File.basename( assetname ) })" )
     todo = FALSE
@@ -500,7 +505,7 @@ def check_for_asset( filename, suffix )
 end
 
 
-# used to conform any image to container size and color specs
+# scale and fit any image to container size and apply color specs
 def convert( image, level, filename )
   case @output_type
   when "preview", "fullpreview"
@@ -571,7 +576,7 @@ end
 ###
 
 
-requirements = [ "convert", "identify", "montage", "display", "mplayer", "image_to_j2k", "kdu_compress", "asdcp-test", "mkcpl", "mkpkl", "mkmap" ]
+requirements = [ 'convert', 'identify', 'montage', 'display', 'mplayer', 'image_to_j2k', 'kdu_compress', 'asdcp-test', 'kmuuidgen', 'mkcpl', 'mkpkl', 'mkmap' ]
 available_tools, missing_tools = check_requirements( requirements )
 if options.output_type == "dcp"
   if missing_tools.include?( "kdu_compress" )
@@ -743,7 +748,6 @@ end
 
 
 fps = options.fps # used in a million places
-@fps = fps # need fps in asset's filenames, too, but passing it to check_for_asset() just doesn't sound right =:] FIXME
 @framecount = 1
 @imagecount = 0
 if @output_type == "dcp"
@@ -835,7 +839,7 @@ if options.montage == TRUE
     #{ thumbs_asset }`
   end
   if ENV[ "DISPLAY" ].nil?
-    @logger.warn( "DISPLAY not set. Skipping montage summary" )
+    @logger.warn( "DISPLAY not set. Skipping montage summary. #{ options.keep == TRUE ? nil : 'Say --keep to keep preview files.' }" )
   else
     @logger.warn( "Montage summary #{ @output_type }. Exit with ESC or 'q'" )
     `display #{ thumbs_asset }`
@@ -864,14 +868,14 @@ keeper = nil # keep a conform for the next crossfade (2nd will be 1st then, don'
   case options.transition_and_timing.first
   when "fade"
     @imagecount += 1
-    image = conform( @source[ index  ] )
+    image = conform( @source[ index  ], fps )
     fade_in_hold_fade_out( image, fps, fade_in_time, duration, fade_out_time )
   when "crossfade"
     @imagecount += 1
     case index
     when 0 # first image
-      image1 = conform( @source[ index ] )
-      image2 = conform( @source[ index + 1 ] )
+      image1 = conform( @source[ index ], fps )
+      image2 = conform( @source[ index + 1 ], fps )
       keeper = image2
       fade_in( image1, fps, crossfade_time )
       full_level( image1, fps, duration )
@@ -882,7 +886,7 @@ keeper = nil # keep a conform for the next crossfade (2nd will be 1st then, don'
       fade_out( image, fps, crossfade_time )
     else
       image1 = keeper
-      image2 = conform( @source[ index + 1 ] )
+      image2 = conform( @source[ index + 1 ], fps )
       keeper = image2
       full_level( image1, fps, duration )
       crossfade( image1, image2, fps, crossfade_time )
@@ -906,7 +910,7 @@ case @output_type
 when "preview", "fullpreview"
   sequence = File.join( "#{ @conformdir }", "*.#{ @output_format }" )
   if ENV[ "DISPLAY" ].nil?
-    @logger.warn( "DISPLAY not set. Skipping preview" )
+    @logger.warn( "DISPLAY not set. Skipping preview. #{ options.keep == TRUE ? nil : 'Say --keep to keep preview files.' }" )
   else
     @logger.warn( "Loop #{ @output_type }. Exit with ESC or 'q'" )
     mplayer_vo = ""
@@ -952,12 +956,12 @@ when "dcp"
   counter = 0
   last_encoded_file = ""
   files.each do |file|
-    type = File.ftype( file )
-
-    if type == "file" # check for asset / encode
+    dir = File.dirname( File.readlink( file ) ) # readlink not available on all platforms
+    
+    if dir != @conformdir # file links to conform asset
       counter += 1
       last_encoded_file = file + ".j2c"
-      asset, todo = check_for_asset( file, "j2c" )
+      asset, todo = check_for_asset( file, "j2c", fps )
       if todo == TRUE
         @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
         case options.encoder
@@ -974,7 +978,8 @@ when "dcp"
       end
       File.link( asset, last_encoded_file )
         
-    elsif type == "link" # link to last encoded file
+    #elsif type == "link" # link to last encoded file
+    elsif dir == @conformdir
       counter += 1
       # For the time being (case dcp) we make tiffs, so there, see original_suffix
       link = File.join( @conformdir, "#{ '%06d' % counter }.#{ original_suffix }.j2c" )
@@ -990,10 +995,8 @@ when "dcp"
 
   `mv #{ File.join( @conformdir, '*.j2c' ) } #{ @j2cdir }`
   @logger.info( "Write image trackfile ..." )
-  `asdcp-test -L -E -p #{ fps } -c #{ tmp_slidesmxf } #{ @j2cdir } > /dev/null 2>&1`
-  # FIXME this will break when asdcp-test -i -H changes its output format
-  # ass backwards anyway, the following ...
-  slidesmxf_uuid = `asdcp-test -i -H #{ tmp_slidesmxf }`.grep( /AssetUUID/ ).first.split(": ").last.chomp
+  slidesmxf_uuid = `kmuuidgen -n`
+  `asdcp-test -L -E -p #{ fps } -a #{ slidesmxf_uuid } -c #{ tmp_slidesmxf } #{ @j2cdir } > /dev/null 2>&1`
   @logger.debug( "trackfile uuid: #{ slidesmxf_uuid }" )
   slidesmxf = File.join( File.dirname( tmp_slidesmxf ), "j2c_" + slidesmxf_uuid + "_.mxf" )
   File.rename( tmp_slidesmxf, slidesmxf )
@@ -1014,7 +1017,7 @@ when "dcp"
   pkl = File.join( File.dirname( tmp_pkl ), "pkl_" + pkl_uuid + "_.xml" )
   File.rename( tmp_pkl, pkl)
   @logger.info( "Write ASSETMAP and VOLINDEX" )
-  `cd #{ @dcpdir }; mkmap --issuer '#{ options.issuer }' #{File.basename( slidesmxf )} #{File.basename( cpl )} #{File.basename( pkl )}`
+  `cd #{ @dcpdir }; mkmap --issuer '#{ options.issuer }' #{ File.basename( slidesmxf ) } #{ File.basename( cpl ) } #{ File.basename( pkl ) }`
 
   # FIXME report -> dry out
   # report
