@@ -580,7 +580,7 @@ end
 
 
 def sequence?( filelist )
-  
+  nil
 end
 ###
 
