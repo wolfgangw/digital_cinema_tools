@@ -30,8 +30,9 @@ end
 def continuous?( list )
   continuous = FALSE
   order = NIL
+  step = 0
+  continuity_broken = FALSE
   init = list[ 1 ].to_i - list[ 0 ].to_i
-  step = NIL
   list.each_with_index do |element, index|
     unless element == list.last
       step = list[ index + 1 ].to_i - list[ index ].to_i
@@ -39,10 +40,12 @@ def continuous?( list )
         break
       elsif step == init
         next
+      elsif step != init
+        continuity_broken = TRUE
       end
     end
   end
-  if step == init and step != 0
+  if step != 0 and continuity_broken == FALSE
     continuous = TRUE
     step > 0 ? order = "ascending by #{ step }" : order = "descending by #{ step }"
   end
