@@ -687,7 +687,8 @@ unless options.dont_check == TRUE
         @logger.debug( "#{ identify }: #{ file }" )
       end
     else # file is useable
-      @logger.debug( "#{ identify }: #{ file }" )
+      dimensions = `convert #{ file } -format '(%wx%h, 1:%[fx:w/h])' info:`.chomp
+      @logger.debug( "#{ identify } #{ dimensions }: #{ file }" )
     end
   end
   if not_readable.size > 0
