@@ -66,19 +66,19 @@ end
 composite_token = ''
 sequence = FALSE
 orders = Array.new
-particles = Array.new
+splits = Array.new
 
 # split all tokens into numeric and non-numeric partices
 tokens.each_with_index do |token, index|
-  particles[ index ] = numeric_and_non_numeric_particles( File.basename( token ) )
+  splits[ index ] = numeric_and_non_numeric_particles( File.basename( token ) )
 end
 
-# check all particles
-particles.first.each_with_index do |item, index|
+# take first as example template. doesn't matter with this approach
+splits.first.each_with_index do |item, index|
   list = Array.new
   # collect column
-  particles.each do |particle|
-    list << particle[ index ]
+  splits.each do |particles|
+    list << particles[ index ]
   end
   continuous, order, step = continuous?( list )
   if continuous == TRUE

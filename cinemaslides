@@ -610,7 +610,7 @@ if available_tools.size < requirements.size - 1 # all tools needed minus 1 codec
 end
 @logger.debug( "Available tools: #{ available_tools.sort.join(', ') }" ) unless available_tools.empty?
 @logger.debug( "Missing tools: #{ missing_tools.join(', ') }" ) unless missing_tools.empty?
-@logger.debug( "All necessary tools available" ) if missing_tools.empty?
+@logger.debug( "All necessary tools available" ) if missing_tools.empty? # FIXME
 
 
 ### Get options and initialize
