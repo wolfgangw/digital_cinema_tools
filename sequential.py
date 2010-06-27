@@ -101,7 +101,7 @@ def report( length, sequence, composite_token, orders ):
         print ")"
         print composite_token
     else:
-        print "No numeric sequential stream found"
+        print "No numeric sequential streams found"
 
 
 class Usage( Exception ):
