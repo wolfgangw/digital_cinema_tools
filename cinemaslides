@@ -844,7 +844,7 @@ if options.montage == TRUE
     `montage #{ thumbs } \
        -mode Concatenate \
        -tile #{ tiles_x }x \
-       -frame 1 \
+       -border 1 \
        -geometry '#{ x }x#{ y }+5+5>' \
        -bordercolor lightblue \
     #{ thumbs_asset }`
