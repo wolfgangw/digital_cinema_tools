@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.06.16"
+CinemaSlidesVersion = "v0.2010.06.28"
 Author = "Wolfgang Woehl".freeze
 #
 # Run "cinemaslides -h" to see options
@@ -105,7 +105,7 @@ BANNER
       opts.on("--fps fps", "Framerate (Default: 24)", Float) do |p| # float cast needed for fps-based calculations. actual non-integer values won't fly so don't do that. FIXME
         options.fps = p
       end
-      opts.on( "-x", "--transition_and_timing transition,seconds,seconds,[seconds]", Array, "Use this option to specify the transition type ('fade' or 'crossfade') and timing parameters. Defaults to '-x #{ options.transition_and_timing.join(',') }' (fade in #{ options.transition_and_timing[ 1 ] } seconds, full level #{ options.transition_and_timing[ 2 ] } seconds, fade out #{ options.transition_and_timing[ 3 ] } seconds). Separate parameters with commas (no spaces)" ) do |p|
+      opts.on( "-x", "--transition_and_timing transition,seconds,seconds[,seconds]", Array, "Use this option to specify the transition type ('fade' or 'crossfade') and timing parameters. Defaults to '-x #{ options.transition_and_timing.join(',') }' (fade in #{ options.transition_and_timing[ 1 ] } seconds, full level #{ options.transition_and_timing[ 2 ] } seconds, fade out #{ options.transition_and_timing[ 3 ] } seconds). Separate parameters with commas (no spaces)" ) do |p|
         options.transition_and_timing = p
       end
       opts.on("-j", "--encoder codec", String, "Use 'openjpeg' or 'kakadu' for JPEG 2000 encoding (Default: openjpeg)") do |p|
@@ -967,9 +967,14 @@ when "dcp"
   counter = 0
   last_encoded_file = ""
   files.each do |file|
-    dir = File.dirname( File.readlink( file ) ) # readlink not available on all platforms
+    type = File.ftype( file )
+    if type == 'link'
+      dir = File.dirname( File.readlink( file ) ) # readlink not available on all platforms
+    else
+      dir = File.dirname( file )
+    end
     
-    if dir != @conformdir # file links to conform asset
+    if dir != @conformdir or type == 'file' # file is either a link pointing to conform asset or a faded/crossfaded image file
       counter += 1
       last_encoded_file = file + ".j2c"
       asset, todo = check_for_asset( file, "j2c", fps )
@@ -989,8 +994,7 @@ when "dcp"
       end
       File.link( asset, last_encoded_file )
         
-    #elsif type == "link" # link to last encoded file
-    elsif dir == @conformdir
+  elsif dir == @conformdir # file (which is a link) points to last asset link
       counter += 1
       # For the time being (case dcp) we make tiffs, so there, see original_suffix
       link = File.join( @conformdir, "#{ '%06d' % counter }.#{ original_suffix }.j2c" )
