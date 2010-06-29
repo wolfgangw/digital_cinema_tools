@@ -121,9 +121,11 @@ def main( argv = None ):
             if o in ( "-h", "--help" ):
                 print __doc__
         # process arguments
-        if len( args ) > 0:
+        if len( args ) > 1:
             sequence, composite_token, orders = check_sequential( args )
             report( len( args ), sequence, composite_token, orders )
+        else:
+            raise Usage( 'Need at least 2 items to check for sequential streams' )
     except Usage, err:
         print >>sys.stderr, err.msg
         print >>sys.stderr, "For help use --help"
