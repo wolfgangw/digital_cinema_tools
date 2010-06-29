@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.06.28"
+CinemaSlidesVersion = "v0.2010.06.29"
 Author = "Wolfgang Woehl".freeze
 #
 # Run "cinemaslides -h" to see options
@@ -267,7 +267,7 @@ def hrs_min_sec( seconds )
   return [
     hrs > 0 ? hrs.to_s + " hour#{ 's' * ( hrs > 1 ? 1 : 0 ) }" : nil ,
     min > 0 ? min.to_s + " minute#{ 's' * ( min > 1 ? 1 : 0 ) }" : nil ,
-    sec > 0 ? sec.to_s + " seconds" : '0 seconds' ,
+    sec > 0 ? sec.to_s + " second#{ 's' * ( sec > 1 ? 1 : 0 ) }" : '0 seconds' ,
     t > 60 ? "(#{ t } seconds)" : nil
   ].compact.join( ' ' )
 end
@@ -387,7 +387,11 @@ def fade( image, seconds, fps, level, step)
   ( 1..( seconds * fps ) ).each do
     filename = sequencefile
     @logger.cr( sprintf('%.2f', level) )
-    convert2( image, level, filename )
+    asset, todo = check_for_asset( image, @output_format, fps, level )
+    if todo == TRUE
+      convert_apply_level( image, level, asset )
+    end
+    File.symlink( asset, filename )
     level = level + step
     @framecount += 1
   end
@@ -399,19 +403,13 @@ def full_level( image, fps, duration )
   @logger.info( "--- Full level #{ imagecount_info( image ) }" )
   level = 0
   file = sequencefile
+  File.symlink( image, file )
   if ( 1 ..( duration * fps - 1 ) ).none? # only 1 image needed
-    @logger.debug( "Skip: Only 1 image needed here, skip convert2" )
-    File.symlink( image, file )
+    @logger.debug( "Skip sequence links: Only 1 image needed here" )
   else
-    case level
-    when 0
-      File.symlink( image, file )
-    else
-      convert2( image, level, file )
-    end
+    @framecount += 1
+    sequence_links_to_last_encoded_file( "full", duration, fps, file )
   end
-  @framecount += 1
-  sequence_links_to_last_encoded_file( "full", duration, fps, file )
 end
 
 
@@ -419,7 +417,6 @@ def sequence_links_to_last_encoded_file( info, seconds, fps, file )
   ( 1..( seconds * fps - 1 ) ).each do # 1 file already written
     link = sequencefile
     # FIXME link available on all platforms?
-    # FIXME hardlinks answer "file" to ftype, so all files would be jpeg2000 encoded
     File.symlink( file, link )
     @framecount += 1
   end
@@ -488,17 +485,18 @@ end
 
 def conform( image, fps )
   @logger.info( "Conform #{ image }" )
-  asset, todo = check_for_asset( image, @output_format, fps )
+  level = 0
+  asset, todo = check_for_asset( image, @output_format, fps, level )
   if todo == TRUE
-    convert( image, 0, asset ) # full level
+    convert_resize_apply_level_and_color_specs( image, level, asset ) # full level
   end
   return asset
 end
 
 
-# asset match is based on a /conform's/ IM signature + dimensions + (encoder + fps if jpeg2000 codestream is requested) + suffix
-def check_for_asset( filename, suffix, fps )
-  assetname = File.join( @assetsdir, `identify -format '%#' #{ filename }`.chomp + "_#{ @dimensions }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' + fps.floor.to_s : '' : '_pre' }_.#{ suffix }" )
+# asset match is based on a /conform's/ IM signature + dimensions + (level unless jpeg2000 codestream requested) + (encoder + fps if jpeg2000 codestream is requested) + suffix
+def check_for_asset( filename, suffix, fps, level = nil )
+  assetname = File.join( @assetsdir, `identify -format '%#' #{ filename }`.chomp + "_#{ @dimensions }#{ level.nil? ? '' : '_' + level.to_s }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' + fps.floor.to_s : '' : '_pre' }_.#{ suffix }" )
   if File.exists?( assetname )
     @logger.debug( "Skip: Asset exists (#{ File.basename( filename ) } -> #{ File.basename( assetname ) })" )
     todo = FALSE
@@ -510,7 +508,7 @@ end
 
 
 # scale and fit any image to container size and apply color specs
-def convert( image, level, filename )
+def convert_resize_apply_level_and_color_specs( image, level, filename )
   case @output_type
   when "preview", "fullpreview"
     `convert #{image} \
@@ -549,7 +547,7 @@ end
 
 
 # image is already conformed, just apply level here
-def convert2( image, level, filename )
+def convert_apply_level( image, level, filename )
   case @output_type
   when "preview", "fullpreview"
     `convert #{image} \
@@ -974,7 +972,8 @@ when "dcp"
       dir = File.dirname( file )
     end
     
-    if dir != @conformdir or type == 'file' # file is either a link pointing to conform asset or a faded/crossfaded image file
+    # file is either a link pointing to conform asset or a crossfaded image file (the latter not being stored in asset depot)
+    if dir != @conformdir or type == 'file'
       counter += 1
       last_encoded_file = file + ".j2c"
       asset, todo = check_for_asset( file, "j2c", fps )
@@ -1049,6 +1048,7 @@ end # End Create DCP
 
 
 TODO = <<TODO
+FIXME fades/crossfades levels overshoot by 1 (level drop/jump at full level boundary)
 FIXME slideshow objects
 FIXME crossfades border case: 0.0416666666666667 (1/24) crossfade time -> level shoots off the roof
 FIXME gamma diff on resize: don't conform images with target dimensions
