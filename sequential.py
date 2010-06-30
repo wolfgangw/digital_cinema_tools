@@ -16,31 +16,24 @@ def numeric_and_non_numeric_particles( token ):
     return splits
 
 
-def value_or_zero( string ):
-    if string == '':
-        value = 0
-    else:
-        value = int( string )
-    return value
-    
 def test_continuous( list ):
     continuous = False
     order = ''
     step = 0
     continuity_broken = False
-    numerical = False
     for element in list:
         if re.match( '\d+', element ):
             numerical = True
         else:
+            numerical = False
             break
     if numerical == True:
-        init = value_or_zero( list[ 1 ] ) - value_or_zero( list[ 0 ] )
+        init = int( list[ 1 ] ) - int( list[ 0 ] )
         for index, element in enumerate( list ):
             if index == len( list ) - 1:
                 break
             else:
-                step = value_or_zero( list[ index + 1 ] ) - value_or_zero( list[ index ] )
+                step = int( list[ index + 1 ] ) - int( list[ index ] )
                 if step == 0:
                     break
                 elif step == init:
@@ -89,11 +82,11 @@ def check_sequential( args ):
     return sequence, composite_token, orders
     
 
-def report( length, sequence, composite_token, orders ):
-    print length, [ 'item', 'items' ][ (length > 1) ]
+def report( number, sequence, composite_token, orders ):
+    print number, 'items'
     if sequence == True:
         number_of_streams = len( orders )
-        print "Sequential", [ 'stream', 'streams' ][ ( number_of_streams > 1 ) ], "found", "(",
+        print number_of_streams, "Sequential", [ 'stream', 'streams' ][ ( number_of_streams > 1 ) ], "found", "(",
         for index, order in enumerate( orders ):
             print order,
             if number_of_streams > 1 and index < len( orders ) -1:
