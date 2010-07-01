@@ -1,7 +1,16 @@
 #!/usr/bin/env python
 
-"""sequential.py takes a list of strings (which can be filenames) and checks for sequential numeric parts.
-It returns orders and a composite string with markers for those parts.
+"""sequential.py checks a list of strings (e.g. filenames) for numeric sequential streams.
+TODO: obj.<gaps>
+    
+It creates a SequentialCandidate object which provides these attributes:
+    obj.args:      List of processed strings
+    obj.sequence:  True|False (True if at least 1 continuous numeric sequential stream is found)
+    obj.composite: Composite summary of obj.args with markers for numeric sequential streams and UUIDs
+    obj.orders:    List of sequential stream directions
+and
+    obj.report()
+
 Usage:   sequential.py <list>
 Example: sequential.py motion_sequence/*"""
 
@@ -9,99 +18,105 @@ import re
 import sys
 import getopt
 import os.path
+import inspect
 
-
-def numeric_and_non_numeric_particles( token ):
-    splits = re.split( '(\D+)', token )
-    return splits
-
-
-def test_continuous( list ):
-    continuous = False
-    order = ''
-    step = 0
-    continuity_broken = False
-    for element in list:
-        if re.match( '\d+', element ):
-            numerical = True
-        else:
-            numerical = False
-            break
-    if numerical == True:
-        init = int( list[ 1 ] ) - int( list[ 0 ] )
-        for index, element in enumerate( list ):
-            if index == len( list ) - 1:
-                break
-            else:
-                step = int( list[ index + 1 ] ) - int( list[ index ] )
-                if step == 0:
-                    break
-                elif step == init:
-                    continue
-                elif step != init:
-                    continuity_broken = True
-                    break
-    if ( step != 0 and continuity_broken == False ):
-        continuous = True
-        if step > 0:
-            order = 'ascending by ' + str( step )
-        else:
-            order = 'descending by ' + str( step )
-    return continuous, order, step
-
-
-def mark_uuid( string ):
-    return re.sub( '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', '[UUID]', string )
-
-
-def check_sequential( args ):
-    composite_token = ''
-    sequence = False
-    orders = []
-    splits = []
-    # split all tokens into numeric and non-numeric partices
-    for token in args:
-        splits.append( numeric_and_non_numeric_particles( os.path.basename( token ) ) )
-    # check all particles
-    for index, item in enumerate( splits[ 0 ] ):
-        list = []
-        for particles in splits:
-            # catch dangling ends of variable-sized split lists
-            if index > len( particles ) - 1: # nothing left to pick up here
-                list.append( '' )
-            else:
-                list.append( particles[ index ] )
-        continuous, order, step = test_continuous( list )
-        if continuous == True:
-            sequence = True
-            orders.append( order )
-            composite_token += '[' + str( list[ 0 ] ) + '-' + str( list[ -1 ] ) + ']'
-        else:
-            composite_token += str( list[ 0 ] )
-    composite_token = mark_uuid( composite_token )
-    return sequence, composite_token, orders
+class SequentialCandidate:
     
+    def __init__( self, args ):
+        self.args = args
+        self.number_of_args = len( self.args )
+        args_uuid_safe = []
+        if re.search( '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', self.args[ 0 ] ):
+            args_uuid_safe = map( self._mark_uuid, self.args )
+        else:
+            args_uuid_safe = self.args
+        self._check_sequential( args_uuid_safe )
 
-def report( number, sequence, composite_token, orders ):
-    print number, 'items'
-    if sequence == True:
-        number_of_streams = len( orders )
-        print number_of_streams, "Sequential", [ 'stream', 'streams' ][ ( number_of_streams > 1 ) ], "found", "(",
-        for index, order in enumerate( orders ):
-            print order,
-            if number_of_streams > 1 and index < len( orders ) -1:
-                print ',',
-        print ")"
-        print composite_token
-    else:
-        print "No numeric sequential streams found"
+    def _check_sequential( self, args ):
+        self.composite = ''
+        self.sequence = False
+        self.orders = []
+        splits = []
+        for token in args:
+            splits.append( self._numeric_and_non_numeric_particles( os.path.basename( token ) ) )
+        for index in range( len( splits[ 0 ] ) ):
+            column = []
+            for row in splits:
+                # catch dangling ends of variable-sized split lists
+                if index > len( row ) - 1: # nothing left to pick up here
+                    column.append( '' )
+                else:
+                    column.append( row[ index ] )
+            continuous, order, step = self._test_continuity( column )
+            if continuous == True:
+                self.sequence = True
+                self.orders.append( order )
+                self.composite += '[' + str( column[ 0 ] ) + '-' + str( column[ -1 ] ) + ']'
+            else:
+                self.composite += str( column[ 0 ] )
+        if self.sequence == True:
+            pass #self.composite = self._mark_uuid( self.composite )
+        else:
+            self.composite = ''
+        
+    def _numeric_and_non_numeric_particles( self, token ):
+        splits = re.split( '(\D+)', token )
+        return splits
 
+    def _test_continuity( self, sequence ):
+        continuous = False
+        order = ''
+        step = 0
+        continuity_broken = False
+        for element in sequence:
+            if re.match( '\d+', element ):
+                numerical = True
+            else:
+                numerical = False
+                break
+        if numerical == True:
+            initial_step = int( sequence[ 1 ] ) - int( sequence[ 0 ] )
+            for index, element in enumerate( sequence ):
+                if index == len( sequence ) - 1:
+                    break
+                else:
+                    step = int( sequence[ index + 1 ] ) - int( sequence[ index ] )
+                    if step == 0:
+                        break
+                    elif step == initial_step:
+                        continue
+                    elif step != initial_step:
+                        continuity_broken = True
+                        break
+        if ( step != 0 and continuity_broken == False ):
+            continuous = True
+            if step > 0:
+                order = 'ascending by ' + str( step )
+            else:
+                order = 'descending by ' + str( step )
+        return continuous, order, step
+
+    def _mark_uuid( self, string ):
+        return re.sub( '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', '[UUID]', string )
+
+    def report( self ):
+        print self.number_of_args, 'items'
+        if self.sequence == True:
+            number_of_streams = len( self.orders )
+            print number_of_streams, "numeric sequential", [ 'stream', 'streams' ][ ( number_of_streams > 1 ) ], "found", "(",
+            for index, order in enumerate( self.orders ):
+                print order,
+                if number_of_streams > 1 and index < len( self.orders ) -1:
+                    print ',',
+            print ")"
+            print self.composite
+        else:
+            print "No numeric sequential streams found"
 
 class Usage( Exception ):
     def __init__( self, msg ):
         self.msg = msg
         
-
 def main( argv = None ):
     # parse command line options
     try:
@@ -109,21 +124,16 @@ def main( argv = None ):
             opts, args = getopt.getopt( sys.argv[ 1: ], "h", ["help"] )
         except getopt.error, msg:
             raise Usage( msg )
-        # process options
         for o, a in opts:
             if o in ( "-h", "--help" ):
                 print __doc__
-        # process arguments
         if len( args ) > 1:
-            sequence, composite_token, orders = check_sequential( args )
-            report( len( args ), sequence, composite_token, orders )
-        else:
-            raise Usage( 'Need at least 2 items to check for sequential streams' )
+            candidate = SequentialCandidate( args )
+            candidate.report()
     except Usage, err:
         print >>sys.stderr, err.msg
         print >>sys.stderr, "For help use --help"
         return 2
-
 
 if __name__ == "__main__":
     sys.exit( main() )
