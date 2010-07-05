@@ -18,7 +18,6 @@ import re
 import sys
 import getopt
 import os.path
-import inspect
 
 class SequentialCandidate:
     

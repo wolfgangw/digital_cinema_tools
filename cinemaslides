@@ -16,7 +16,7 @@ Author = "Wolfgang Woehl".freeze
 #   nokogiri (gem install nokogiri, requires ruby-dev, libxml2-dev)
 #
 ###
-#   Kakadu (http://www.kakadusoftware.com/index.php) is a proprietary JPEG2000 implementation, written by Dr. Taubman
+#   Kakadu (http://www.kakadusoftware.com/index.php) is a proprietary JPEG 2000 implementation, written by Dr. Taubman
 #   Kakadu Copyright is owned by NewSouth Innovations Proprietary Ltd, commercial arm of the University of New South Wales, Sydney, Australia
 #   Its feature set and performance are quite impressive. It is significantly faster than OpenJPEG's implementation.
 #   Kakadu is available for demonstration purposes (Windows, Mac, Linux).
@@ -54,7 +54,7 @@ class Optparser
     options.aspect_choices = [ 'flat', 'scope', 'hd', Regexp.new('\d+(\.\d+)?x\d+(\.\d+)?') ] # custom aspect ratios: match '<numeric>x<numeric>'
     options.aspect_malformed = FALSE
     options.fps = 24
-    options.fps_dcp_choices = [ 24, 48 ] # FIXME jpeg2000 rate control for 25, 30, 50, 60?
+    options.fps_dcp_choices = [ 24, 48 ]
     options.fps_asdcp_choices = [ 23.976, 24, 25, 30, 48, 50, 60 ]
     options.encoder = 'openjpeg'
     options.encoder_choices = [ 'openjpeg', 'kakadu' ]
@@ -97,12 +97,12 @@ BANNER
         if options.aspect_choices.include?( p.downcase )
           options.aspect = p.downcase
         elsif p.match( options.aspect_choices.last )
-          options.aspect = 'Custom aspect ratio: ' + p
+          options.aspect = 'Custom aspect ratio:' + p
         else
           options.aspect_malformed = TRUE
         end
       end
-      opts.on("--fps fps", "Framerate (Default: 24)", Float) do |p| # float cast needed for fps-based calculations. actual non-integer values won't fly so don't do that. FIXME
+      opts.on("--fps fps", "Framerate (Default: 24)", Float) do |p| # 23.976
         options.fps = p
       end
       opts.on( "-x", "--transition_and_timing transition,seconds,seconds[,seconds]", Array, "Use this option to specify the transition type ('fade' or 'crossfade') and timing parameters. Defaults to '-x #{ options.transition_and_timing.join(',') }' (fade in #{ options.transition_and_timing[ 1 ] } seconds, full level #{ options.transition_and_timing[ 2 ] } seconds, fade out #{ options.transition_and_timing[ 3 ] } seconds). Separate parameters with commas (no spaces)" ) do |p|
@@ -316,6 +316,7 @@ def scale_to_fit_container( width, height, container_width, container_height )
   return width_scaled.floor, height_scaled.floor
 end
 
+
 # target container dimensions are upscaled from 1k numbers
 # (1k for preview, 2k and 4k for fullpreview and dcp)
 # any custom aspect ratio is scaled to fit the target container
@@ -332,7 +333,7 @@ def width_x_height
   when 'hd' # 1.77 : 1 (1.77777777777778)
     width, height = 960, 540
   else # Custom aspect ratio
-    custom_width, custom_height = @aspect.split( 'Custom aspect ratio: ' ).last.split( 'x' )
+    custom_width, custom_height = @aspect.split( 'Custom aspect ratio:' ).last.split( 'x' )
     width, height = scale_to_fit_container( custom_width.to_f, custom_height.to_f, container_width, container_height )
     return [ width, height ].join( 'x' )
   end
@@ -473,6 +474,7 @@ end
 
 
 def fadetype( level )
+  @logger.critical( "level + 100 = #{ level + 100 }" )
   "-modulate #{ level + 100 },#{ level + 100 }"
   #"-brightness-contrast #{ level }x#{ level }" # not in ubuntu 10.04's im 6.5.7-8
 end
@@ -494,7 +496,7 @@ def conform( image, fps )
 end
 
 
-# asset match is based on a /conform's/ IM signature + dimensions + (level unless jpeg2000 codestream requested) + (encoder + fps if jpeg2000 codestream is requested) + suffix
+# asset match is based on a /conform's/ IM signature + dimensions + (level unless jpeg 2000 codestream requested) + (encoder + fps if jpeg 2000 codestream is requested) + suffix
 def check_for_asset( filename, suffix, fps, level = nil )
   assetname = File.join( @assetsdir, `identify -format '%#' #{ filename }`.chomp + "_#{ @dimensions }#{ level.nil? ? '' : '_' + level.to_s }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' + fps.floor.to_s : '' : '_pre' }_.#{ suffix }" )
   if File.exists?( assetname )
@@ -577,7 +579,7 @@ def jpeg2000_dcp_rate_constraints( fps ) # returns bytes
 end
 
 
-def sequence?( filelist )
+def sequence?( list )
   nil
 end
 ###
@@ -588,7 +590,7 @@ available_tools, missing_tools = check_requirements( requirements )
 if options.output_type == "dcp"
   if missing_tools.include?( "kdu_compress" )
     if missing_tools.include?( "image_to_j2k" ) # both openjpeg and kakadu not available
-      @logger.warn( "No JPEG2000 codec available (Needed for DCP creation). Check your installation." )
+      @logger.warn( "No JPEG 2000 codec available (Needed for DCP creation). Check your installation." )
     elsif options.encoder == "kakadu" # openjpeg is available, kakadu is not
       options.encoder = "openjpeg"
       @logger.warn( "kakadu's kdu_compress is not available. Falling back to openjpeg" )
@@ -719,7 +721,8 @@ if @output_type == "dcp"
     @logger.critical( "Not a usable encoder: '#{ options.encoder }'" )
     exit
   end
-  case options.encoder # in order not to mix up asset retrieval, encoding results are not identical
+  # mark assets with encoder ids
+  case options.encoder
   when 'openjpeg'
     @encoder_id = 'opj'
   when 'kakadu'
@@ -756,7 +759,7 @@ else
 end
 
 
-fps = options.fps # used in a million places
+fps = options.fps
 @framecount = 1
 @imagecount = 0
 if @output_type == "dcp"
@@ -972,7 +975,7 @@ when "dcp"
       dir = File.dirname( file )
     end
     
-    # file is either a link pointing to conform asset or a crossfaded image file (the latter not being stored in asset depot)
+    # file is either a link pointing to a conform asset or a crossfaded image file (the latter not being stored in asset depot)
     if dir != @conformdir or type == 'file'
       counter += 1
       last_encoded_file = file + ".j2c"
@@ -1008,6 +1011,7 @@ when "dcp"
   end
 
   `mv #{ File.join( @conformdir, '*.j2c' ) } #{ @j2cdir }`
+  
   @logger.info( "Write image trackfile ..." )
   slidesmxf_uuid = `kmuuidgen -n`
   `asdcp-test -L -E -p #{ fps } -a #{ slidesmxf_uuid } -c #{ tmp_slidesmxf } #{ @j2cdir } > /dev/null 2>&1`
@@ -1048,8 +1052,8 @@ end # End Create DCP
 
 
 TODO = <<TODO
-FIXME fades/crossfades levels overshoot by 1 (level drop/jump at full level boundary)
-FIXME slideshow objects
+FIXME symmetric fades
+FIXME fades/crossfades levels overshoot by 1 step (level drop/jump at full level boundary)
 FIXME crossfades border case: 0.0416666666666667 (1/24) crossfade time -> level shoots off the roof
 FIXME gamma diff on resize: don't conform images with target dimensions
 FIXME how to detect optimal -vo for mplayer?
@@ -1067,6 +1071,7 @@ FEATURE transition times and duration are global. make them file specific
 FEATURE DCP naming conventions
 FEATURE MPEG MXFI
 
+CODE slideshow objects
 CODE dry out black header/tail
 CODE report method (also generalize transition types and timings)
 CODE options catch all (missing arguments trace back deep)
