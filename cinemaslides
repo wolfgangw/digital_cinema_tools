@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.06.29"
+CinemaSlidesVersion = "v0.2010.07.07"
 Author = "Wolfgang Woehl".freeze
 #
 # Run "cinemaslides -h" to see options
@@ -53,9 +53,9 @@ class Optparser
     options.aspect = 'flat'
     options.aspect_choices = [ 'flat', 'scope', 'hd', Regexp.new('\d+(\.\d+)?x\d+(\.\d+)?') ] # custom aspect ratios: match '<numeric>x<numeric>'
     options.aspect_malformed = FALSE
-    options.fps = 24
-    options.fps_dcp_choices = [ 24, 48 ]
-    options.fps_asdcp_choices = [ 23.976, 24, 25, 30, 48, 50, 60 ]
+    options.fps = 24.0
+    options.fps_dcp_choices = [ 24.0, 48.0 ]
+    options.fps_asdcp_choices = [ 23.976, 24.0, 25.0, 30.0, 48.0, 50.0, 60.0 ]
     options.encoder = 'openjpeg'
     options.encoder_choices = [ 'openjpeg', 'kakadu' ]
     options.output_format = 'jpg'
@@ -103,7 +103,7 @@ BANNER
         end
       end
       opts.on("--fps fps", "Framerate (Default: 24)", Float) do |p| # 23.976
-        options.fps = p
+        options.fps = p.to_f
       end
       opts.on( "-x", "--transition_and_timing transition,seconds,seconds[,seconds]", Array, "Use this option to specify the transition type ('fade' or 'crossfade') and timing parameters. Defaults to '-x #{ options.transition_and_timing.join(',') }' (fade in #{ options.transition_and_timing[ 1 ] } seconds, full level #{ options.transition_and_timing[ 2 ] } seconds, fade out #{ options.transition_and_timing[ 3 ] } seconds). Separate parameters with commas (no spaces)" ) do |p|
         options.transition_and_timing = p
@@ -378,7 +378,7 @@ def fade_out( image, fps, fade_out_time )
   @logger.info( "<<< Fade out #{ imagecount_info( image ) }" )
   level = 0
   step = - ( 100 / ( fade_out_time * fps ) )
-  level += step
+  level = step_level_and_round( level, step )
   fade( image, fade_out_time, fps, level, step )
 end
 
@@ -393,7 +393,7 @@ def fade( image, seconds, fps, level, step)
       convert_apply_level( image, level, asset )
     end
     File.symlink( asset, filename )
-    level = level + step
+    level = step_level_and_round( level, step )
     @framecount += 1
   end
   @logger.debug( "Fade frames level after loop: #{ level - step }" )
@@ -427,7 +427,7 @@ end
 def crossfade( image1, image2, fps, seconds )
   @logger.info( "XXX Crossfade #{ imagecount_info( image1 ) }" )
   level = 100
-  step = 100 / ( seconds * fps )
+  step = - ( 100 / ( seconds * fps ) )
   case @output_type
   when "dcp"
     compress = "-compress none"
@@ -436,15 +436,20 @@ def crossfade( image1, image2, fps, seconds )
     compress = ""
     depth = "-depth 8"
   end
-  @logger.debug( "Crossfade level before loop: #{level}" )
+  @logger.debug( "Crossfade level before loop: #{ level }" )
   ( 1..( seconds * fps ) ).each do
     output = sequencefile
     @logger.cr( sprintf( '%.2f', level ) )
     composite( image1, level, image2, depth, compress, output )
-    level = level - step
+    level = step_level_and_round( level, step )
     @framecount += 1
   end
-  @logger.debug( "Crossfade level after loop: #{level + step}" )
+  @logger.debug( "Crossfade level after loop: #{ level - step }" )
+end
+
+
+def step_level_and_round( level, step )
+  level = ( ( level + step ) * 10 ** 5 ).round.to_f / 10 ** 5
 end
 
 
@@ -474,7 +479,6 @@ end
 
 
 def fadetype( level )
-  @logger.critical( "level + 100 = #{ level + 100 }" )
   "-modulate #{ level + 100 },#{ level + 100 }"
   #"-brightness-contrast #{ level }x#{ level }" # not in ubuntu 10.04's im 6.5.7-8
 end
@@ -561,7 +565,7 @@ def convert_apply_level( image, level, filename )
   when "dcp" # -compress none for kakadu
     `convert #{image} \
         -type TrueColor \
-        -gamma 0.454545454545455 \
+        -gamma 0.38461538461538458 \
         #{ fadetype( level ) } \
         -depth 12 \
         -gamma 2.6 \
@@ -1052,8 +1056,7 @@ end # End Create DCP
 
 
 TODO = <<TODO
-FIXME symmetric fades
-FIXME fades/crossfades levels overshoot by 1 step (level drop/jump at full level boundary)
+FIXME verbosity level info -> jpeg 2000 encoder talk
 FIXME crossfades border case: 0.0416666666666667 (1/24) crossfade time -> level shoots off the roof
 FIXME gamma diff on resize: don't conform images with target dimensions
 FIXME how to detect optimal -vo for mplayer?
