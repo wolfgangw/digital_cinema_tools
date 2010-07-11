@@ -384,7 +384,6 @@ end
 
 
 def fade( image, seconds, fps, level, step)
-  @logger.debug( "Fade frames level before loop: #{ level }" )
   ( 1..( seconds * fps ) ).each do
     filename = sequencefile
     @logger.cr( sprintf('%.2f', level) )
@@ -396,7 +395,6 @@ def fade( image, seconds, fps, level, step)
     level = step_level_and_round( level, step )
     @framecount += 1
   end
-  @logger.debug( "Fade frames level after loop: #{ level - step }" )
 end
 
 
@@ -436,7 +434,6 @@ def crossfade( image1, image2, fps, seconds )
     compress = ""
     depth = "-depth 8"
   end
-  @logger.debug( "Crossfade level before loop: #{ level }" )
   ( 1..( seconds * fps ) ).each do
     output = sequencefile
     @logger.cr( sprintf( '%.2f', level ) )
@@ -444,7 +441,6 @@ def crossfade( image1, image2, fps, seconds )
     level = step_level_and_round( level, step )
     @framecount += 1
   end
-  @logger.debug( "Crossfade level after loop: #{ level - step }" )
 end
 
 
