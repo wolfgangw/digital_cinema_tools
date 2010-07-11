@@ -42,21 +42,28 @@ class SequentialCandidate:
             column = []
             for row in splits:
                 # catch dangling ends of variable-sized split lists
-                if index > len( row ) - 1: # nothing left to pick up here
+                if index > len( row ) - 1:
                     column.append( '' )
                 else:
-                    column.append( row[ index ] )
-            continuous, order, step = self._test_continuity( column )
+                    if re.match( '\d+', row[ index ] ):
+                        numerical = True
+                        column.append( row[ index ] )
+                    else:
+                        numerical = False
+                        column.append( row[ index ] )
+            if numerical == True:
+                continuous, order, step = self._test_continuity( column )
+            else:
+                continuous = False
             if continuous == True:
                 self.sequence = True
                 self.orders.append( order )
                 self.composite += '[' + str( column[ 0 ] ) + '-' + str( column[ -1 ] ) + ']'
             else:
-                self.composite += str( column[ 0 ] )
-        if self.sequence == True:
-            pass #self.composite = self._mark_uuid( self.composite )
-        else:
-            self.composite = ''
+                if len( list( set( column ) ) ) == 1:
+                    self.composite += str( column[ 0 ] )
+                else:
+                    self.composite += '[GARBLED]'
         
     def _numeric_and_non_numeric_particles( self, token ):
         splits = re.split( '(\D+)', token )
@@ -64,29 +71,22 @@ class SequentialCandidate:
 
     def _test_continuity( self, sequence ):
         continuous = False
+        continuity_broken = False
         order = ''
         step = 0
-        continuity_broken = False
-        for element in sequence:
-            if re.match( '\d+', element ):
-                numerical = True
-            else:
-                numerical = False
+        initial_step = int( sequence[ 1 ] ) - int( sequence[ 0 ] )
+        for index, element in enumerate( sequence ):
+            if index == len( sequence ) - 1:
                 break
-        if numerical == True:
-            initial_step = int( sequence[ 1 ] ) - int( sequence[ 0 ] )
-            for index, element in enumerate( sequence ):
-                if index == len( sequence ) - 1:
+            else:
+                step = int( sequence[ index + 1 ] ) - int( sequence[ index ] )
+                if step == 0:
                     break
-                else:
-                    step = int( sequence[ index + 1 ] ) - int( sequence[ index ] )
-                    if step == 0:
-                        break
-                    elif step == initial_step:
-                        continue
-                    elif step != initial_step:
-                        continuity_broken = True
-                        break
+                elif step == initial_step:
+                    continue
+                elif step != initial_step:
+                    continuity_broken = True
+                    break
         if ( step != 0 and continuity_broken == False ):
             continuous = True
             if step > 0:
@@ -111,13 +111,13 @@ class SequentialCandidate:
             print self.composite
         else:
             print "No numeric sequential streams found"
+            print self.composite
 
 class Usage( Exception ):
     def __init__( self, msg ):
         self.msg = msg
         
 def main( argv = None ):
-    # parse command line options
     try:
         try:
             opts, args = getopt.getopt( sys.argv[ 1: ], "h", ["help"] )
