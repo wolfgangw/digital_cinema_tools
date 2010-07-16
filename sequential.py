@@ -5,6 +5,7 @@ TODO: obj.<gaps>
     
 It creates a SequentialCandidate object which provides these attributes:
     obj.args:      List of processed strings
+    obj.number_of_args
     obj.sequence:  True|False (True if at least 1 continuous numeric sequential stream is found)
     obj.composite: Composite summary of obj.args with markers for numeric sequential streams and UUIDs
     obj.orders:    List of sequential stream directions
