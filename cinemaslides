@@ -368,41 +368,70 @@ end
 
 def fade_in( image, fps, fade_in_time )
   @logger.info( ">>> Fade in #{ imagecount_info( image ) }" )
-  level = -100
+  initial = -100.0
+  final = 0.0
   step = 100 / ( fade_in_time * fps )
-  level = _level( level, step )
-  fade( image, fade_in_time, fps, level, step )
+  fade( image, fade_in_time, fps, initial, final, step )
 end
 
 
 def fade_out( image, fps, fade_out_time )
   @logger.info( "<<< Fade out #{ imagecount_info( image ) }" )
-  level = 0
+  initial = 0.0
+  final = -100.0
   step = - ( 100 / ( fade_out_time * fps ) )
-  level = _level( level, step )
-  fade( image, fade_out_time, fps, level, step )
+  fade( image, fade_out_time, fps, initial, final, step )
 end
 
 
-def fade( image, seconds, fps, level, step)
-  ( 1..( seconds * fps ) ).each do
+def fade( image, seconds, fps, initial, final, step )
+  if step > 0
+    ladder = ( initial .. final ).step( step ).collect
+  else
+    ladder = ( final .. initial ).step( step.abs ).collect
+  end
+  levels = ladder.collect { |rung| sigmoid( rung, initial, final, -50, 0.125 ) }
+  level = levels[ 0 ]
+  ( 1..( seconds * fps ) ).each do |i|
     filename = sequencefile
-    @logger.cr( sprintf('%.2f', level) )
+    @logger.cr( sprintf( '%.2f', level ) )
     asset, todo = check_for_asset( image, @output_format, fps, level )
     if todo == TRUE
       convert_apply_level( image, level, asset )
     end
     File.symlink( asset, filename )
-    level = _level( level, step )
+    level = levels[ i -1 ]
     @framecount += 1
   end
 end
 
 
+def _level( level, step )
+  level += step
+end
+
+
+def sign( value )
+  return ( value.to_f / value.to_f.abs ).to_i
+end
+def sigmoid( value, initial, final, center, rate )
+  if initial > final
+    base = final
+  else
+    base = initial
+  end
+  return ( initial - final ).abs / ( 1.0 + Math.exp( rate * sign( final - initial ) * ( -( value - center ).to_f ) ) ) + base
+end
+
+
 def crossfade( image1, image2, fps, seconds )
   @logger.info( "XXX Crossfade #{ imagecount_info( image1 ) }" )
-  level = 100
+  initial = 100.0
+  final = 0.0
   step = - ( 100 / ( seconds * fps ) )
+  ladder = ( final .. initial ).step( step.abs ).collect
+  levels = ladder.collect { |rung| sigmoid( rung, initial, final, 50, 0.125 ) }
+  level = levels[ 0 ]
   case @output_type
   when "dcp"
     compress = "-compress none"
@@ -411,7 +440,7 @@ def crossfade( image1, image2, fps, seconds )
     compress = ""
     depth = "-depth 8"
   end
-  ( 1..( seconds * fps ) ).each do
+  ( 1..( seconds * fps ) ).each do |i|
     filename = sequencefile
     @logger.cr( sprintf( '%.2f', level ) )
     asset, todo = check_for_asset( [ image1, image2 ], @output_format, fps, level )
@@ -419,7 +448,7 @@ def crossfade( image1, image2, fps, seconds )
       composite( image1, level, image2, depth, compress, asset )
     end
     File.symlink( asset, filename )
-    level = _level( level, step )
+    level = levels[ i - 1 ]
     @framecount += 1
   end
 end
@@ -447,27 +476,6 @@ def sequence_links_to_last_encoded_file( info, seconds, fps, file )
     File.symlink( file, link )
     @framecount += 1
   end
-end
-
-
-def _level( level, step )
-  level += step
-  #level = ( ( level + step ) * 10 ** 3 ).round.to_f / 10 ** 3
-end
-
-
-def sign( value )
-  return ( value.to_f / value.to_f.abs ).to_i
-end
-
-
-def sigmoid( value, initial, final, center, rate )
-  if initial > final
-    base = final
-  else
-    base = initial
-  end
-  return ( initial - final ).abs / ( 1.0 + Math.exp( rate * sign( final - initial ) * ( -( value - center ).to_f ) ) ) + base
 end
 
 
@@ -560,7 +568,7 @@ def convert_apply_level( image, level, filename )
         #{ fadetype( level ) } \
         -gamma 2.2 \
       #{ filename }`
-when "dcp" # -compress none for kakadu
+  when "dcp" # -compress none for kakadu
     `convert #{image} \
         -type TrueColor \
         -gamma 0.38461538461538458 \
