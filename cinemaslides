@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.07.07"
+CinemaSlidesVersion = "v0.2010.07.18"
 Author = "Wolfgang Woehl".freeze
 #
 # Run "cinemaslides -h" to see options
@@ -370,6 +370,7 @@ def fade_in( image, fps, fade_in_time )
   @logger.info( ">>> Fade in #{ imagecount_info( image ) }" )
   level = -100
   step = 100 / ( fade_in_time * fps )
+  level = _level( level, step )
   fade( image, fade_in_time, fps, level, step )
 end
 
@@ -378,7 +379,7 @@ def fade_out( image, fps, fade_out_time )
   @logger.info( "<<< Fade out #{ imagecount_info( image ) }" )
   level = 0
   step = - ( 100 / ( fade_out_time * fps ) )
-  level = step_level_and_round( level, step )
+  level = _level( level, step )
   fade( image, fade_out_time, fps, level, step )
 end
 
@@ -392,7 +393,7 @@ def fade( image, seconds, fps, level, step)
       convert_apply_level( image, level, asset )
     end
     File.symlink( asset, filename )
-    level = step_level_and_round( level, step )
+    level = _level( level, step )
     @framecount += 1
   end
 end
@@ -404,6 +405,7 @@ def full_level( image, fps, duration )
   file = sequencefile
   File.symlink( image, file )
   if ( 1 ..( duration * fps - 1 ) ).none? # only 1 image needed
+    @framecount += 1 # temporary fix for FIXME @framecount stumble (Errno::EEXIST) on first fade out frame with 0 or 1 frame full level settings, like with $ cinemaslides 01.jpg 02.jpg -x crossfade,1,0
     @logger.debug( "Skip sequence links: Only 1 image needed here" )
   else
     @framecount += 1
@@ -438,14 +440,15 @@ def crossfade( image1, image2, fps, seconds )
     output = sequencefile
     @logger.cr( sprintf( '%.2f', level ) )
     composite( image1, level, image2, depth, compress, output )
-    level = step_level_and_round( level, step )
+    level = _level( level, step )
     @framecount += 1
   end
 end
 
 
-def step_level_and_round( level, step )
-  level = ( ( level + step ) * 10 ** 5 ).round.to_f / 10 ** 5
+def _level( level, step )
+  level += step
+  #level = ( ( level + step ) * 10 ** 3 ).round.to_f / 10 ** 3
 end
 
 
@@ -1052,6 +1055,9 @@ end # End Create DCP
 
 
 TODO = <<TODO
+FIXME max number of commandline args 32768
+FIXME @framecount stumble (Errno::EEXIST) on first fade out frame with 0 or 1 frame full level settings, like with $ cinemaslides 01.jpg 02.jpg -x crossfade,1,0 (see temporary fix in full_level())
+FIXME fades' symmetry broken
 FIXME verbosity level info -> jpeg 2000 encoder talk
 FIXME crossfades border case: 0.0416666666666667 (1/24) crossfade time -> level shoots off the roof
 FIXME gamma diff on resize: don't conform images with target dimensions
