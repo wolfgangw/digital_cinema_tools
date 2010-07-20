@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.07.18"
+CinemaSlidesVersion = "v0.2010.07.20"
 Author = "Wolfgang Woehl".freeze
 #
 # Run "cinemaslides -h" to see options
@@ -533,8 +533,8 @@ def convert_resize_extent_color_specs( image, filename )
         -background black \
         -gravity center \
         -extent #{ @dimensions } \
-        -depth 8 \
         -gamma 2.2 \
+        -depth 8 \
       #{ filename }`
   # kakadu needs uncompressed 12bpc files # FIXME dep compress on options.encoder
   when "dcp"
@@ -547,8 +547,8 @@ def convert_resize_extent_color_specs( image, filename )
         -gravity center \
         -extent #{ @dimensions } \
         -recolor '#{ SRGB_TO_XYZ }' \
-        -depth 12 \
         -gamma 2.6 \
+        -depth 12 \
         -compress none \
       #{ filename }`
   else # hello typo
@@ -573,8 +573,8 @@ def convert_apply_level( image, level, filename )
         -type TrueColor \
         -gamma 0.38461538461538458 \
         #{ fadetype( level ) } \
-        -depth 12 \
         -gamma 2.6 \
+        -depth 12 \
         -compress none \
       #{ filename }`
   end
@@ -1057,8 +1057,8 @@ FIXME how to detect optimal -vo for mplayer?
 FIXME crossfade,5,0 [5 images] -> 720 frames intended 725 frames created
 FIXME cinemaslides multipage.pdf is somewhat borked because of assets creation (name), conforms to <digest>_<dimensions>_-<page_number>.jpg
       which won't fly at pickup time
-FIXME montage preview needs a border around thumbs (for white backgrounds of images etc.). Not working
 
+FEATURE option to request linear/s-curved/... transitions for comparison (well, for showing off, basically, how nice the sigmoid function works for transitions)
 FEATURE sparse assets via minimum mxfs and playlists
 FEATURE audio
 FEATURE 3D
@@ -1068,6 +1068,9 @@ FEATURE transition times and duration are global. make them file specific
 FEATURE DCP naming conventions
 FEATURE MPEG MXFI
 
+CODE during jpeg 2000 encodng check for "file repetition" in the conformdir instead of pinging every full level file over and over in check_for_asset() (this used to work with 
+     the old way the conformdir was organised: repeated files, i.e. full level files, were links pointing to a file _within_ the conformdir. now all files are links 
+     to the asset depot -- outside the conformdir. remembering the previous file and checking for equality should do it again.
 CODE slideshow objects
 CODE dry out black header/tail
 CODE report method (also generalize transition types and timings)
