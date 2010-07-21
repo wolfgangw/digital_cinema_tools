@@ -1068,7 +1068,7 @@ FEATURE transition times and duration are global. make them file specific
 FEATURE DCP naming conventions
 FEATURE MPEG MXFI
 
-CODE during jpeg 2000 encodng check for "file repetition" in the conformdir instead of pinging every full level file over and over in check_for_asset() (this used to work with 
+CODE during jpeg 2000 encoding check for "file repetition" in the conformdir instead of pinging every full level file over and over in check_for_asset() (this used to work with 
      the old way the conformdir was organised: repeated files, i.e. full level files, were links pointing to a file _within_ the conformdir. now all files are links 
      to the asset depot -- outside the conformdir. remembering the previous file and checking for equality should do it again.
 CODE slideshow objects
