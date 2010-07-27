@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.07.20"
+CinemaSlidesVersion = "v0.2010.07.27"
 Author = "Wolfgang Woehl".freeze
 #
 # Run "cinemaslides -h" to see options
@@ -48,6 +48,7 @@ class Optparser
     # defaults
     options = OpenStruct.new
     options.output_type = 'preview'
+    options.output_type_choices = [ 'preview', 'fullpreview', 'dcp' ]
     options.size = '2k'
     options.size_choices = [ '2k', '4k' ]
     options.aspect = 'flat'
@@ -55,7 +56,7 @@ class Optparser
     options.aspect_malformed = FALSE
     options.fps = 24.0
     options.fps_dcp_choices = [ 24.0, 48.0 ]
-    options.fps_asdcp_choices = [ 23.976, 24.0, 25.0, 30.0, 48.0, 50.0, 60.0 ]
+    options.fps_asdcp_choices = [ 23.976, 24.0, 25.0, 30.0, 48.0, 50.0, 60.0 ] # 24000/1001 not DCI compliant but shows up in asdcplib. Why?
     options.encoder = 'openjpeg'
     options.encoder_choices = [ 'openjpeg', 'kakadu' ]
     options.output_format = 'jpg'
@@ -84,7 +85,11 @@ Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>
 BANNER
 
       opts.on("-t", "--type type", String, "Use 'preview' (half size) or 'fullpreview' (full size) or 'dcp' (Default: preview)") do |p|
-        options.output_type = p.downcase
+        if options.output_type_choices.include?( p.downcase )
+          options.output_type = p.downcase
+        else
+          options.output_type = 'catch:' + p
+        end
       end
       opts.on("-k", "--size resolution", String, "Use '2k' or '4k' (Default: 2k)") do |p|
         if options.size_choices.include?( p.downcase )
@@ -385,29 +390,29 @@ end
 
 
 def fade( image, seconds, fps, initial, final, step )
-  if step > 0
+  if step > 0 # fade in
     ladder = ( initial .. final ).step( step ).collect
-  else
+  else # fade out
     ladder = ( final .. initial ).step( step.abs ).collect
   end
   levels = ladder.collect { |rung| sigmoid( rung, initial, final, -50, 0.125 ) }
-  level = levels[ 0 ]
+  @logger.debug( "levels: #{levels.inspect}" )
+  #
+  # levels has 1 element more than the number of steps provided by the following range
+  # so the last element never gets applied -- 
+  # hence the shifted fade symmetry (by 1 step).
+  # 
   ( 1..( seconds * fps ) ).each do |i|
     filename = sequencefile
+    level = levels[ i - 1 ]
     @logger.cr( sprintf( '%.2f', level ) )
     asset, todo = check_for_asset( image, @output_format, fps, level )
     if todo == TRUE
       convert_apply_level( image, level, asset )
     end
     File.symlink( asset, filename )
-    level = levels[ i -1 ]
     @framecount += 1
   end
-end
-
-
-def _level( level, step )
-  level += step
 end
 
 
@@ -431,7 +436,6 @@ def crossfade( image1, image2, fps, seconds )
   step = - ( 100 / ( seconds * fps ) )
   ladder = ( final .. initial ).step( step.abs ).collect
   levels = ladder.collect { |rung| sigmoid( rung, initial, final, 50, 0.125 ) }
-  level = levels[ 0 ]
   case @output_type
   when "dcp"
     compress = "-compress none"
@@ -442,13 +446,13 @@ def crossfade( image1, image2, fps, seconds )
   end
   ( 1..( seconds * fps ) ).each do |i|
     filename = sequencefile
+    level = levels[ i - 1 ]
     @logger.cr( sprintf( '%.2f', level ) )
     asset, todo = check_for_asset( [ image1, image2 ], @output_format, fps, level )
     if todo == TRUE
       composite( image1, level, image2, depth, compress, asset )
     end
     File.symlink( asset, filename )
-    level = levels[ i - 1 ]
     @framecount += 1
   end
 end
@@ -650,13 +654,18 @@ when FALSE
   end
 end
 
-m = options.size.match(/catch:(.*)/)
+m = options.size.match( /catch:(.*)/ )
 unless m.nil? 
   if m[1] == 'eep'
     @logger.info( "Optparser tango, did you mean to say --keep?" )
   else
     @logger.info( "Can't understand -k's parameter" )
   end
+  exit
+end
+m = options.output_type.match( /catch:(.*)/ )
+unless m.nil?
+  @logger.info( "Specify output type: preview, fullpreview or dcp" )
   exit
 end
 
@@ -751,9 +760,14 @@ if @output_type == "dcp"
   else
     @encoder_id = 'xxx' # FIXME
   end
-  unless options.fps_dcp_choices.include?( options.fps )
-    @logger.critical( "Not yet implemented: #{ options.fps } fps" )
-    exit
+  if ! options.fps_dcp_choices.include?( options.fps )
+    if options.fps_asdcp_choices.include?( options.fps )
+      @logger.critical( "DCI compliant framerate but not yet implemented in #{ File.basename( $0 ) }: #{ options.fps } fps" )
+      exit
+    else
+      @logger.critical( "Not a DCI compliant framerate: #{ options.fps } fps" )
+      exit
+    end
   end
   @logger.debug( "DCP related options ok" )
 end
@@ -886,7 +900,7 @@ Dir.mkdir( @workdir )
 Dir.mkdir( @conformdir )
 
 
-# black leader
+# Create black leader
 if options.black > 0
   @logger.info( "Black header: #{ options.black } seconds" )
   blackfile = sequencefile
@@ -895,7 +909,7 @@ if options.black > 0
   sequence_links_to_last_encoded_file( "black", options.black, fps, blackfile )
 end
 
-### all images
+# Process all images
 keeper = nil # keep a conform for the next crossfade (2nd will be 1st then, don't conform again)
 @source.each_index do |index|
   case options.transition_and_timing.first
@@ -927,7 +941,7 @@ keeper = nil # keep a conform for the next crossfade (2nd will be 1st then, don'
   end
 end
 
-# black tail
+# Create black tail
 if options.black > 0
   @logger.info( "Black tail: #{ options.black } seconds" )
   filename = sequencefile
@@ -986,23 +1000,30 @@ when "dcp"
     kakadu_cinema_profile = "CINEMA4K"
     openjpeg_cinema_profile = "cinema4K"
   end
+  
   counter = 0
-  last_encoded_file = ""
+  previous_asset = ""
   
   files.each do |file|
     counter += 1
-    last_encoded_file = file + ".j2c"
-    asset, todo = check_for_asset( file, "j2c", fps )
-    if todo == TRUE
-      @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
-      case options.encoder
-      when 'openjpeg'
-        `image_to_j2k -#{ openjpeg_cinema_profile } -i #{ file } -o #{ asset } > /dev/null 2>&1`
-      when 'kakadu'
-        `kdu_compress -i #{ file } -o #{ asset } Sprofile=#{ kakadu_cinema_profile } Creslengths=#{ max_bytes_per_image } Creslengths:C0=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C1=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C2=#{ max_bytes_per_image },#{ max_bytes_per_component }`
+    asset_link = file + ".j2c"
+    if File.dirname( File.readlink( file ) ) == @conformdir # 1st file is always a link to the asset depot
+      File.link( previous_asset, asset_link )
+      @logger.cr( "Skip (Full level): #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
+    else
+      asset, todo = check_for_asset( file, "j2c", fps ) # possible "Skip" message only with debug verbosity
+      previous_asset = asset
+      if todo == TRUE
+        @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
+        case options.encoder
+        when 'openjpeg'
+          `image_to_j2k -#{ openjpeg_cinema_profile } -i #{ file } -o #{ asset } > /dev/null 2>&1`
+        when 'kakadu'
+          `kdu_compress -i #{ file } -o #{ asset } Sprofile=#{ kakadu_cinema_profile } Creslengths=#{ max_bytes_per_image } Creslengths:C0=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C1=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C2=#{ max_bytes_per_image },#{ max_bytes_per_component }`
+        end
       end
+      File.link( asset, asset_link )
     end
-    File.link( asset, last_encoded_file )
   end
 
   `mv #{ File.join( @conformdir, '*.j2c' ) } #{ @j2cdir }`
@@ -1068,9 +1089,6 @@ FEATURE transition times and duration are global. make them file specific
 FEATURE DCP naming conventions
 FEATURE MPEG MXFI
 
-CODE during jpeg 2000 encoding check for "file repetition" in the conformdir instead of pinging every full level file over and over in check_for_asset() (this used to work with 
-     the old way the conformdir was organised: repeated files, i.e. full level files, were links pointing to a file _within_ the conformdir. now all files are links 
-     to the asset depot -- outside the conformdir. remembering the previous file and checking for equality should do it again.
 CODE slideshow objects
 CODE dry out black header/tail
 CODE report method (also generalize transition types and timings)
