@@ -332,11 +332,11 @@ def width_x_height
   @logger.debug( "Container: #{ container_width } x #{ container_height } (1k multiplier: #{ container_multiplier })" )
   case @aspect
   when 'flat' # 1.85 : 1
-    width, height = 999, 540
-  when 'scope' # 2.39 : 1 (2.38694638694639)
-    width, height = 1024, 429
-  when 'hd' # 1.77 : 1 (1.77777777777778)
-    width, height = 960, 540
+    width, height = 999, 540 # 1.85
+  when 'scope' # 2.39 : 1
+    width, height = 1024, 429 # 2.38694638694639
+  when 'hd' # 1.77 : 1
+    width, height = 960, 540 # 1.77777777777778
   else # Custom aspect ratio
     custom_width, custom_height = @aspect.split( 'Custom aspect ratio:' ).last.split( 'x' )
     width, height = scale_to_fit_container( custom_width.to_f, custom_height.to_f, container_width, container_height )
@@ -348,13 +348,27 @@ def width_x_height
 end
 
 
-def make_black_frame( filename )
-  case @output_type
-  when 'preview', 'fullpreview'
-    `convert -type TrueColor -size #{ @dimensions } xc:black -depth 8 #{ filename }`
-  when 'dcp'
-    `convert -type TrueColor -size #{ @dimensions } xc:black -depth 12 #{ filename }`
+def make_black_sequence( info, duration, fps )
+  @logger.info( "Black #{ info }: #{ duration } seconds" )
+  blackfile = sequencefile
+  make_black_frame( blackfile, fps )
+  @framecount += 1
+  sequence_links_to( blackfile, duration, fps )
+end
+
+
+def make_black_frame( filename, fps )
+  black_asset = File.join( @assetsdir, 'black.' + @output_format )
+  asset, todo = check_for_asset( black_asset, @output_format, fps )
+  if todo == TRUE
+    case @output_type
+    when 'preview', 'fullpreview'
+      `convert -type TrueColor -size #{ @dimensions } xc:black -depth 8 #{ asset }`
+    when 'dcp'
+      `convert -type TrueColor -size #{ @dimensions } xc:black -depth 12 #{ asset }`
+    end
   end
+  File.symlink( asset, filename )
 end
 
 
@@ -468,12 +482,12 @@ def full_level( image, fps, duration )
     @logger.debug( "Skip sequence links: Only 1 image needed here" )
   else
     @framecount += 1
-    sequence_links_to_last_encoded_file( "full", duration, fps, file )
+    sequence_links_to( file, duration, fps )
   end
 end
 
 
-def sequence_links_to_last_encoded_file( info, seconds, fps, file )
+def sequence_links_to( file, seconds, fps )
   ( 1..( seconds * fps - 1 ) ).each do # 1 file already written
     link = sequencefile
     # FIXME link available on all platforms?
@@ -586,7 +600,9 @@ end
 
 
 def fadetype( level )
-  "-modulate #{ level + 100 },#{ level + 100 }"
+  "-fill black -colorize #{ level.abs }"
+  #"-modulate #{ level + 100 },#{ level + 100 }" # second parameter is saturation. this one has channel clipping issues
+  #"-modulate #{ level + 100 } -blur 0x#{ level }" # experiment, color starvation -> heavy banding
   #"-brightness-contrast #{ level }x#{ level }" # not in ubuntu 10.04's im 6.5.7-8
 end
 
@@ -902,11 +918,7 @@ Dir.mkdir( @conformdir )
 
 # Create black leader
 if options.black > 0
-  @logger.info( "Black header: #{ options.black } seconds" )
-  blackfile = sequencefile
-  make_black_frame( blackfile )
-  @framecount += 1
-  sequence_links_to_last_encoded_file( "black", options.black, fps, blackfile )
+  make_black_sequence( 'leader', options.black, fps)
 end
 
 # Process all images
@@ -943,11 +955,7 @@ end
 
 # Create black tail
 if options.black > 0
-  @logger.info( "Black tail: #{ options.black } seconds" )
-  filename = sequencefile
-  File.symlink( blackfile, filename )
-  @framecount += 1
-  sequence_links_to_last_encoded_file( "black", options.black, fps, blackfile )
+  make_black_sequence( 'tail', options.black, fps )
 end
 ###
 
@@ -1028,30 +1036,33 @@ when "dcp"
 
   `mv #{ File.join( @conformdir, '*.j2c' ) } #{ @j2cdir }`
   
-  @logger.info( "Write image trackfile ..." )
+  # Make image trackfile
+  @logger.info( "Write image trackfile" )
   slidesmxf_uuid = `kmuuidgen -n`
   `asdcp-test -L -E -p #{ fps } -a #{ slidesmxf_uuid } -c #{ tmp_slidesmxf } #{ @j2cdir } > /dev/null 2>&1`
   @logger.debug( "trackfile uuid: #{ slidesmxf_uuid }" )
   slidesmxf = File.join( File.dirname( tmp_slidesmxf ), "j2c_" + slidesmxf_uuid + "_.mxf" )
   File.rename( tmp_slidesmxf, slidesmxf )
 
+  # Write CompositionPlaylist
   @logger.info( "Write CPL" )
   `mkcpl --kind test --norating --title '#{ options.title } #{ timestamp }' --annotation '#{ options.annotation } #{ timestamp }' --issuer '#{ options.issuer }' #{ slidesmxf } > #{ tmp_cpl }`
-  
   cpl_uuid = Nokogiri::XML( File.open( tmp_cpl ) ).xpath( "//xmlns:CompositionPlaylist/xmlns:Id" ).text.split( 'urn:uuid:' ).last
   @logger.debug( "cpl uuid      : #{ cpl_uuid }" )
   cpl = File.join( File.dirname( tmp_cpl ), "cpl_" + cpl_uuid + "_.xml" )
   File.rename( tmp_cpl, cpl )
 
+  # Write PackingList
   @logger.info( "Write PKL" )
-  `mkpkl --issuer '#{ options.issuer }' --annotation '#{ options.annotation } #{ timestamp }' #{ slidesmxf } #{ cpl } > #{ tmp_pkl }`
-
+  `mkpkl --issuer '#{ options.issuer }' --annotation '#{ options.annotation } #{ timestamp }' #{ cpl } #{ slidesmxf } > #{ tmp_pkl }`
   pkl_uuid = Nokogiri::XML( File.open( tmp_pkl ) ).xpath( "//xmlns:PackingList/xmlns:Id" ).text.split( 'urn:uuid:' ).last
   @logger.debug( "pkl uuid      : #{ pkl_uuid }" )
   pkl = File.join( File.dirname( tmp_pkl ), "pkl_" + pkl_uuid + "_.xml" )
   File.rename( tmp_pkl, pkl)
+  
+  # Write Assetmap
   @logger.info( "Write ASSETMAP and VOLINDEX" )
-  `cd #{ @dcpdir }; mkmap --issuer '#{ options.issuer }' #{ File.basename( slidesmxf ) } #{ File.basename( cpl ) } #{ File.basename( pkl ) }`
+  `cd #{ @dcpdir }; mkmap --issuer '#{ options.issuer }' #{ File.basename( cpl ) } #{ File.basename( pkl ) } #{ File.basename( slidesmxf ) }`
 
   # FIXME report -> dry out
   # report
