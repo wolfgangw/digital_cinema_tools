@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 CinemaSlidesVersion = "v0.2010.08.01"
-Author = "Wolfgang Woehl".freeze
+Author = "Wolfgang Woehl"
+#
+# Cinemaslides is a glue tool to create slideshows for digital cinema
 #
 # Run "cinemaslides -h" to see options
 #
@@ -409,7 +411,15 @@ def fade( image, seconds, fps, initial, final, step )
   else # fade out
     ladder = ( final .. initial ).step( step.abs ).collect
   end
+  ladder[ -1 ] = 0 # sic. float implementation, tighten the nut
   levels = ladder.collect { |rung| sigmoid( rung, initial, final, -50, 0.125 ) }
+  if levels.first < -50
+    levels[ 0 ] = -100
+    levels[ -1 ] = 0
+  else
+    levels[ 0 ] = 0
+    levels[ -1 ] = -100
+  end
   @logger.debug( "levels: #{levels.inspect}" )
   #
   # levels has 1 element more than the number of steps provided by the following range
@@ -601,7 +611,7 @@ end
 
 def fadetype( level )
   "-fill black -colorize #{ level.abs }"
-  #"-modulate #{ level + 100 },#{ level + 100 }" # second parameter is saturation. this one has channel clipping issues
+  #"-modulate #{ level + 100 }"#,#{ level + 100 }" # second parameter is saturation. this one has channel clipping issues
   #"-modulate #{ level + 100 } -blur 0x#{ level }" # experiment, color starvation -> heavy banding
   #"-brightness-contrast #{ level }x#{ level }" # not in ubuntu 10.04's im 6.5.7-8
 end
