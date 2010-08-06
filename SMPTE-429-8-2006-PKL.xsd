@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema targetNamespace="http://www.smpte-ra.org/schemas/429-8/2007/PKL"
-  xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
-  xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  xmlns:pkl="http://www.smpte-ra.org/schemas/429-8/2007/PKL" elementFormDefault="qualified" attributeFormDefault="unqualified">
+<xs:schema targetNamespace="http://www.smpte-ra.org/schemas/429-8/2007/PKL" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:pkl="http://www.smpte-ra.org/schemas/429-8/2007/PKL" elementFormDefault="qualified" attributeFormDefault="unqualified">
+
   <xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="http://www.w3.org/TR/2002/REC-xmldsig-core-20020212/xmldsig-core-schema.xsd"/>
   <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/03/xml.xsd"/>
 

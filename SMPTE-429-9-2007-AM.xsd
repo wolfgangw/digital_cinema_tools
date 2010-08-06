@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema targetNamespace="http://www.smpte-ra.org/schemas/429-9/2007/AM"
-  xmlns:am="http://www.smpte-ra.org/schemas/429-9/2007/AM"
-  xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+<xs:schema targetNamespace="http://www.smpte-ra.org/schemas/429-9/2007/AM" xmlns:am="http://www.smpte-ra.org/schemas/429-9/2007/AM" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
 
   <xs:simpleType name="UUID">
     <xs:restriction base="xs:anyURI">
