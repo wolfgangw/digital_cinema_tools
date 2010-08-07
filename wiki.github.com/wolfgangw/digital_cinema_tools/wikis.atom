@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xml:lang="en-US" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom">
+  <id>tag:wiki.github.com,2008:/wolfgangw/digital_cinema_tools/wikis</id>
+  <link type="text/html" rel="alternate" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/home"/>
+  <link type="application/atom+xml" rel="self" href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"/>
+  <title>digital_cinema_tools: Recent Wiki Updates</title>
+  <updated>2010-08-06T23:28:30-07:00</updated>
+  <entry>
+    <id>tag:wiki.github.com,2008:Wiki/514368</id>
+    <published>2010-08-07T05:47:36-07:00</published>
+    <updated>2010-08-06T23:28:30-07:00</updated>
+    <link type="text/html" rel="alternate" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/mystery-meat"/>
+    <title>Mystery Meat</title>
+    <updated>Fri Aug 06 23:28:30 -0700 2010</updated>
+    <published>Sat Aug 07 05:47:36 -0700 2010</published>
+    <content type="html">&lt;p&gt;&lt;code&gt;2010 Aug 07&lt;/code&gt; &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-430-3-2008-ETM.xsd&quot;&gt;&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-430-3-2008-&lt;span class=&quot;caps&quot;&gt;ETM&lt;/span&gt;.xsd&lt;/a&gt; and &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-430-1-2006-Amd-1-2009-KDM.xsd&quot;&gt;&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-430-1-2006-Amd-1-2009-&lt;span class=&quot;caps&quot;&gt;KDM&lt;/span&gt;.xsd&lt;/a&gt; (including a correction from &lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-Amendment-1-2009) are the normative &lt;span class=&quot;caps&quot;&gt;XML&lt;/span&gt; Schema documents to test key delivery messages (&lt;span class=&quot;caps&quot;&gt;KDM&lt;/span&gt;) for well-formedness and &lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; compliance.  Use &lt;code&gt;schema-check&lt;/code&gt; from DCI&amp;#8217;s &lt;a href=&quot;http://www.dcimovies.com/DCI_CTP_v1_1.pdf&quot;&gt;Compliance Test Plan v1.1&lt;/a&gt; to perform those tests.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;2010 Jul 30&lt;/code&gt; &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-429-7-2006-CPL.xsd&quot;&gt;&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-429-7-2006-&lt;span class=&quot;caps&quot;&gt;CPL&lt;/span&gt;.xsd&lt;/a&gt;, &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-429-8-2006-PKL.xsd&quot;&gt;&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-429-8-2006-&lt;span class=&quot;caps&quot;&gt;PKL&lt;/span&gt;.xsd&lt;/a&gt; and &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-429-9-2007-AM.xsd&quot;&gt;&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-429-9-2007-AM.xsd&lt;/a&gt; are the normative &lt;span class=&quot;caps&quot;&gt;XML&lt;/span&gt; Schema documents to test composition playlists (&lt;span class=&quot;caps&quot;&gt;CPL&lt;/span&gt;), packing lists (&lt;span class=&quot;caps&quot;&gt;PKL&lt;/span&gt;) and asset mapping (&lt;span class=&quot;caps&quot;&gt;ASSETMAP&lt;/span&gt;, &lt;span class=&quot;caps&quot;&gt;VOLINDEX&lt;/span&gt;) files for well-formedness and &lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; compliance. Use &lt;code&gt;schema-check&lt;/code&gt; from DCI&amp;#8217;s &lt;a href=&quot;http://www.dcimovies.com/DCI_CTP_v1_1.pdf&quot;&gt;Compliance Test Plan v1.1&lt;/a&gt; to perform those tests.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;2010 Jul 8&lt;/code&gt; One of the problems when handling image sequences is making sure a given set of files actually is a continuous sequence. See &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/sequential.py&quot;&gt;sequential.py&lt;/a&gt; for a demo script.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;2010 Jun 6&lt;/code&gt; &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/raw/master/dcp_s429-5_test.tar&quot;&gt;Tiny &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; to test &lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; 429-5 compliance (Subtitle trackfiles) on servers&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;2010 May 26&lt;/code&gt; See &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides&quot;&gt;Cinemaslides&lt;/a&gt; for notes on a pet project of mine: A commandline tool to build cinema slideshows. Initial alpha v0 to test and play. It&amp;#8217;d be cool to hear how this works for you and the random material you throw at it.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;2010 Mar 14&lt;/code&gt; See &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/opencinematools-mpeg2_support.diff&quot;&gt;patch&lt;/a&gt; (and &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/mpeg2-essence-support-for-opencinematools-112&quot;&gt;how to apply it&lt;/a&gt;) for MPEG2 essence support for &lt;a href=&quot;http://code.google.com/p/opencinematools/&quot;&gt;opencinematools 1.1.2&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;2010 Feb 26&lt;/code&gt; See &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/rec709-xyz_matrix.rb&quot;&gt;rec709-xyz_matrix.rb&lt;/a&gt; for a script to calculate the 3&amp;#215;3 matrix needed to transform &lt;span class=&quot;caps&quot;&gt;ITU&lt;/span&gt; &lt;span class=&quot;caps&quot;&gt;REC&lt;/span&gt;. 709 to &lt;span class=&quot;caps&quot;&gt;XYZ&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;2010 Feb 21&lt;/code&gt; See &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline&quot;&gt;Open source tools for a digital cinema pipeline&lt;/a&gt; for a sort-of step-by-step &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; pipeline.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;2010 Jan 17&lt;/code&gt; You&amp;#8217;re looking at an initial commit to the repository. Right now there is &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/chromatic_adaptation.rb&quot;&gt;chromatic_adaptation.rb&lt;/a&gt; to play with chromatic adaptation numbers. This might be useful when targeting a specific white gamut of digital cinema projectors. See &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut&quot;&gt;White Gamut&lt;/a&gt; for some notes on the problem.&lt;/p&gt;</content>
+    <media:thumbnail url="http://www.gravatar.com/avatar/7d5278537426ee8ad94d2ae71e6df1f8?s=30&amp;d=http%3A%2F%2Fgithub.com%2Fimages%2Fgravatars%2Fgravatar-140.png"/>
+    <author>
+      <name>wolfgangw</name>
+    </author>
+  </entry>
+  <entry>
+    <id>tag:wiki.github.com,2008:Wiki/739120</id>
+    <published>2010-08-07T05:47:36-07:00</published>
+    <updated>2010-08-04T06:19:14-07:00</updated>
+    <link type="text/html" rel="alternate" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/cinemaslides"/>
+    <title>Cinemaslides</title>
+    <updated>Wed Aug 04 06:19:14 -0700 2010</updated>
+    <published>Sat Aug 07 05:47:36 -0700 2010</published>
+    <content type="html">&lt;p&gt;&lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/cinemaslides&quot;&gt;Cinemaslides&lt;/a&gt; is a commandline-tool to build slideshows and pack them up as &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema&quot; title=&quot;DCPs&quot;&gt;digital cinema packages&lt;/a&gt;. It has preview modes to check how transitions (fades, crossfades, cuts) and timings play out. It &amp;#8212; or rather &lt;a href=&quot;http://www.imagemagick.org/script/index.php&quot;&gt;ImageMagick&lt;/a&gt;, source of endless awesomeness &amp;#8212; conforms a wide range of image types to cinema specs and tries to be smart and fast (Couple of todo&amp;#8217;s lurking right there).&lt;/p&gt;
+&lt;p&gt;Technically, it&amp;#8217;s a ruby script acting as glue and organizer between a number of tools: CineCert&amp;#8217;s/John Hurst&amp;#8217;s reference implementation for AS-&lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; file access &lt;a href=&quot;http://www.cinecert.com/asdcplib/&quot;&gt;asdcplib&lt;/a&gt;, ImageMagick, MPlayer, OpenJPEG / Kakadu (which is available for demonstration purposes), opencinematools and bash.&lt;/p&gt;
+&lt;p&gt;Cinemaslides provides a basic set of transitions: Cuts, Fades and Crossfades. The latter step through a sigmoid function which creates a much nicer look than linear transitioning. (If you love fades make sure to watch Almod&#243;var&amp;#8217;s &lt;em&gt;Los abrazos rotos&lt;/em&gt;)&lt;br /&gt;
+By the way: As of now (v0.2010.08.01) there&amp;#8217;s no black fill between fades. Which is a problem when you watch fades in a dark theater on a big screen because human vision tends to &amp;#8220;burn in&amp;#8221; images. The darker the environment the stronger the effect, it seems. I&amp;#8217;m thinking about a solid algorithm to automatically provide that fill (possibly in relation to fade-out duration). Coming up.&lt;/p&gt;
+&lt;p&gt;Cinemaslides checks for and tells you about missing tools. It stores assets (frames that were cpu-expensive to create) in a depot and picks them up when they&amp;#8217;re eventually needed again. Instead of copying files it links to files whenever it makes sense.&lt;/p&gt;
+&lt;p&gt;One thing that bugs me about it: For now cinemaslides creates full-length trackfiles which is kind of nuts for slideshows. One way to reduce size is to use &lt;em&gt;sparse assets&lt;/em&gt; &amp;#8212; minimum-length trackfiles (1 second each) or one store-all trackfile with minimum-length runs for each slide &amp;#8212; and to reference those via reels for the full-length run of each slide.&lt;/p&gt;
+&lt;p&gt;Another idea is to merely build new composition playlists targeting &lt;em&gt;fat&lt;/em&gt; slideshow essence already ingested on a cinema server. Like daily remixes.&lt;/p&gt;
+&lt;p&gt;And yet another way would be what Terrence Meiczinger casually &lt;a href=&quot;http://reduser.net/forum/showthread.php?p=607408#post607408&quot;&gt;mentions&lt;/a&gt; on &lt;a href=&quot;http://reduser.net/forum/showthread.php?t=33118&quot;&gt;Digital Cinema Package&lt;/a&gt; (an extensive thread on &lt;a href=&quot;http://reduser.net/forum/index.php&quot;&gt;reduser&lt;/a&gt; that&amp;#8217;s about to linger into its 2nd year):&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;I wonder if slideshows could also be achieved using timed-text tracks.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;That should be quite elegant, indeed. 8 bpc only, though.&lt;/p&gt;
+&lt;p&gt;Something to get you started:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;cinemaslides --help&lt;/code&gt; to learn about options and parameters.&lt;br /&gt;
+&lt;code&gt;cinemaslides --examples&lt;/code&gt; to see a couple of example invocations.&lt;br /&gt;
+&lt;code&gt;cinemaslides -m -t dcp -k 2k -a scope -b 10 -x crossfade,1,5 -j openjpeg image1 image2 image3 ...&lt;/code&gt; displays a montage summary to check resizes and goes on to create a 2K Scope &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; with 10 seconds black leader/tail and crossfades for 1 second between all 5 second slides.&lt;br /&gt;
+&lt;code&gt;cinemaslides -t dcp -x fade,0,0.0416666666666667,0 motion_sequence/&lt;/code&gt; works, too, in a sort of bass-ackwards way.&lt;/p&gt;</content>
+    <media:thumbnail url="http://www.gravatar.com/avatar/7d5278537426ee8ad94d2ae71e6df1f8?s=30&amp;d=http%3A%2F%2Fgithub.com%2Fimages%2Fgravatars%2Fgravatar-140.png"/>
+    <author>
+      <name>wolfgangw</name>
+    </author>
+  </entry>
+  <entry>
+    <id>tag:wiki.github.com,2008:Wiki/517808</id>
+    <published>2010-08-07T05:47:36-07:00</published>
+    <updated>2010-07-19T11:02:27-07:00</updated>
+    <link type="text/html" rel="alternate" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/notes-on-dci-specification-and-related-smpte-papers"/>
+    <title>Notes on DCI specification and related SMPTE papers</title>
+    <updated>Mon Jul 19 11:02:27 -0700 2010</updated>
+    <published>Sat Aug 07 05:47:36 -0700 2010</published>
+    <content type="html">&lt;ul&gt;
+	&lt;li&gt;[&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-429-2-2009, Composition Playlist Constraints (9.11)]: &amp;#8220;The Hash element shall be present in an asset when the KeyId element is present (i.e., when the referenced Track File is encrypted).&amp;#8221;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ul&gt;
+	&lt;li&gt;Theater black: &amp;#8220;&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; 431-24 assumes a theater black of 0.024 cd/m&#178;&amp;#8221;&lt;br /&gt;
+Gamma: &amp;quot;It is important to note that the selection of the value 2.6 has nothing to do with the physics or electronics of any display device. The decision was made based on the ability to encode the luminance values at a modulation that will not limit the quality of the encoded images. Although the emphasis has been on a 5000:1 sequential contrast, the gamma value of 2.6 will not be a limiting factor in image quality, even if a future projector were to reach a sequential contrast of 1,000,000:1&lt;br /&gt;
+Source: &lt;a href=&quot;http://www.smpte.org/journal/?p=2652&quot;&gt;Color Processing for Digital Cinema 1: Background, Encoding and Decoding Equations, Encoding Primaries, and the Exponent 1/2.6&lt;/a&gt; by Thomas O. Maier&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ul&gt;
+	&lt;li&gt;The Key Delivery Message (&lt;span class=&quot;caps&quot;&gt;KDM&lt;/span&gt;) is an &lt;span class=&quot;caps&quot;&gt;XML&lt;/span&gt; document that contains cryptographic information necessary to reproduce an encrypted composition. A &lt;span class=&quot;caps&quot;&gt;KDM&lt;/span&gt; also contains metadata about the cryptographic information, such as the validity period and the associated Composition Playlist (&lt;span class=&quot;caps&quot;&gt;CPL&lt;/span&gt;). The format of the &lt;span class=&quot;caps&quot;&gt;KDM&lt;/span&gt; file is specified by [&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-430-1-2006]. A &lt;span class=&quot;caps&quot;&gt;KDM&lt;/span&gt; is a type of Extra-Theater Message (&lt;span class=&quot;caps&quot;&gt;ETM&lt;/span&gt;), as specified by [&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-430-3-2008]. (&lt;a href=&quot;http://www.dcimovies.com/DCI_CTP_v1_1.pdf&quot;&gt;Digital Cinema System Specification &amp;#8212; Compliance Test Plan, 3.2. Key Delivery Message example&lt;/a&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ul&gt;
+	&lt;li&gt;[&lt;span class=&quot;caps&quot;&gt;DCIP&lt;/span&gt; &lt;span class=&quot;caps&quot;&gt;FLM&lt;/span&gt;] &lt;span class=&quot;caps&quot;&gt;DCIP&lt;/span&gt; Facility List Message Non-Critical Extension&lt;/li&gt;
+	&lt;li&gt;[&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; 430-3] &lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; Standard 430-3 D-Cinema Operation-Generic Extra-Theatre Message Format&lt;/li&gt;
+	&lt;li&gt;[&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; 430-7] &lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; Standard 430-7 for D-Cinema: Facility List Message&lt;/li&gt;
+&lt;/ul&gt;</content>
+    <media:thumbnail url="http://www.gravatar.com/avatar/7d5278537426ee8ad94d2ae71e6df1f8?s=30&amp;d=http%3A%2F%2Fgithub.com%2Fimages%2Fgravatars%2Fgravatar-140.png"/>
+    <author>
+      <name>wolfgangw</name>
+    </author>
+  </entry>
+  <entry>
+    <id>tag:wiki.github.com,2008:Wiki/523679</id>
+    <published>2010-08-07T05:47:36-07:00</published>
+    <updated>2010-07-02T23:33:30-07:00</updated>
+    <link type="text/html" rel="alternate" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/scripts"/>
+    <title>Scripts</title>
+    <updated>Fri Jul 02 23:33:30 -0700 2010</updated>
+    <published>Sat Aug 07 05:47:36 -0700 2010</published>
+    <content type="html">&lt;ul&gt;
+	&lt;li&gt;Check a list of strings (e.g. filenames) for numeric sequential streams and produce a composite from skeleton and streams (multiple streams possible) &amp;#8212; like &lt;code&gt;Reel_01_Final_[000121-010119]_former_[000001-009999].tiff&lt;/code&gt;. It also returns stream directions and markers for UUIDs. See demo script &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/sequential.py&quot;&gt;sequential.py&lt;/a&gt;&lt;/li&gt;
+	&lt;li&gt;&lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides&quot;&gt;Cinemaslides&lt;/a&gt;, feeble attempt to recreate the magic of aunt Mimi&amp;#8217;s hilarious summer-night-shut-all-the-lights slideshow hell.&lt;/li&gt;
+	&lt;li&gt;&lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/chromatic_adaptation.rb&quot;&gt;Calculate chromatic adaptation transformation matrices&lt;/a&gt;. See &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut&quot;&gt;White Gamut&lt;/a&gt; for more.&lt;/li&gt;
+	&lt;li&gt;A script to calculate the 3&amp;#215;3 matrix needed to transform &lt;span class=&quot;caps&quot;&gt;ITU&lt;/span&gt; &lt;span class=&quot;caps&quot;&gt;REC&lt;/span&gt;. 709 to &lt;span class=&quot;caps&quot;&gt;XYZ&lt;/span&gt;: &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/rec709-xyz_matrix.rb&quot;&gt;rec709-xyz_matrix.rb&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content>
+    <media:thumbnail url="http://www.gravatar.com/avatar/7d5278537426ee8ad94d2ae71e6df1f8?s=30&amp;d=http%3A%2F%2Fgithub.com%2Fimages%2Fgravatars%2Fgravatar-140.png"/>
+    <author>
+      <name>wolfgangw</name>
+    </author>
+  </entry>
+  <entry>
+    <id>tag:wiki.github.com,2008:Wiki/625913</id>
+    <published>2010-08-07T05:47:36-07:00</published>
+    <updated>2010-07-01T09:22:17-07:00</updated>
+    <link type="text/html" rel="alternate" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/misc"/>
+    <title>MISC</title>
+    <updated>Thu Jul 01 09:22:17 -0700 2010</updated>
+    <published>Sat Aug 07 05:47:36 -0700 2010</published>
+    <content type="html">&lt;ul&gt;
+	&lt;li&gt;&lt;a href=&quot;http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&amp;amp;t=16530&amp;amp;sid=04be2d02b6cd5c639b74db3c22a30050#p60486&quot;&gt;tiff:alpha=associated&lt;/a&gt;&lt;/li&gt;
+	&lt;li&gt;&lt;a href=&quot;http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&amp;amp;t=16319&quot;&gt;ImageMagick file magic for truetype fonts&lt;/a&gt;&lt;br /&gt;
+Example ~/.magick/magic.xml to solve the issue:&lt;br /&gt;
+&lt;code&gt;&amp;lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&amp;gt;&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;&amp;lt;!DOCTYPE magicmap [&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;&amp;lt;!ELEMENT magicmap (magic)+&amp;gt;&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;&amp;lt;!ELEMENT magic (#PCDATA)&amp;gt;&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;&amp;lt;!ATTLIST magic name CDATA #REQUIRED&amp;gt;&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;&amp;lt;!ATTLIST magic offset CDATA &quot;0&quot;&amp;gt;&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;&amp;lt;!ATTLIST magic target CDATA #REQUIRED&amp;gt;&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;]&amp;gt;&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;&amp;lt;magicmap&amp;gt;&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;&amp;lt;magic name=&quot;TTF&quot; offset=&quot;0&quot; target=&quot;\000\001\000\000&quot;/&amp;gt;&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;&amp;lt;/magicmap&amp;gt;&lt;/code&gt;&lt;/li&gt;
+	&lt;li&gt;How to build asdcplib&amp;#8217;s S429-5-cgi.cpp (at least on my box):&lt;br /&gt;
+&lt;code&gt;$ cd $ASDCPLIB_CURRENT/src&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;gcc -o S429-5-cgi S429-5-cgi.cpp -lkumu -lasdcp -D_FILE_OFFSET_BITS=64&lt;/code&gt;&lt;/li&gt;
+	&lt;li&gt;&lt;a href=&quot;http://www.cinecert.com/asdcplib/&quot;&gt;asdcplib&lt;/a&gt; 2010.05.13 &amp;#8211; bug fixes, enhancements, v1.6.34 &amp;#8220;Changed AudioDescriptor &amp;#8216;SampleRate&amp;#8217; element name to &amp;#8216;EditRate&amp;#8217; to make it consistent with the other types.&amp;#8221;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This will break building opencinematools-1.1.2. Change opencinematools-1.1.2/src/mkcpl:592&lt;/p&gt;
+&lt;p&gt;592c592&lt;br /&gt;
+&amp;lt;                 sprintf(buff, &amp;#8220;%u %u&amp;#8221;, ADesc.SampleRate.Numerator, ADesc.SampleRate.Denominator);&lt;br /&gt;
+&lt;del&gt;-&lt;/del&gt;&lt;br /&gt;
+&amp;gt;                 sprintf(buff, &amp;#8220;%u %u&amp;#8221;, ADesc.EditRate.Numerator, ADesc.EditRate.Denominator);&lt;/p&gt;
+&lt;p&gt;to fix it.&lt;/p&gt;
+&lt;ul&gt;
+	&lt;li&gt;&lt;a href=&quot;http://www.libtiff.org/tools.html&quot;&gt;&lt;span class=&quot;caps&quot;&gt;TIFF&lt;/span&gt; tools&lt;/a&gt; (tiffinfo among those)&lt;/li&gt;
+	&lt;li&gt;openjpeg v2: &lt;code&gt;svn checkout http://openjpeg.googlecode.com/svn/branches/v2/ openjpeg-read-only&lt;/code&gt;&lt;/li&gt;
+	&lt;li&gt;Sony &lt;span class=&quot;caps&quot;&gt;SRX&lt;/span&gt;-R320 Xenon color primaries (x, y): R 0.68, 0.32 | G 0.265, 0.69 | B 0.15, 0.06&lt;/li&gt;
+	&lt;li&gt;&lt;a href=&quot;http://archives.free.net.ph/message/20091126.015123.b2b38636.en.html&quot;&gt;DNxHD related post on ffmpeg-user:&lt;/a&gt;
+	&lt;ul&gt;
+		&lt;li&gt;&lt;span class=&quot;caps&quot;&gt;DPX&lt;/span&gt; to DNxHD 36: &lt;code&gt;for f in *.dpx; do convert $f -depth 16 -sampling-factor 4:2:2 -interlace plane -resize 1920x1080! -size 1920x1080 yuv:-; done | ffmpeg -threads 8 -s 1920x1080 -pix_fmt yuv422p -f rawvideo -i - -vcodec dnxhd -b 36Mb -r 23.9760 -y -an out.mov&lt;/code&gt;&lt;/li&gt;
+		&lt;li&gt;&lt;span class=&quot;caps&quot;&gt;DPX&lt;/span&gt; to &lt;span class=&quot;caps&quot;&gt;MJPEG&lt;/span&gt;: &lt;code&gt;for f in *.dpx; do convert $f ppm:-; done | ffmpeg -an -y -f image2pipe -vcodec ppm -i - -pix_fmt yuvj422p -vcodec mjpeg -qscale 1 out_mjpeg.mov&lt;/code&gt;&lt;/li&gt;
+	&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ul&gt;
+	&lt;li&gt;&lt;a href=&quot;http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&amp;amp;t=15903#p57217&quot;&gt;Using ImageMagick&amp;#8217;s -clut&lt;/a&gt;&lt;/li&gt;
+	&lt;li&gt;&lt;a href=&quot;http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&amp;amp;t=14092&quot;&gt;Fred Weinhaus&amp;#8217; Summed Area Tables or Integral Images&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content>
+    <media:thumbnail url="http://www.gravatar.com/avatar/7d5278537426ee8ad94d2ae71e6df1f8?s=30&amp;d=http%3A%2F%2Fgithub.com%2Fimages%2Fgravatars%2Fgravatar-140.png"/>
+    <author>
+      <name>wolfgangw</name>
+    </author>
+  </entry>
+  <entry>
+    <id>tag:wiki.github.com,2008:Wiki/617910</id>
+    <published>2010-08-07T05:47:36-07:00</published>
+    <updated>2010-06-06T21:57:39-07:00</updated>
+    <link type="text/html" rel="alternate" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/digital-cinema"/>
+    <title>Digital Cinema</title>
+    <updated>Sun Jun 06 21:57:39 -0700 2010</updated>
+    <published>Sat Aug 07 05:47:36 -0700 2010</published>
+    <content type="html">&lt;h2&gt;What is it?&lt;/h2&gt;
+&lt;p&gt;It&amp;#8217;s a platform (Like 35mm film is a platform): Fully spec&amp;#8217;d and standardized. High quality motion pictures in the age of files. The point of a platform is everyone knows how to use it. Anyone can target it, be it a major studio or so-called &lt;em&gt;Indies&lt;/em&gt;. Results are reproducible, be it on a digital screen in Bombay or in Anchorage.&lt;/p&gt;
+&lt;p&gt;Another aspect of the platform is its quality level. Once you&amp;#8217;ve seen a standard digital cinema screening you will not miss film. The latter is disputed, naturally, like pretty much anything, be it the most obvious thing one could run into. It&amp;#8217;s what they call &lt;em&gt;labor pains&lt;/em&gt;. They&amp;#8217;re finite and then a baby is born.&lt;/p&gt;
+&lt;p&gt;By the way, &lt;i&gt;Avatar&lt;/i&gt; ran on ~26.000 screens worldwide. 8000 of those were Digital Cinema screens (7.382 digital 3D, 553 digital 2D). Baby is out of school already.&lt;/p&gt;
+&lt;h2&gt;What&amp;#8217;s the benefit?&lt;/h2&gt;
+&lt;ul&gt;
+	&lt;li&gt;A digital cinema package (&lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt;, digital cinema&amp;#8217;s equivalent of a distribution print) can carry a number of sound/language versions, title versions, subtitles, even different edits of the film if it&amp;#8217;s called for. It&amp;#8217;s a very flexible format.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ul&gt;
+	&lt;li&gt;A digital cinema projector can be color-corrected. Which means authors &amp;#8212; for the first time in film history &amp;#8212; can actually get their graded colors back from theatre&amp;#8217;s screens. With 35mm projectors you could, of course, also correct color shifts introduced by the Xenon lamp, the mirror and the heat shield. But it&amp;#8217;s not practical, hence not done. Ever saw a black and white feature on a changeover setup? Every reel change means a jump in color temperature. Sucks big time. With digital cinema projectors color correction and calibration is built-in.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ul&gt;
+	&lt;li&gt;Pristine image quality from opening night until the end of time. No more mutilated prints. What &lt;em&gt;some&lt;/em&gt; projectionists do to film prints goes well beyond a motion picture engineer&amp;#8217;s worst nightmares. Prints with perfect changeover cues get the &lt;em&gt;Big X Scratch&lt;/em&gt; treatment &amp;#8212; not once, but many times. Up to entire scenes go missing at reel boundaries. Show up again in random places &amp;#8212; if you&amp;#8217;re lucky. Headers and tails get mixed up. Tail 3 ends up as header 4. Accordingly, prints are being shown in mixed up order. Over and over. Emulsion gets licked to see whether it&amp;#8217;s, well, the emulsion side. Prints are dragged through projectors that haven&amp;#8217;t been touched ever again after installation, let alone &lt;em&gt;cleaned&lt;/em&gt;.  Some prints clearly are stored outside, without cans, in the dirt. Some prints have obviously been attacked with weapons &amp;#8212; I don&amp;#8217;t even want to have a clue as for why and how, but the scars leave no other explanation. Some projectionists in the game are wizards: They figured out ways to destroy &lt;em&gt;polyester&lt;/em&gt; prints, like on the first screening (Try to tear a piece of polyester leader. It&amp;#8217;s hard.). All in all: It&amp;#8217;s nothing short of a miracle we have &lt;em&gt;any&lt;/em&gt;  film history artifacts left. Digital cinema ends this.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ul&gt;
+	&lt;li&gt;With digital cinema it&amp;#8217;s inherently cheap to reach the big screen with no/low/modest budget productions. Current quotes from post facilities and labs offering digital cinema authoring might suggest the opposite. But this will change, you can bet on that.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;How does it work?&lt;/h2&gt;
+&lt;p&gt;Basically an image sequence (the film) is encoded to a well-defined, cinema-specific &lt;span class=&quot;caps&quot;&gt;JPEG&lt;/span&gt; 2000 codestream. Packed up (alongside with sound and subtitles) in &lt;span class=&quot;caps&quot;&gt;MXF&lt;/span&gt; containers and composed through the means of descriptive &lt;span class=&quot;caps&quot;&gt;XML&lt;/span&gt; to what will be shown on the screen. These &lt;em&gt;compositions&lt;/em&gt; are what make &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; such a powerful and flexible format because a &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; can carry a number of them. Final package gets copied onto harddrive, memory stick, optical medium, and ingested on a digital cinema server. Finally, someone hits &lt;em&gt;Play&lt;/em&gt;.&lt;/p&gt;
+&lt;h2&gt;Can I do it?&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline&quot;&gt;Absolutely&lt;/a&gt;. Keep in mind that Digital Cinema will not, through some magic spells, turn 8bpc material into smooth 12bpc delight. It will not make up for the shortcomings of your acquisition gear. It &lt;em&gt;might&lt;/em&gt; turn a dull story into epic drama, though, and it just &lt;em&gt;might&lt;/em&gt; deliver world peace in due time.&lt;/p&gt;</content>
+    <media:thumbnail url="http://www.gravatar.com/avatar/7d5278537426ee8ad94d2ae71e6df1f8?s=30&amp;d=http%3A%2F%2Fgithub.com%2Fimages%2Fgravatars%2Fgravatar-140.png"/>
+    <author>
+      <name>wolfgangw</name>
+    </author>
+  </entry>
+  <entry>
+    <id>tag:wiki.github.com,2008:Wiki/540395</id>
+    <published>2010-08-07T05:47:36-07:00</published>
+    <updated>2010-05-29T16:20:14-07:00</updated>
+    <link type="text/html" rel="alternate" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/open-source-tools-for-a-digital-cinema-pipeline"/>
+    <title>Open source tools for a digital cinema pipeline</title>
+    <updated>Sat May 29 16:20:14 -0700 2010</updated>
+    <published>Sat Aug 07 05:47:36 -0700 2010</published>
+    <content type="html">&lt;p&gt;The following are basic building blocks for an ad-hoc digital cinema pipeline based on open source tools. Keep in mind that none of this is overly practical for production, though.&lt;/p&gt;
+&lt;p&gt;Key problem being the massive amount of cycles the JPEG2000 encoding consumes. There is no way around dedicated hardware to solve this, really. Any general-purpose-&lt;span class=&quot;caps&quot;&gt;CPU&lt;/span&gt;-based implementation will eventually fall behind the parallel computing power of specialized hardware, I reckon: There are &lt;span class=&quot;caps&quot;&gt;FPGA&lt;/span&gt;/&lt;span class=&quot;caps&quot;&gt;ASIC&lt;/span&gt; solutions (not easily affordable) and there is &lt;span class=&quot;caps&quot;&gt;CUDA&lt;/span&gt; (on off-the-shelf GPUs, quite affordable) and the likes. I&amp;#8217;ll definitely be looking more into the latter. See &lt;a href=&quot;http://cuj2k.sourceforge.net/index.html&quot;&gt;CUJ2K&lt;/a&gt; for an example &amp;#8212; alas, as of February 2010, CUJ2K v1.1 does not produce &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt; compliant &lt;a href=&quot;http://www.digitalpreservation.gov/formats/fdd/fdd000212.shtml&quot;&gt;Profile-3&lt;/a&gt; and &lt;a href=&quot;http://www.digitalpreservation.gov/formats/fdd/fdd000213.shtml&quot;&gt;Profile-4&lt;/a&gt; codestreams. Maybe that can change.&lt;/p&gt;
+&lt;p&gt;Efficiency: Setting up a shell script to walk all those steps is as easy as it is inefficient. Every image file would be touched a number of times. Every step would involve disk access to and fro. Some of the tools are not multi-threaded. Etc.pp.&lt;/p&gt;
+&lt;p&gt;Still, it&amp;#8217;s a perfectly viable process for tests and short features. And, most of all, it&amp;#8217;s a transparent process.&lt;/p&gt;
+&lt;ul&gt;
+	&lt;li&gt;&lt;strong&gt;How to create an image sequence from a video file&lt;/strong&gt;: &lt;a href=&quot;http://ffmpeg.org/&quot;&gt;FFmpeg&lt;/a&gt; and &lt;a href=&quot;http://www.mplayerhq.hu/design7/news.html&quot;&gt;MPlayer/Mencoder&lt;/a&gt; are swiss army knives for pretty much anything you want to do with video and image sequences. In this context FFmpeg is used to create an image sequence from a given video file.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Like&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ffmpeg -i video.m2v -f image2 -vcodec tiff %06d.tiff&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;where &lt;code&gt;%06d&lt;/code&gt; tells ffmpeg to create 6-digit zero-padded filenames.&lt;/p&gt;
+&lt;ul&gt;
+	&lt;li&gt;&lt;strong&gt;How to convert sRGB (Gamma ~2.2) to X&amp;#8217;Y&amp;#8217;Z&amp;#8217; (Gamma 2.6)&lt;/strong&gt;: &lt;a href=&quot;http://www.imagemagick.org/script/index.php&quot;&gt;ImageMagick&amp;#8217;s&lt;/a&gt; &lt;strong&gt;convert&lt;/strong&gt; lets you perform color transforms, handle embedded color profiles, adjust bit-depth, scale, gamma de/encode etc.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Check out Bruce Lindbloom&amp;#8217;s &lt;a href=&quot;http://www.brucelindbloom.com/&quot;&gt;great math and color pages&lt;/a&gt;. See &lt;a href=&quot;http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html&quot;&gt;&lt;span class=&quot;caps&quot;&gt;RGB&lt;/span&gt;/&lt;span class=&quot;caps&quot;&gt;XYZ&lt;/span&gt; Matrices&lt;/a&gt; for &lt;span class=&quot;caps&quot;&gt;RGB&lt;/span&gt; &amp;lt;&amp;gt; &lt;span class=&quot;caps&quot;&gt;XYZ&lt;/span&gt; color transform equations and important notes.&lt;/p&gt;
+&lt;p&gt;For example (assuming sRGB source)&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;for f in *tiff; do echo $f; convert $f -alpha off -depth 12 -gamma 0.454545 -resize 1998x1080 -recolor &quot;0.4124564 0.3575761 0.1804375 0.2126729 0.7151522 0.0721750 0.0193339 0.1191920 0.9503041&quot; -gamma 2.6 xyz-2.6-$f; done&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;takes all tiffs in the current directory, drops the alpha channel, adjusts bit-depth to the &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt; spec&amp;#8217;d 12 bits per component (depending on the material you throw at it this will truncate or pad least significant bits), decodes gamma (from sRGB&amp;#8217;s standard and &lt;em&gt;approximated&lt;/em&gt; 2.2), scales to 2K (keeping the original aspect ratio), applies an sRGB to &lt;span class=&quot;caps&quot;&gt;XYZ&lt;/span&gt; color transform and finally encodes to the &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt; spec&amp;#8217;d gamma of 2.6. (You want to transform color with linear values, hence the gamma decode, then the color transform and then the concluding gamma encode.)&lt;/p&gt;
+&lt;p&gt;The convert above merely demonstrates a number of operations. It would have to be tweaked to meet any real-world requirements:&lt;/p&gt;
+&lt;ol&gt;
+	&lt;li&gt;With ImageMagick the order of operators and settings matters. If your source material has 16-bit color channels you wouldn&amp;#8217;t want to truncate to 12 bits &lt;em&gt;before&lt;/em&gt; gamma decoding or scaling or the color transform but &lt;em&gt;afterwards&lt;/em&gt;, and probably before the gamma encoding with 2.6.&lt;/li&gt;
+	&lt;li&gt;sRGB&amp;#8217;s gamma is not exactly 2.2. A correct linearization of sRGB would be&lt;br /&gt;
+&lt;code&gt;convert srgb-gradient.tiff -fx &quot;p &amp;lt;= 0.04045 ? p/12.92 : ((p + 0.055) / 1.055) ^ 2.4&quot; linear.tiff&lt;/code&gt;&lt;br /&gt;
+There&amp;#8217;s a linear part for values below 0.04045 and a power function for higher values. The difference is subtle but real (Easy to see with gradients and a posterize action to, like, 16 levels). Because color transforms have to be performed on linear values any errors from linearization will propagate into color errors on the silver screen. Big sign, right up there: &amp;#8220;Color wrong! Terminate!&amp;#8221;, you know the drill. Seriously: this will matter if your grading choices were made in a calibrated mastering environment. And if your material has the bits to show the difference. Or if you&amp;#8217;re somewhat fussy about numbers. Or if your vision is trained and specialized in detecting subtle differences. So, there&amp;#8217;s clearly a million of reasons to do sRGB linearization right, right? Alas, ImageMagick&amp;#8217;s &lt;code&gt;-fx&lt;/code&gt; operator, while powerful, is quite cpu-expensive. And, unfortunately, ImageMagick&amp;#8217;s LUT&amp;#8217;s are even slower. Any &lt;span class=&quot;caps&quot;&gt;CUDA&lt;/span&gt; geeks out there writing FastLUT?&lt;br /&gt;
+See &lt;a href=&quot;http://en.wikipedia.org/wiki/SRGB#Specification_of_the_transformation&quot;&gt;Wikipedia&lt;/a&gt; for the math and an explanation for why 0.04045 is used instead of &lt;a href=&quot;http://www.w3.org/Graphics/Color/sRGB&quot;&gt;0.03928&lt;/a&gt;.&lt;/li&gt;
+	&lt;li&gt;Jussi Siponen &lt;a href=&quot;http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&amp;amp;t=13936#p55703&quot;&gt;mentions&lt;/a&gt; an issue with &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt;-compliant image dimensions. He suggests padding (within a convert statement) for non-compliant dimensions, like &lt;code&gt;-background black -gravity center -extent 1998x1080&lt;/code&gt; for flat 2K and &lt;code&gt;-background black -gravity center -extent 2048x858&lt;/code&gt; for scope 2K. It&amp;#8217;d be interesting to learn whether some cinema servers actually choke on non-compliant image dimensions. The &lt;span class=&quot;caps&quot;&gt;XDC&lt;/span&gt; G3 doesn&amp;#8217;t.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+	&lt;li&gt;&lt;strong&gt;How to encode to &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt; compliant JPEG2000 (Profiles 3 and 4)&lt;/strong&gt;: &lt;a href=&quot;http://www.openjpeg.org/index.php?menu=main&quot;&gt;OpenJPEG&amp;#8217;s&lt;/a&gt; image_to_j2k implements &lt;span class=&quot;caps&quot;&gt;JPEG&lt;/span&gt; Profiles 3 and 4 (for 2K and 4K material, respectively) and creates JPEG2000 codestream files.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;code&gt;image_to_j2k -cinema2K 24  -ImgDir XYZ -OutFor j2c&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;encodes all tiffs in &lt;span class=&quot;caps&quot;&gt;XYZ&lt;/span&gt;/ to &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt; compliant JPEG2000 codestream files (Suffix &amp;#8220;j2c&amp;#8221;). This is a lossy process as Profiles 3 and 4 specify maximum file sizes and bit rates of streams. Encoding time for a 2K tiff on a recent Intel core is around 2-4 seconds. That&amp;#8217;s around 5 days for a 100-minute feature. So there :)&lt;/p&gt;
+&lt;ul&gt;
+	&lt;li&gt;&lt;strong&gt;Coming up&lt;/strong&gt;: Wrapping image and audio essence into &lt;span class=&quot;caps&quot;&gt;MXF&lt;/span&gt; containers and building a &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; infrastructure with &lt;a href=&quot;http://www.cinecert.com/asdcplib/&quot;&gt;asdcplib&lt;/a&gt; and &lt;a href=&quot;http://code.google.com/p/opencinematools/wiki/GettingStarted&quot;&gt;Open Cinema Tools&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content>
+    <media:thumbnail url="http://www.gravatar.com/avatar/7d5278537426ee8ad94d2ae71e6df1f8?s=30&amp;d=http%3A%2F%2Fgithub.com%2Fimages%2Fgravatars%2Fgravatar-140.png"/>
+    <author>
+      <name>wolfgangw</name>
+    </author>
+  </entry>
+  <entry>
+    <id>tag:wiki.github.com,2008:Wiki/525196</id>
+    <published>2010-08-07T05:47:36-07:00</published>
+    <updated>2010-05-16T12:40:51-07:00</updated>
+    <link type="text/html" rel="alternate" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/notes-on-handling-audio-assets-for-digital-cinema"/>
+    <title>Notes on handling audio assets for Digital Cinema</title>
+    <updated>Sun May 16 12:40:51 -0700 2010</updated>
+    <published>Sat Aug 07 05:47:36 -0700 2010</published>
+    <content type="html">&lt;p&gt;&lt;a href=&quot;http://www.cinecert.com/asdcplib/&quot;&gt;asdcplib&lt;/a&gt; is a reference implementation of &lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; and &lt;span class=&quot;caps&quot;&gt;MXF&lt;/span&gt; Interop &amp;#8220;Sound &amp;amp; Picture Track File&amp;#8221; formats. You can use it on the command line to stuff digital cinema assets into &lt;span class=&quot;caps&quot;&gt;MXF&lt;/span&gt; &amp;#8220;containers&amp;#8221;, calculate message digests of these containers (needed in &lt;span class=&quot;caps&quot;&gt;CPL&lt;/span&gt; and &lt;span class=&quot;caps&quot;&gt;PKL&lt;/span&gt;), generate UUIDs, extract track essence etc.&lt;/p&gt;
+&lt;ul&gt;
+	&lt;li&gt;&lt;strong&gt;How to map discrete audio files&lt;/strong&gt;: &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt; allows for 5.1, 7.1 and up to 14 tracks + HI (hearing impaired listeners track) + VI (visually impaired listeners track). asdcplib&amp;#8217;s main tool &lt;strong&gt;asdcp-test&lt;/strong&gt; maps given audio files in the order they appear on the command line.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In order to map discrete 5.1 files you would tell asdcp-test to&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;asdcp-test -c audio.mxf audio_left.wav audio_right.wav audio_center.wav audio_low_frequency_effect.wav audio_left_surround.wav audio_right_surround.wav&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;because &lt;code&gt;L - R - C - LFE - LS - LR&lt;/code&gt; is the 6-channel mapping order specified in the &lt;a href=&quot;http://www.dcimovies.com/specification/index.tt2&quot;&gt;&lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt; specs&lt;/a&gt; (See section &lt;i&gt;3.3.3 Channel Mapping&lt;/i&gt; for 6-channel and 8-channel mappings).&lt;/p&gt;
+&lt;p&gt;Also see asdcplib&amp;#8217;s &lt;code&gt;src/AS_DCP.h&lt;/code&gt;:&lt;br /&gt;
+&lt;code&gt;CF_CFG_1, // 5.1 with optional HI/VI&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;CF_CFG_2, // 6.1 (5.1 + center surround) with optional HI/VI&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;CF_CFG_3, // 7.1 with optional HI/VI&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+	&lt;li&gt;&lt;strong&gt;Notes for a ffmpeg/sox audio pipeline&lt;/strong&gt;:
+	&lt;ul&gt;
+		&lt;li&gt;relevant ffmpeg options:
+		&lt;ul&gt;
+			&lt;li&gt;-acodec (see available formats with &amp;#8220;ffmpeg -formats&amp;#8221;, among those see pcm_s24daud/&lt;span class=&quot;caps&quot;&gt;PCM&lt;/span&gt; D-Cinema audio signed 24-bit)&lt;/li&gt;
+			&lt;li&gt;-map (set stream mapping from input streams to output streams)&lt;/li&gt;
+			&lt;li&gt;-ar (set the audio sampling frequency)&lt;/li&gt;
+			&lt;li&gt;-ac (set the number of audio channels)&lt;/li&gt;
+			&lt;li&gt;-vn (disable video)&lt;/li&gt;
+			&lt;li&gt;-sn (disable subtitle)&lt;/li&gt;
+		&lt;/ul&gt;&lt;/li&gt;
+		&lt;li&gt;relevant sox options:
+		&lt;ul&gt;
+			&lt;li&gt;-t wavpcm (see Peter Forret&amp;#8217;s &lt;a href=&quot;http://code.google.com/p/opencinematools/issues/detail?id=29#c0&quot;&gt;initial report&lt;/a&gt; and &lt;a href=&quot;http://code.google.com/p/opencinematools/issues/detail?id=29#c2&quot;&gt;his findings&lt;/a&gt;. Also see Peter&amp;#8217;s &lt;a href=&quot;http://code.google.com/p/dcptoolkit/&quot;&gt;dcptoolkit project pages&lt;/a&gt;)&lt;/li&gt;
+		&lt;/ul&gt;&lt;/li&gt;
+	&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;</content>
+    <media:thumbnail url="http://www.gravatar.com/avatar/7d5278537426ee8ad94d2ae71e6df1f8?s=30&amp;d=http%3A%2F%2Fgithub.com%2Fimages%2Fgravatars%2Fgravatar-140.png"/>
+    <author>
+      <name>wolfgangw</name>
+    </author>
+  </entry>
+  <entry>
+    <id>tag:wiki.github.com,2008:Wiki/635898</id>
+    <published>2010-08-07T05:47:36-07:00</published>
+    <updated>2010-05-04T23:45:52-07:00</updated>
+    <link type="text/html" rel="alternate" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/mpeg2-essence-support-for-opencinematools-112"/>
+    <title>MPEG2 essence support for opencinematools 1.1.2</title>
+    <updated>Tue May 04 23:45:52 -0700 2010</updated>
+    <published>Sat Aug 07 05:47:36 -0700 2010</published>
+    <content type="html">&lt;p&gt;This &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/opencinematools-mpeg2_support.diff&quot;&gt;patch&lt;/a&gt; lets you use opencinematools (1.1.2, latest release as of April 2010) to wrap up MPEG2 (elementary stream) essence in a &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt;. Useful for a number of purposes. The patch is quite trivial in that it simply fills a bailout stub in oct with the according descriptors provided by &lt;a href=&quot;http://www.cinecert.com/asdcplib/&quot;&gt;asdcplib&lt;/a&gt; (CineCert&amp;#8217;s/John Hurst&amp;#8217;s standard AS-&lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; library)&lt;/p&gt;
+&lt;p&gt;Read &lt;code&gt;[asdcplib]/src/KM_fileio.h&lt;/code&gt; (part &lt;code&gt;#ifndef KM_SMALL_FILES_OK&lt;/code&gt;) for an explanation for the &lt;span class=&quot;caps&quot;&gt;CFLAGS&lt;/span&gt; addition.&lt;/p&gt;
+&lt;ol&gt;
+	&lt;li&gt;Get &lt;a href=&quot;http://opencinematools.googlecode.com/files/opencinematools-1.1.2-src.zip&quot;&gt;opencinematools 1.1.2&lt;/a&gt; and unzip.&lt;/li&gt;
+	&lt;li&gt;Get &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/archives/master&quot;&gt;digital cinema tools scriptball&lt;/a&gt; (bunch of other stuff in there) and unzip/untar or copy from &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/raw/master/opencinematools-mpeg2_support.diff&quot;&gt;raw view&lt;/a&gt;&lt;/li&gt;
+	&lt;li&gt;Put &lt;code&gt;opencinematools-mpeg2_support.diff&lt;/code&gt; next to the opencinematools-1.1.2 dir&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;code&gt;$ cat opencinematools-mpeg2_support.diff | patch -p0&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;$ cd opencinematools-1.1.2/build/unix&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;$ make all&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;$ cp ../../bin/mk* [to ~/bin or wherever]&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Tested on linux.&lt;/p&gt;</content>
+    <media:thumbnail url="http://www.gravatar.com/avatar/7d5278537426ee8ad94d2ae71e6df1f8?s=30&amp;d=http%3A%2F%2Fgithub.com%2Fimages%2Fgravatars%2Fgravatar-140.png"/>
+    <author>
+      <name>wolfgangw</name>
+    </author>
+  </entry>
+  <entry>
+    <id>tag:wiki.github.com,2008:Wiki/514320</id>
+    <published>2010-08-07T05:47:36-07:00</published>
+    <updated>2010-04-07T02:32:55-07:00</updated>
+    <link type="text/html" rel="alternate" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/home"/>
+    <title>Home</title>
+    <updated>Wed Apr 07 02:32:55 -0700 2010</updated>
+    <published>Sat Aug 07 05:47:36 -0700 2010</published>
+    <content type="html">&lt;p&gt;Hi and welcome.&lt;/p&gt;
+&lt;p&gt;Here you&amp;#8217;ll find a growing collection of useful &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/scripts&quot;&gt;scripts&lt;/a&gt; and &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/notes&quot;&gt;notes&lt;/a&gt; to set up an open source based pipeline for &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema&quot;&gt;Digital Cinema&lt;/a&gt; authoring. Read &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat&quot;&gt;Mystery Meat&lt;/a&gt; to learn where the beef is.&lt;/p&gt;
+&lt;p&gt;To establish an open platform for digital cinema production and distribution is the general idea of the &lt;a href=&quot;http://www.dcimovies.com/&quot;&gt;Digital Cinema Initiative&lt;/a&gt; and their &lt;a href=&quot;http://www.dcimovies.com/specification/index.tt2&quot;&gt;specification&lt;/a&gt;. Much like the &lt;i&gt;35mm&lt;/i&gt; platform (specified in 1916) which has had a lot of breath.&lt;/p&gt;
+&lt;p&gt;The &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt; had realized that in order to create a platform good for decades to come they needed to adhere to tried and tested standards. As a result you can satisfy the requirements for &lt;span class=&quot;caps&quot;&gt;DCDM&lt;/span&gt;/&lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; mastering and production with a set of almost ubiquitous open source tools. Which is the laudable kind of &lt;i&gt;Good Thing&lt;/i&gt; geeks feel irresistibly attracted to, like bears to the honey pot.&lt;/p&gt;
+&lt;p&gt;A basic workflow to create DCPs includes&lt;/p&gt;
+&lt;ol&gt;
+	&lt;li&gt;Prepare the source material (Create an image sequence consisting of &lt;span class=&quot;caps&quot;&gt;TIFF&lt;/span&gt;/&lt;span class=&quot;caps&quot;&gt;DPX&lt;/span&gt;/Cineon files, wrap audio in Broadcast &lt;span class=&quot;caps&quot;&gt;WAV&lt;/span&gt; container)&lt;/li&gt;
+	&lt;li&gt;Linearize &lt;span class=&quot;caps&quot;&gt;RGB&lt;/span&gt;&lt;/li&gt;
+	&lt;li&gt;Transform color from source color to &lt;span class=&quot;caps&quot;&gt;XYZ&lt;/span&gt; (see this &lt;a href=&quot;http://www.youtube.com/watch?v=x0-qoXOCOow&quot;&gt;nice visual &lt;span class=&quot;caps&quot;&gt;CIE&lt;/span&gt; &lt;span class=&quot;caps&quot;&gt;XYZ&lt;/span&gt; primer&lt;/a&gt;)&lt;/li&gt;
+	&lt;li&gt;Chromatic adaptation to the targeted white point (need to understand the problem better, see &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut&quot;&gt;White Gamut&lt;/a&gt;)&lt;/li&gt;
+	&lt;li&gt;Encode with &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt; spec&amp;#8217;d gamma (2.6)&lt;/li&gt;
+	&lt;li&gt;Encode to JPEG2000 codestream files (The &lt;span class=&quot;caps&quot;&gt;JPEG&lt;/span&gt; 2000 Profiles 3 and 4, used here, are lossy, btw)&lt;/li&gt;
+	&lt;li&gt;Collect assets (images, audio) in &lt;span class=&quot;caps&quot;&gt;MXF&lt;/span&gt; containers/streams&lt;/li&gt;
+	&lt;li&gt;Create the basic infrastructure of a &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; (composition playlist, packing list, assetmap, volindex)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;See &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline&quot;&gt;Open source tools for a digital cinema pipeline&lt;/a&gt; for commandline examples.&lt;/p&gt;
+&lt;p&gt;The required information and knowledge is somewhat buried in man-pages, specs and &lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; papers. Post-production facilities in the business are, understandably and yet regrettably, not exactly eager to share experience and practices. However there is no reason &lt;span class=&quot;caps&quot;&gt;DCDM&lt;/span&gt;/&lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; production should remain more complicated and opaque than, say, the creation of DVDs or BluRay media. That is the point of the platform.&lt;/p&gt;
+&lt;p&gt;Feedback, insights, code etc. very welcomed and much appreciated.&lt;br /&gt;
+Wolfgang Woehl&lt;/p&gt;</content>
+    <media:thumbnail url="http://www.gravatar.com/avatar/7d5278537426ee8ad94d2ae71e6df1f8?s=30&amp;d=http%3A%2F%2Fgithub.com%2Fimages%2Fgravatars%2Fgravatar-140.png"/>
+    <author>
+      <name>wolfgangw</name>
+    </author>
+  </entry>
+</feed>

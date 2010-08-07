@@ -1,0 +1,482 @@
+
+  
+  
+
+  
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <title>Mystery Meat - digital_cinema_tools - GitHub</title>
+    <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub" />
+    <link rel="fluid-icon" href="http://github.com/fluidicon.png" title="GitHub" />
+
+    <link href="http://assets0.github.com/stylesheets/bundle_common.css?9270d926595a6ec088a11aa772803b8fabed3902" media="screen" rel="stylesheet" type="text/css" />
+<link href="http://assets3.github.com/stylesheets/bundle_github.css?9270d926595a6ec088a11aa772803b8fabed3902" media="screen" rel="stylesheet" type="text/css" />
+
+    <script type="text/javascript" charset="utf-8">
+      var GitHub = {}
+      var github_user = null
+      
+    </script>
+    <script src="http://assets1.github.com/javascripts/jquery/jquery-1.4.2.min.js?9270d926595a6ec088a11aa772803b8fabed3902" type="text/javascript"></script>
+    <script src="http://assets1.github.com/javascripts/bundle_common.js?9270d926595a6ec088a11aa772803b8fabed3902" type="text/javascript"></script>
+<script src="http://assets2.github.com/javascripts/bundle_github.js?9270d926595a6ec088a11aa772803b8fabed3902" type="text/javascript"></script>
+
+        <script type="text/javascript" charset="utf-8">
+      GitHub.spy({
+        repo: "wolfgangw/digital_cinema_tools"
+      })
+    </script>
+
+    
+  <link href="http://github.com/wolfgangw/digital_cinema_tools/commits/master.atom" rel="alternate" title="Recent Commits to digital_cinema_tools:master" type="application/atom+xml" />
+
+        <meta name="description" content="Collection of useful scripts and notes for an open source based digital cinema pipeline" />
+    <script type="text/javascript">
+      GitHub.nameWithOwner = GitHub.nameWithOwner || "wolfgangw/digital_cinema_tools";
+      GitHub.currentRef = 'master';
+    </script>
+  
+
+            <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3769691-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script');
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        ga.setAttribute('async', 'true');
+        document.documentElement.firstChild.appendChild(ga);
+      })();
+    </script>
+
+  </head>
+
+  
+
+  <body>
+    
+
+    
+      <script type="text/javascript">
+        var _kmq = _kmq || [];
+        function _kms(u){
+          var s = document.createElement('script'); var f = document.getElementsByTagName('script')[0]; s.type = 'text/javascript'; s.async = true;
+          s.src = u; f.parentNode.insertBefore(s, f);
+        }
+        _kms('//i.kissmetrics.com/i.js');_kms('//doug1izaerwt3.cloudfront.net/406e8bf3a2b8846ead55afb3cfaf6664523e3a54.1.js');
+      </script>
+    
+
+    
+
+    
+
+    
+
+    <div class="" id="main">
+      <div id="header" class="pageheaded">
+        <div class="site">
+          <div class="logo">
+            <a href="http://github.com"><img src="/images/modules/header/logov3.png" alt="github" /></a>
+          </div>
+          
+          <div class="topsearch">
+  
+    <form action="http://github.com/search" id="top_search_form" method="get">
+      <a href="http://github.com/search" class="advanced-search tooltipped downwards" title="Advanced Search">Advanced Search</a>
+      <input type="search" class="search my_repos_autocompleter" name="q" results="5" placeholder="Search&hellip;" /> <input type="submit" value="Search" class="button" />
+      <input type="hidden" name="type" value="Everything" />
+      <input type="hidden" name="repo" value="" />
+      <input type="hidden" name="langOverride" value="" />
+      <input type="hidden" name="start_value" value="1" />
+    </form>
+  
+  
+    <ul class="nav logged_out">
+      
+        <li><a href="http://github.com">Home</a></li>
+        <li class="pricing"><a href="http://github.com/plans">Pricing and Signup</a></li>
+        <li><a href="http://github.com/explore">Explore GitHub</a></li>
+        
+        <li><a href="/blog">Blog</a></li>
+      
+      <li></li>
+    </ul>
+  
+</div>
+
+        </div>
+      </div>
+
+      
+      
+        
+    <div class="site">
+      <div class="pagehead repohead vis-public   emptyrepohead shortdetails">
+        <h1>
+          <a href="/wolfgangw">wolfgangw</a> / <strong><a href="http://github.com/wolfgangw/digital_cinema_tools">digital_cinema_tools</a></strong>
+          
+          
+        </h1>
+
+        
+    <ul class="actions">
+      
+
+      
+      
+      <li class="repostats">
+        <ul class="repo-stats">
+          <li class="watchers"><a href="http://github.com/wolfgangw/digital_cinema_tools/watchers" title="Watchers" class="tooltipped downwards">6</a></li>
+          <li class="forks"><a href="http://github.com/wolfgangw/digital_cinema_tools/network" title="Forks" class="tooltipped downwards">2</a></li>
+        </ul>
+      </li>
+    </ul>
+
+
+        
+  <ul class="tabs">
+    <li><a href="http://github.com/wolfgangw/digital_cinema_tools/tree/master" highlight="repo_source">Source</a></li>
+    <li><a href="http://github.com/wolfgangw/digital_cinema_tools/commits/master" highlight="repo_commits">Commits</a></li>
+
+    
+    <li><a href="http://github.com/wolfgangw/digital_cinema_tools/network" highlight="repo_network">Network</a></li>
+
+    
+
+    
+
+    
+      
+      <li><a href="http://github.com/wolfgangw/digital_cinema_tools/downloads">Downloads</a></li>
+    
+
+          
+      <li><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Wiki</a></li>
+    
+    <li><a href="http://github.com/wolfgangw/digital_cinema_tools/graphs" highlight="repo_graphs">Graphs</a></li>
+
+    <li class="contextswitch nochoices">
+      <span class="toggle leftwards" >
+        <em>Branch:</em>
+        <code>master</code>
+      </span>
+    </li>
+  </ul>
+
+  <div style="display:none" id="pl-description"><p><em class="placeholder">click here to add a description</em></p></div>
+  <div style="display:none" id="pl-homepage"><p><em class="placeholder">click here to add a homepage</em></p></div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+
+        
+
+        
+
+      </div><!-- /.pagehead -->
+
+      
+
+<div id="repos">
+  
+
+
+<script type="text/javascript">
+  GitHub.currentCommitRef = 'master'
+  GitHub.currentRepoOwner = 'wolfgangw'
+  GitHub.currentRepo = "digital_cinema_tools"
+  GitHub.downloadRepo = '/wolfgangw/digital_cinema_tools/archives/master'
+
+  
+
+  
+</script>
+
+
+
+
+
+
+
+
+</div>
+
+<div id="guides">
+  <div class="guide">
+    <!-- main content -->
+
+    
+    <div class="main">
+
+      
+        <div class="actions">
+          <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a> |
+          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/mystery-meat/edit">Edit</a> |
+          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/new">New</a>
+        </div>
+      
+
+
+      <h1>Mystery Meat</h1>
+
+      <div class="wikistyle">
+        <p><code>2010 Aug 07</code> <a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-430-3-2008-ETM.xsd"><span class="caps">SMPTE</span>-430-3-2008-<span class="caps">ETM</span>.xsd</a> and <a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-430-1-2006-Amd-1-2009-KDM.xsd"><span class="caps">SMPTE</span>-430-1-2006-Amd-1-2009-<span class="caps">KDM</span>.xsd</a> (including a correction from <span class="caps">SMPTE</span>-Amendment-1-2009) are the normative <span class="caps">XML</span> Schema documents to test key delivery messages (<span class="caps">KDM</span>) for well-formedness and <span class="caps">SMPTE</span> compliance.  Use <code>schema-check</code> from DCI&#8217;s <a href="http://www.dcimovies.com/DCI_CTP_v1_1.pdf">Compliance Test Plan v1.1</a> to perform those tests.</p>
+<p><code>2010 Jul 30</code> <a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-429-7-2006-CPL.xsd"><span class="caps">SMPTE</span>-429-7-2006-<span class="caps">CPL</span>.xsd</a>, <a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-429-8-2006-PKL.xsd"><span class="caps">SMPTE</span>-429-8-2006-<span class="caps">PKL</span>.xsd</a> and <a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-429-9-2007-AM.xsd"><span class="caps">SMPTE</span>-429-9-2007-AM.xsd</a> are the normative <span class="caps">XML</span> Schema documents to test composition playlists (<span class="caps">CPL</span>), packing lists (<span class="caps">PKL</span>) and asset mapping (<span class="caps">ASSETMAP</span>, <span class="caps">VOLINDEX</span>) files for well-formedness and <span class="caps">SMPTE</span> compliance. Use <code>schema-check</code> from DCI&#8217;s <a href="http://www.dcimovies.com/DCI_CTP_v1_1.pdf">Compliance Test Plan v1.1</a> to perform those tests.</p>
+<p><code>2010 Jul 8</code> One of the problems when handling image sequences is making sure a given set of files actually is a continuous sequence. See <a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/sequential.py">sequential.py</a> for a demo script.</p>
+<p><code>2010 Jun 6</code> <a href="http://github.com/wolfgangw/digital_cinema_tools/raw/master/dcp_s429-5_test.tar">Tiny <span class="caps">DCP</span> to test <span class="caps">SMPTE</span> 429-5 compliance (Subtitle trackfiles) on servers</a></p>
+<p><code>2010 May 26</code> See <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides">Cinemaslides</a> for notes on a pet project of mine: A commandline tool to build cinema slideshows. Initial alpha v0 to test and play. It&#8217;d be cool to hear how this works for you and the random material you throw at it.</p>
+<p><code>2010 Mar 14</code> See <a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/opencinematools-mpeg2_support.diff">patch</a> (and <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/mpeg2-essence-support-for-opencinematools-112">how to apply it</a>) for MPEG2 essence support for <a href="http://code.google.com/p/opencinematools/">opencinematools 1.1.2</a></p>
+<p><code>2010 Feb 26</code> See <a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/rec709-xyz_matrix.rb">rec709-xyz_matrix.rb</a> for a script to calculate the 3&#215;3 matrix needed to transform <span class="caps">ITU</span> <span class="caps">REC</span>. 709 to <span class="caps">XYZ</span>.</p>
+<p><code>2010 Feb 21</code> See <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline">Open source tools for a digital cinema pipeline</a> for a sort-of step-by-step <span class="caps">DCP</span> pipeline.</p>
+<p><code>2010 Jan 17</code> You&#8217;re looking at an initial commit to the repository. Right now there is <a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/chromatic_adaptation.rb">chromatic_adaptation.rb</a> to play with chromatic adaptation numbers. This might be useful when targeting a specific white gamut of digital cinema projectors. See <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut">White Gamut</a> for some notes on the problem.</p>
+      </div>
+    </div>
+    
+    <!-- sidebar -->
+
+    <div class="sidebar">
+      <h3>
+        Pages
+        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets0.github.com/images/icons/feed.png?9270d926595a6ec088a11aa772803b8fabed3902" title="Feed of recent digital_cinema_tools wiki edits" /></a>
+      </h3>
+      
+
+
+<ul>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides">Cinemaslides</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema">Digital Cinema</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools">Home</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc">MISC</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/mpeg2-essence-support-for-opencinematools-112">MPEG2 essence support for opencinematools 1.1.2</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat">Mystery Meat</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes">Notes</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-dci-specification-and-related-smpte-papers">Notes on DCI specification and related SMPTE papers</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema">Notes on handling audio assets for Digital Cinema</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline">Open source tools for a digital cinema pipeline</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/scripts">Scripts</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/todo">TODO</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut">White Gamut</a></b></li>
+  
+</ul>
+
+      
+    </div>
+
+  </div>
+
+    <!-- admin -->
+
+      <div class="admin">
+      <div style="float:left;">
+        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-08-06 23:28:30">Fri Aug 06 23:28:30 -0700 2010</abbr></small>
+
+        <div class="actions">
+          <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a>
+          | <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/mystery-meat/edit">Edit</a> |
+          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/new">New</a>
+        </div>
+      </div>
+
+      <div style="float:right;">
+        <small>Versions:</small>
+        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/mystery-meat">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/26">Version 26 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/25">Version 25 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/24">Version 24 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/23">Version 23 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/22">Version 22 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/21">Version 21 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/20">Version 20 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/19">Version 19 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/18">Version 18 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/17">Version 17 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/16">Version 16 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/15">Version 15 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/14">Version 14 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/13">Version 13 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/12">Version 12 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/11">Version 11 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/10">Version 10 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/9">Version 9 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/8">Version 8 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/7">Version 7 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/6">Version 6 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/5">Version 5 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat/1">Version 1 by wolfgangw</option></select>
+      </div>
+    </div>
+    </div>
+    </div>
+  
+      
+
+      <div class="push"></div>
+    </div>
+
+    <div id="footer">
+      <div class="site">
+        <div class="info">
+          <div class="links">
+            <a href="http://github.com/blog"><b>Blog</b></a> |
+            <a href="http://support.github.com">Support</a> |
+            <a href="http://github.com/training">Training</a> |
+            <a href="http://jobs.github.com">Job Board</a> |
+            <a href="http://github.com/contact">Contact</a> |
+            <a href="http://develop.github.com">API</a> |
+            <a href="http://status.github.com">Status</a> |
+            <a href="http://twitter.com/github">Twitter</a> |
+            <a href="http://help.github.com">Help</a> |
+            <a href="http://github.com/security">Security</a>
+          </div>
+          <div class="company">
+            &copy;
+            2010
+            <span id="_rrt" title="0.10193s from fe1.rs.github.com">GitHub</span> Inc.
+            All rights reserved. |
+            <a href="/site/terms">Terms of Service</a> |
+            <a href="/site/privacy">Privacy Policy</a>
+          </div>
+        </div>
+        <div class="sponsor">
+          <div>
+            Powered by the <a href="http://www.rackspace.com">Dedicated
+            Servers</a> and<br/> <a href="http://www.rackspacecloud.com">Cloud
+            Computing</a> of Rackspace Hosting<span>&reg;</span>
+          </div>
+          <a href="http://www.rackspace.com">
+            <img alt="Dedicated Server" src="http://assets2.github.com/images/modules/footer/rackspace_logo.png?9270d926595a6ec088a11aa772803b8fabed3902" />
+          </a>
+        </div>
+      </div>
+    </div>
+
+    
+      
+      
+        <!-- current locale:  -->
+        <div class="locales">
+          <div class="site">
+            <ul class="choices">
+              
+                
+                  <li><span class="current">English</span></li>
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://ca.wiki.github.com/saucelabs/sauce/batterie/">Català</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://cs.wiki.github.com/saucelabs/sauce/batterie/">Čeština</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://de.wiki.github.com/saucelabs/sauce/batterie/">Deutsch</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://es.wiki.github.com/saucelabs/sauce/batterie/">Español</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://fr.wiki.github.com/saucelabs/sauce/batterie/">Français</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://hr.wiki.github.com/saucelabs/sauce/batterie/">Hrvatski</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://id.wiki.github.com/saucelabs/sauce/batterie/">Indonesia</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://it.wiki.github.com/saucelabs/sauce/batterie/">Italiano</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://ja.wiki.github.com/saucelabs/sauce/batterie/">日本語</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://nl.wiki.github.com/saucelabs/sauce/batterie/">Nederlands</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://no.wiki.github.com/saucelabs/sauce/batterie/">Norsk</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://pl.wiki.github.com/saucelabs/sauce/batterie/">Polski</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/saucelabs/sauce/batterie/">Português (BR)</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://sr.wiki.github.com/saucelabs/sauce/batterie/">Српски</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://sv.wiki.github.com/saucelabs/sauce/batterie/">Svenska</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://zh.wiki.github.com/saucelabs/sauce/batterie/">中文</a></li>
+                  
+                
+              
+            </ul>
+          </div>
+        </div>
+      
+    
+
+    
+    
+
+    <script type="text/javascript">
+      _kmq.push(['trackClick', 'entice_banner_link', 'Entice banner clicked']);
+      
+    </script>
+    
+  </body>
+</html>
+

@@ -1,0 +1,501 @@
+
+  
+  
+
+  
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <title>Notes on handling audio assets for Digital Cinema - digital_cinema_tools - GitHub</title>
+    <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub" />
+    <link rel="fluid-icon" href="http://github.com/fluidicon.png" title="GitHub" />
+
+    <link href="http://assets2.github.com/stylesheets/bundle_common.css?6b267442a1cb280630a22902d6ef047807d05cdc" media="screen" rel="stylesheet" type="text/css" />
+<link href="http://assets1.github.com/stylesheets/bundle_github.css?6b267442a1cb280630a22902d6ef047807d05cdc" media="screen" rel="stylesheet" type="text/css" />
+
+    <script type="text/javascript" charset="utf-8">
+      var GitHub = {}
+      var github_user = null
+      
+    </script>
+    <script src="http://assets0.github.com/javascripts/jquery/jquery-1.4.2.min.js?6b267442a1cb280630a22902d6ef047807d05cdc" type="text/javascript"></script>
+    <script src="http://assets0.github.com/javascripts/bundle_common.js?6b267442a1cb280630a22902d6ef047807d05cdc" type="text/javascript"></script>
+<script src="http://assets1.github.com/javascripts/bundle_github.js?6b267442a1cb280630a22902d6ef047807d05cdc" type="text/javascript"></script>
+
+        <script type="text/javascript" charset="utf-8">
+      GitHub.spy({
+        repo: "wolfgangw/digital_cinema_tools"
+      })
+    </script>
+
+    
+  <link href="http://github.com/wolfgangw/digital_cinema_tools/commits/master.atom" rel="alternate" title="Recent Commits to digital_cinema_tools:master" type="application/atom+xml" />
+
+        <meta name="description" content="Collection of useful scripts and notes for an open source based digital cinema pipeline" />
+    <script type="text/javascript">
+      GitHub.nameWithOwner = GitHub.nameWithOwner || "wolfgangw/digital_cinema_tools";
+      GitHub.currentRef = 'master';
+    </script>
+  
+
+            <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-3769691-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script');
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        ga.setAttribute('async', 'true');
+        document.documentElement.firstChild.appendChild(ga);
+      })();
+    </script>
+
+  </head>
+
+  
+
+  <body>
+    
+
+    
+      <script type="text/javascript">
+        var _kmq = _kmq || [];
+        function _kms(u){
+          var s = document.createElement('script'); var f = document.getElementsByTagName('script')[0]; s.type = 'text/javascript'; s.async = true;
+          s.src = u; f.parentNode.insertBefore(s, f);
+        }
+        _kms('//i.kissmetrics.com/i.js');_kms('//doug1izaerwt3.cloudfront.net/406e8bf3a2b8846ead55afb3cfaf6664523e3a54.1.js');
+      </script>
+    
+
+    
+
+    
+
+    
+
+    <div class="" id="main">
+      <div id="header" class="pageheaded">
+        <div class="site">
+          <div class="logo">
+            <a href="http://github.com"><img src="/images/modules/header/logov3.png" alt="github" /></a>
+          </div>
+          
+          <div class="topsearch">
+  
+    <form action="http://github.com/search" id="top_search_form" method="get">
+      <a href="http://github.com/search" class="advanced-search tooltipped downwards" title="Advanced Search">Advanced Search</a>
+      <input type="search" class="search my_repos_autocompleter" name="q" results="5" placeholder="Search&hellip;" /> <input type="submit" value="Search" class="button" />
+      <input type="hidden" name="type" value="Everything" />
+      <input type="hidden" name="repo" value="" />
+      <input type="hidden" name="langOverride" value="" />
+      <input type="hidden" name="start_value" value="1" />
+    </form>
+  
+  
+    <ul class="nav logged_out">
+      
+        <li><a href="http://github.com">Home</a></li>
+        <li class="pricing"><a href="http://github.com/plans">Pricing and Signup</a></li>
+        <li><a href="http://github.com/explore">Explore GitHub</a></li>
+        
+        <li><a href="/blog">Blog</a></li>
+      
+      <li></li>
+    </ul>
+  
+</div>
+
+        </div>
+      </div>
+
+      
+      
+        
+    <div class="site">
+      <div class="pagehead repohead vis-public   emptyrepohead shortdetails">
+        <h1>
+          <a href="/wolfgangw">wolfgangw</a> / <strong><a href="http://github.com/wolfgangw/digital_cinema_tools">digital_cinema_tools</a></strong>
+          
+          
+        </h1>
+
+        
+    <ul class="actions">
+      
+
+      
+      
+      <li class="repostats">
+        <ul class="repo-stats">
+          <li class="watchers"><a href="http://github.com/wolfgangw/digital_cinema_tools/watchers" title="Watchers" class="tooltipped downwards">5</a></li>
+          <li class="forks"><a href="http://github.com/wolfgangw/digital_cinema_tools/network" title="Forks" class="tooltipped downwards">2</a></li>
+        </ul>
+      </li>
+    </ul>
+
+
+        
+  <ul class="tabs">
+    <li><a href="http://github.com/wolfgangw/digital_cinema_tools/tree/master" highlight="repo_source">Source</a></li>
+    <li><a href="http://github.com/wolfgangw/digital_cinema_tools/commits/master" highlight="repo_commits">Commits</a></li>
+
+    
+    <li><a href="http://github.com/wolfgangw/digital_cinema_tools/network" highlight="repo_network">Network</a></li>
+
+    
+
+    
+
+    
+      
+      <li><a href="http://github.com/wolfgangw/digital_cinema_tools/downloads">Downloads</a></li>
+    
+
+          
+      <li><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Wiki</a></li>
+    
+    <li><a href="http://github.com/wolfgangw/digital_cinema_tools/graphs" highlight="repo_graphs">Graphs</a></li>
+
+    <li class="contextswitch nochoices">
+      <span class="toggle leftwards" >
+        <em>Branch:</em>
+        <code>master</code>
+      </span>
+    </li>
+  </ul>
+
+  <div style="display:none" id="pl-description"><p><em class="placeholder">click here to add a description</em></p></div>
+  <div style="display:none" id="pl-homepage"><p><em class="placeholder">click here to add a homepage</em></p></div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+
+        
+
+        
+
+      </div><!-- /.pagehead -->
+
+      
+
+<div id="repos">
+  
+
+
+<script type="text/javascript">
+  GitHub.currentCommitRef = 'master'
+  GitHub.currentRepoOwner = 'wolfgangw'
+  GitHub.currentRepo = "digital_cinema_tools"
+  GitHub.downloadRepo = '/wolfgangw/digital_cinema_tools/archives/master'
+
+  
+
+  
+</script>
+
+
+
+
+
+
+
+
+</div>
+
+<div id="guides">
+  <div class="guide">
+    <!-- main content -->
+
+    
+    <div class="main">
+
+      
+        <div class="actions">
+          <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a> |
+          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/notes-on-handling-audio-assets-for-digital-cinema/edit">Edit</a> |
+          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/new">New</a>
+        </div>
+      
+
+
+      <h1>Notes on handling audio assets for Digital Cinema</h1>
+
+      <div class="wikistyle">
+        <p><a href="http://www.cinecert.com/asdcplib/">asdcplib</a> is a reference implementation of <span class="caps">SMPTE</span> and <span class="caps">MXF</span> Interop &#8220;Sound &amp; Picture Track File&#8221; formats. You can use it on the command line to stuff digital cinema assets into <span class="caps">MXF</span> &#8220;containers&#8221;, calculate message digests of these containers (needed in <span class="caps">CPL</span> and <span class="caps">PKL</span>), generate UUIDs, extract track essence etc.</p>
+<ul>
+	<li><strong>How to map discrete audio files</strong>: <span class="caps">DCI</span> allows for 5.1, 7.1 and up to 14 tracks + HI (hearing impaired listeners track) + VI (visually impaired listeners track). asdcplib&#8217;s main tool <strong>asdcp-test</strong> maps given audio files in the order they appear on the command line.</li>
+</ul>
+<p>In order to map discrete 5.1 files you would tell asdcp-test to</p>
+<p><code>asdcp-test -c audio.mxf audio_left.wav audio_right.wav audio_center.wav audio_low_frequency_effect.wav audio_left_surround.wav audio_right_surround.wav</code></p>
+<p>because <code>L - R - C - LFE - LS - LR</code> is the 6-channel mapping order specified in the <a href="http://www.dcimovies.com/specification/index.tt2"><span class="caps">DCI</span> specs</a> (See section <i>3.3.3 Channel Mapping</i> for 6-channel and 8-channel mappings).</p>
+<p>Also see asdcplib&#8217;s <code>src/AS_DCP.h</code>:<br />
+<code>CF_CFG_1, // 5.1 with optional HI/VI</code><br />
+<code>CF_CFG_2, // 6.1 (5.1 + center surround) with optional HI/VI</code><br />
+<code>CF_CFG_3, // 7.1 with optional HI/VI</code></p>
+<ul>
+	<li><strong>Notes for a ffmpeg/sox audio pipeline</strong>:
+	<ul>
+		<li>relevant ffmpeg options:
+		<ul>
+			<li>-acodec (see available formats with &#8220;ffmpeg -formats&#8221;, among those see pcm_s24daud/<span class="caps">PCM</span> D-Cinema audio signed 24-bit)</li>
+			<li>-map (set stream mapping from input streams to output streams)</li>
+			<li>-ar (set the audio sampling frequency)</li>
+			<li>-ac (set the number of audio channels)</li>
+			<li>-vn (disable video)</li>
+			<li>-sn (disable subtitle)</li>
+		</ul></li>
+		<li>relevant sox options:
+		<ul>
+			<li>-t wavpcm (see Peter Forret&#8217;s <a href="http://code.google.com/p/opencinematools/issues/detail?id=29#c0">initial report</a> and <a href="http://code.google.com/p/opencinematools/issues/detail?id=29#c2">his findings</a>. Also see Peter&#8217;s <a href="http://code.google.com/p/dcptoolkit/">dcptoolkit project pages</a>)</li>
+		</ul></li>
+	</ul></li>
+</ul>
+      </div>
+    </div>
+    
+    <!-- sidebar -->
+
+    <div class="sidebar">
+      <h3>
+        Pages
+        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets2.github.com/images/icons/feed.png?6b267442a1cb280630a22902d6ef047807d05cdc" title="Feed of recent digital_cinema_tools wiki edits" /></a>
+      </h3>
+      
+
+
+<ul>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides">Cinemaslides</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema">Digital Cinema</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools">Home</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc">MISC</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/mpeg2-essence-support-for-opencinematools-112">MPEG2 essence support for opencinematools 1.1.2</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat">Mystery Meat</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes">Notes</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-dci-specification-and-related-smpte-papers">Notes on DCI specification and related SMPTE papers</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema">Notes on handling audio assets for Digital Cinema</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline">Open source tools for a digital cinema pipeline</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/scripts">Scripts</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/todo">TODO</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut">White Gamut</a></b></li>
+  
+</ul>
+
+      
+    </div>
+
+  </div>
+
+    <!-- admin -->
+
+      <div class="admin">
+      <div style="float:left;">
+        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-05-16 12:40:51">Sun May 16 12:40:51 -0700 2010</abbr></small>
+
+        <div class="actions">
+          <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a>
+          | <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/notes-on-handling-audio-assets-for-digital-cinema/edit">Edit</a> |
+          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/new">New</a>
+        </div>
+      </div>
+
+      <div style="float:right;">
+        <small>Versions:</small>
+        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/notes-on-handling-audio-assets-for-digital-cinema">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/18">Version 18 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/17">Version 17 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/16">Version 16 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/15">Version 15 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/14">Version 14 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/13">Version 13 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/12">Version 12 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/11">Version 11 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/10">Version 10 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/9">Version 9 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/8">Version 8 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/7">Version 7 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/6">Version 6 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/5">Version 5 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema/1">Version 1 by wolfgangw</option></select>
+      </div>
+    </div>
+    </div>
+    </div>
+  
+      
+
+      <div class="push"></div>
+    </div>
+
+    <div id="footer">
+      <div class="site">
+        <div class="info">
+          <div class="links">
+            <a href="http://github.com/blog"><b>Blog</b></a> |
+            <a href="http://support.github.com">Support</a> |
+            <a href="http://github.com/training">Training</a> |
+            <a href="http://github.com/contact">Contact</a> |
+            <a href="http://develop.github.com">API</a> |
+            <a href="http://status.github.com">Status</a> |
+            <a href="http://twitter.com/github">Twitter</a> |
+            <a href="http://help.github.com">Help</a> |
+            <a href="http://github.com/security">Security</a>
+          </div>
+          <div class="company">
+            &copy;
+            2010
+            <span id="_rrt" title="0.08845s from fe2.rs.github.com">GitHub</span> Inc.
+            All rights reserved. |
+            <a href="/site/terms">Terms of Service</a> |
+            <a href="/site/privacy">Privacy Policy</a>
+          </div>
+        </div>
+        <div class="sponsor">
+          <div>
+            Powered by the <a href="http://www.rackspace.com">Dedicated
+            Servers</a> and<br/> <a href="http://www.rackspacecloud.com">Cloud
+            Computing</a> of Rackspace Hosting<span>&reg;</span>
+          </div>
+          <a href="http://www.rackspace.com">
+            <img alt="Dedicated Server" src="http://assets0.github.com/images/modules/footer/rackspace_logo.png?6b267442a1cb280630a22902d6ef047807d05cdc" />
+          </a>
+        </div>
+      </div>
+    </div>
+
+    
+      
+      
+        <!-- current locale:  -->
+        <div class="locales">
+          <div class="site">
+            <ul class="choices">
+              
+                
+                  <li><span class="current">English</span></li>
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://ca.wiki.github.com/DHowett/theos/">Català</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://cs.wiki.github.com/DHowett/theos/">Čeština</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://de.wiki.github.com/DHowett/theos/">Deutsch</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://es.wiki.github.com/DHowett/theos/">Español</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://fr.wiki.github.com/DHowett/theos/">Français</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://hr.wiki.github.com/DHowett/theos/">Hrvatski</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://id.wiki.github.com/DHowett/theos/">Indonesia</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://it.wiki.github.com/DHowett/theos/">Italiano</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://ja.wiki.github.com/DHowett/theos/">日本語</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://nl.wiki.github.com/DHowett/theos/">Nederlands</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://no.wiki.github.com/DHowett/theos/">Norsk</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://pl.wiki.github.com/DHowett/theos/">Polski</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/DHowett/theos/">Português (BR)</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://sr.wiki.github.com/DHowett/theos/">Српски</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://sv.wiki.github.com/DHowett/theos/">Svenska</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://zh.wiki.github.com/DHowett/theos/">中文</a></li>
+                  
+                
+              
+            </ul>
+          </div>
+        </div>
+      
+    
+
+    
+    
+
+    <script type="text/javascript">
+      _kmq.push(['trackClick', 'entice_banner_link', 'Entice banner clicked']);
+      
+    </script>
+    
+  </body>
+</html>
+

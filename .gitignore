@@ -1,3 +1,4 @@
-github.readme
-.gitignore
 *~
+housekeeping.readme
+github.readme
+update_wiki_backup.sh
