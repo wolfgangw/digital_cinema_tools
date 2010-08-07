@@ -16,17 +16,17 @@
     <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub" />
     <link rel="fluid-icon" href="http://github.com/fluidicon.png" title="GitHub" />
 
-    <link href="http://assets2.github.com/stylesheets/bundle_common.css?6b267442a1cb280630a22902d6ef047807d05cdc" media="screen" rel="stylesheet" type="text/css" />
-<link href="http://assets1.github.com/stylesheets/bundle_github.css?6b267442a1cb280630a22902d6ef047807d05cdc" media="screen" rel="stylesheet" type="text/css" />
+    <link href="http://assets0.github.com/stylesheets/bundle_common.css?9270d926595a6ec088a11aa772803b8fabed3902" media="screen" rel="stylesheet" type="text/css" />
+<link href="http://assets3.github.com/stylesheets/bundle_github.css?9270d926595a6ec088a11aa772803b8fabed3902" media="screen" rel="stylesheet" type="text/css" />
 
     <script type="text/javascript" charset="utf-8">
       var GitHub = {}
       var github_user = null
       
     </script>
-    <script src="http://assets0.github.com/javascripts/jquery/jquery-1.4.2.min.js?6b267442a1cb280630a22902d6ef047807d05cdc" type="text/javascript"></script>
-    <script src="http://assets0.github.com/javascripts/bundle_common.js?6b267442a1cb280630a22902d6ef047807d05cdc" type="text/javascript"></script>
-<script src="http://assets1.github.com/javascripts/bundle_github.js?6b267442a1cb280630a22902d6ef047807d05cdc" type="text/javascript"></script>
+    <script src="http://assets1.github.com/javascripts/jquery/jquery-1.4.2.min.js?9270d926595a6ec088a11aa772803b8fabed3902" type="text/javascript"></script>
+    <script src="http://assets1.github.com/javascripts/bundle_common.js?9270d926595a6ec088a11aa772803b8fabed3902" type="text/javascript"></script>
+<script src="http://assets2.github.com/javascripts/bundle_github.js?9270d926595a6ec088a11aa772803b8fabed3902" type="text/javascript"></script>
 
         <script type="text/javascript" charset="utf-8">
       GitHub.spy({
@@ -134,7 +134,7 @@
       
       <li class="repostats">
         <ul class="repo-stats">
-          <li class="watchers"><a href="http://github.com/wolfgangw/digital_cinema_tools/watchers" title="Watchers" class="tooltipped downwards">5</a></li>
+          <li class="watchers"><a href="http://github.com/wolfgangw/digital_cinema_tools/watchers" title="Watchers" class="tooltipped downwards">6</a></li>
           <li class="forks"><a href="http://github.com/wolfgangw/digital_cinema_tools/network" title="Forks" class="tooltipped downwards">2</a></li>
         </ul>
       </li>
@@ -174,6 +174,7 @@
   <div style="display:none" id="pl-description"><p><em class="placeholder">click here to add a description</em></p></div>
   <div style="display:none" id="pl-homepage"><p><em class="placeholder">click here to add a homepage</em></p></div>
 
+  
   
   
   
@@ -238,6 +239,17 @@
 <p>Key problem being the massive amount of cycles the JPEG2000 encoding consumes. There is no way around dedicated hardware to solve this, really. Any general-purpose-<span class="caps">CPU</span>-based implementation will eventually fall behind the parallel computing power of specialized hardware, I reckon: There are <span class="caps">FPGA</span>/<span class="caps">ASIC</span> solutions (not easily affordable) and there is <span class="caps">CUDA</span> (on off-the-shelf GPUs, quite affordable) and the likes. I&#8217;ll definitely be looking more into the latter. See <a href="http://cuj2k.sourceforge.net/index.html">CUJ2K</a> for an example &#8212; alas, as of February 2010, CUJ2K v1.1 does not produce <span class="caps">DCI</span> compliant <a href="http://www.digitalpreservation.gov/formats/fdd/fdd000212.shtml">Profile-3</a> and <a href="http://www.digitalpreservation.gov/formats/fdd/fdd000213.shtml">Profile-4</a> codestreams. Maybe that can change.</p>
 <p>Efficiency: Setting up a shell script to walk all those steps is as easy as it is inefficient. Every image file would be touched a number of times. Every step would involve disk access to and fro. Some of the tools are not multi-threaded. Etc.pp.</p>
 <p>Still, it&#8217;s a perfectly viable process for tests and short features. And, most of all, it&#8217;s a transparent process.</p>
+<p>Required steps:</p>
+<ol>
+	<li>Prepare the source material (Create an image sequence, wrap audio in Broadcast <span class="caps">WAV</span> container)</li>
+	<li>Linearize (s)<span class="caps">RGB</span></li>
+	<li>Transform color from source color to <span class="caps">XYZ</span> (see this <a href="http://www.youtube.com/watch?v=x0-qoXOCOow">nice visual <span class="caps">CIE</span> <span class="caps">XYZ</span> primer</a>)</li>
+	<li>Chromatic adaptation to the targeted white point (need to understand the problem better, see <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut">White Gamut</a>)</li>
+	<li>Encode with <span class="caps">SMPTE</span> spec&#8217;d gamma (2.6)</li>
+	<li>Compress to JPEG2000 codestream files (The <span class="caps">JPEG</span> 2000 Profiles 3 and 4, used here, are lossy, btw)</li>
+	<li>Collect assets (images, audio) in <span class="caps">MXF</span> containers/streams</li>
+	<li>Create the basic infrastructure of a <span class="caps">DCP</span> (composition playlist, packing list, assetmap, volindex)</li>
+</ol>
 <ul>
 	<li><strong>How to create an image sequence from a video file</strong>: <a href="http://ffmpeg.org/">FFmpeg</a> and <a href="http://www.mplayerhq.hu/design7/news.html">MPlayer/Mencoder</a> are swiss army knives for pretty much anything you want to do with video and image sequences. In this context FFmpeg is used to create an image sequence from a given video file.</li>
 </ul>
@@ -250,10 +262,10 @@
 <p>Check out Bruce Lindbloom&#8217;s <a href="http://www.brucelindbloom.com/">great math and color pages</a>. See <a href="http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html"><span class="caps">RGB</span>/<span class="caps">XYZ</span> Matrices</a> for <span class="caps">RGB</span> &lt;&gt; <span class="caps">XYZ</span> color transform equations and important notes.</p>
 <p>For example (assuming sRGB source)</p>
 <p><code>for f in *tiff; do echo $f; convert $f -alpha off -depth 12 -gamma 0.454545 -resize 1998x1080 -recolor "0.4124564 0.3575761 0.1804375 0.2126729 0.7151522 0.0721750 0.0193339 0.1191920 0.9503041" -gamma 2.6 xyz-2.6-$f; done</code></p>
-<p>takes all tiffs in the current directory, drops the alpha channel, adjusts bit-depth to the <span class="caps">DCI</span> spec&#8217;d 12 bits per component (depending on the material you throw at it this will truncate or pad least significant bits), decodes gamma (from sRGB&#8217;s standard and <em>approximated</em> 2.2), scales to 2K (keeping the original aspect ratio), applies an sRGB to <span class="caps">XYZ</span> color transform and finally encodes to the <span class="caps">DCI</span> spec&#8217;d gamma of 2.6. (You want to transform color with linear values, hence the gamma decode, then the color transform and then the concluding gamma encode.)</p>
+<p>takes all tiffs in the current directory, drops the alpha channel, scales bit-depth to the <span class="caps">SMPTE</span> spec&#8217;d 12 bits per component, decodes gamma (from sRGB&#8217;s standard and <em>approximated</em> 2.2), scales to 2K (keeping the original aspect ratio), applies an sRGB to <span class="caps">XYZ</span> color transform and finally encodes to the <span class="caps">SMPTE</span> spec&#8217;d gamma of 2.6. (You want to transform color with linear values, hence the gamma decode, then the color transform and then the concluding gamma encode.)</p>
 <p>The convert above merely demonstrates a number of operations. It would have to be tweaked to meet any real-world requirements:</p>
 <ol>
-	<li>With ImageMagick the order of operators and settings matters. If your source material has 16-bit color channels you wouldn&#8217;t want to truncate to 12 bits <em>before</em> gamma decoding or scaling or the color transform but <em>afterwards</em>, and probably before the gamma encoding with 2.6.</li>
+	<li>With ImageMagick the order of operators and settings matters. If your source material has 16-bit color channels you wouldn&#8217;t want to scale to 12 bits <em>before</em> gamma decoding or scaling or the color transform but <em>afterwards</em>.</li>
 	<li>sRGB&#8217;s gamma is not exactly 2.2. A correct linearization of sRGB would be<br />
 <code>convert srgb-gradient.tiff -fx "p &lt;= 0.04045 ? p/12.92 : ((p + 0.055) / 1.055) ^ 2.4" linear.tiff</code><br />
 There&#8217;s a linear part for values below 0.04045 and a power function for higher values. The difference is subtle but real (Easy to see with gradients and a posterize action to, like, 16 levels). Because color transforms have to be performed on linear values any errors from linearization will propagate into color errors on the silver screen. Big sign, right up there: &#8220;Color wrong! Terminate!&#8221;, you know the drill. Seriously: this will matter if your grading choices were made in a calibrated mastering environment. And if your material has the bits to show the difference. Or if you&#8217;re somewhat fussy about numbers. Or if your vision is trained and specialized in detecting subtle differences. So, there&#8217;s clearly a million of reasons to do sRGB linearization right, right? Alas, ImageMagick&#8217;s <code>-fx</code> operator, while powerful, is quite cpu-expensive. And, unfortunately, ImageMagick&#8217;s LUT&#8217;s are even slower. Any <span class="caps">CUDA</span> geeks out there writing FastLUT?<br />
@@ -276,7 +288,7 @@ See <a href="http://en.wikipedia.org/wiki/SRGB#Specification_of_the_transformati
     <div class="sidebar">
       <h3>
         Pages
-        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets2.github.com/images/icons/feed.png?6b267442a1cb280630a22902d6ef047807d05cdc" title="Feed of recent digital_cinema_tools wiki edits" /></a>
+        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets0.github.com/images/icons/feed.png?9270d926595a6ec088a11aa772803b8fabed3902" title="Feed of recent digital_cinema_tools wiki edits" /></a>
       </h3>
       
 
@@ -320,7 +332,7 @@ See <a href="http://en.wikipedia.org/wiki/SRGB#Specification_of_the_transformati
 
       <div class="admin">
       <div style="float:left;">
-        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-05-29 16:20:14">Sat May 29 16:20:14 -0700 2010</abbr></small>
+        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-08-07 13:08:54">Sat Aug 07 13:08:54 -0700 2010</abbr></small>
 
         <div class="actions">
           <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a>
@@ -331,7 +343,7 @@ See <a href="http://en.wikipedia.org/wiki/SRGB#Specification_of_the_transformati
 
       <div style="float:right;">
         <small>Versions:</small>
-        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/open-source-tools-for-a-digital-cinema-pipeline">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/29">Version 29 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/28">Version 28 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/27">Version 27 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/26">Version 26 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/25">Version 25 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/24">Version 24 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/23">Version 23 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/22">Version 22 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/21">Version 21 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/20">Version 20 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/19">Version 19 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/18">Version 18 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/17">Version 17 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/16">Version 16 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/15">Version 15 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/14">Version 14 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/13">Version 13 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/12">Version 12 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/11">Version 11 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/10">Version 10 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/9">Version 9 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/8">Version 8 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/7">Version 7 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/6">Version 6 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/5">Version 5 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/1">Version 1 by wolfgangw</option></select>
+        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/open-source-tools-for-a-digital-cinema-pipeline">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/31">Version 31 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/30">Version 30 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/29">Version 29 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/28">Version 28 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/27">Version 27 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/26">Version 26 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/25">Version 25 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/24">Version 24 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/23">Version 23 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/22">Version 22 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/21">Version 21 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/20">Version 20 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/19">Version 19 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/18">Version 18 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/17">Version 17 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/16">Version 16 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/15">Version 15 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/14">Version 14 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/13">Version 13 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/12">Version 12 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/11">Version 11 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/10">Version 10 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/9">Version 9 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/8">Version 8 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/7">Version 7 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/6">Version 6 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/5">Version 5 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/1">Version 1 by wolfgangw</option></select>
       </div>
     </div>
     </div>
@@ -349,6 +361,7 @@ See <a href="http://en.wikipedia.org/wiki/SRGB#Specification_of_the_transformati
             <a href="http://github.com/blog"><b>Blog</b></a> |
             <a href="http://support.github.com">Support</a> |
             <a href="http://github.com/training">Training</a> |
+            <a href="http://jobs.github.com">Job Board</a> |
             <a href="http://github.com/contact">Contact</a> |
             <a href="http://develop.github.com">API</a> |
             <a href="http://status.github.com">Status</a> |
@@ -359,7 +372,7 @@ See <a href="http://en.wikipedia.org/wiki/SRGB#Specification_of_the_transformati
           <div class="company">
             &copy;
             2010
-            <span id="_rrt" title="0.11638s from fe4.rs.github.com">GitHub</span> Inc.
+            <span id="_rrt" title="0.09775s from fe3.rs.github.com">GitHub</span> Inc.
             All rights reserved. |
             <a href="/site/terms">Terms of Service</a> |
             <a href="/site/privacy">Privacy Policy</a>
@@ -372,122 +385,124 @@ See <a href="http://en.wikipedia.org/wiki/SRGB#Specification_of_the_transformati
             Computing</a> of Rackspace Hosting<span>&reg;</span>
           </div>
           <a href="http://www.rackspace.com">
-            <img alt="Dedicated Server" src="http://assets0.github.com/images/modules/footer/rackspace_logo.png?6b267442a1cb280630a22902d6ef047807d05cdc" />
+            <img alt="Dedicated Server" src="http://assets2.github.com/images/modules/footer/rackspace_logo.png?9270d926595a6ec088a11aa772803b8fabed3902" />
           </a>
         </div>
       </div>
     </div>
 
     
-    
-      <!-- current locale:  -->
-      <div class="locales">
-        <div class="site">
-          <ul class="choices">
-            
-              
-                <li><span class="current">English</span></li>
-              
-            
+      
+      
+        <!-- current locale:  -->
+        <div class="locales">
+          <div class="site">
+            <ul class="choices">
               
                 
-                  <li><a rel="nofollow" href="http://ca.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">Català</a></li>
+                  <li><span class="current">English</span></li>
                 
               
-            
-              
                 
-                  <li><a rel="nofollow" href="http://cs.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">Čeština</a></li>
-                
-              
-            
-              
-                
-                  <li><a rel="nofollow" href="http://de.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">Deutsch</a></li>
+                  
+                    <li><a rel="nofollow" href="http://ca.wiki.github.com/saucelabs/sauce/batterie/">Català</a></li>
+                  
                 
               
-            
-              
                 
-                  <li><a rel="nofollow" href="http://es.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">Español</a></li>
-                
-              
-            
-              
-                
-                  <li><a rel="nofollow" href="http://fr.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">Français</a></li>
+                  
+                    <li><a rel="nofollow" href="http://cs.wiki.github.com/saucelabs/sauce/batterie/">Čeština</a></li>
+                  
                 
               
-            
-              
                 
-                  <li><a rel="nofollow" href="http://hr.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">Hrvatski</a></li>
-                
-              
-            
-              
-                
-                  <li><a rel="nofollow" href="http://id.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">Indonesia</a></li>
+                  
+                    <li><a rel="nofollow" href="http://de.wiki.github.com/saucelabs/sauce/batterie/">Deutsch</a></li>
+                  
                 
               
-            
-              
                 
-                  <li><a rel="nofollow" href="http://it.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">Italiano</a></li>
-                
-              
-            
-              
-                
-                  <li><a rel="nofollow" href="http://ja.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">日本語</a></li>
+                  
+                    <li><a rel="nofollow" href="http://es.wiki.github.com/saucelabs/sauce/batterie/">Español</a></li>
+                  
                 
               
-            
-              
                 
-                  <li><a rel="nofollow" href="http://nl.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">Nederlands</a></li>
-                
-              
-            
-              
-                
-                  <li><a rel="nofollow" href="http://no.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">Norsk</a></li>
+                  
+                    <li><a rel="nofollow" href="http://fr.wiki.github.com/saucelabs/sauce/batterie/">Français</a></li>
+                  
                 
               
-            
-              
                 
-                  <li><a rel="nofollow" href="http://pl.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">Polski</a></li>
-                
-              
-            
-              
-                
-                  <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">Português (BR)</a></li>
+                  
+                    <li><a rel="nofollow" href="http://hr.wiki.github.com/saucelabs/sauce/batterie/">Hrvatski</a></li>
+                  
                 
               
-            
-              
                 
-                  <li><a rel="nofollow" href="http://sr.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">Српски</a></li>
-                
-              
-            
-              
-                
-                  <li><a rel="nofollow" href="http://sv.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">Svenska</a></li>
+                  
+                    <li><a rel="nofollow" href="http://id.wiki.github.com/saucelabs/sauce/batterie/">Indonesia</a></li>
+                  
                 
               
-            
+                
+                  
+                    <li><a rel="nofollow" href="http://it.wiki.github.com/saucelabs/sauce/batterie/">Italiano</a></li>
+                  
+                
               
                 
-                  <li><a rel="nofollow" href="http://zh.wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline/">中文</a></li>
+                  
+                    <li><a rel="nofollow" href="http://ja.wiki.github.com/saucelabs/sauce/batterie/">日本語</a></li>
+                  
                 
               
-            
-          </ul>
+                
+                  
+                    <li><a rel="nofollow" href="http://nl.wiki.github.com/saucelabs/sauce/batterie/">Nederlands</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://no.wiki.github.com/saucelabs/sauce/batterie/">Norsk</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://pl.wiki.github.com/saucelabs/sauce/batterie/">Polski</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/saucelabs/sauce/batterie/">Português (BR)</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://sr.wiki.github.com/saucelabs/sauce/batterie/">Српски</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://sv.wiki.github.com/saucelabs/sauce/batterie/">Svenska</a></li>
+                  
+                
+              
+                
+                  
+                    <li><a rel="nofollow" href="http://zh.wiki.github.com/saucelabs/sauce/batterie/">中文</a></li>
+                  
+                
+              
+            </ul>
+          </div>
         </div>
-      </div>
+      
     
 
     

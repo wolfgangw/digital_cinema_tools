@@ -238,7 +238,7 @@
         <ul>
 	<li>Check FFmpeg&#8217;s handling of video bit-depths</li>
 	<li>Robust audio conform (frame boundary alignment, resampling, bit-depth, channel mapping)</li>
-	<li>Subtitles</li>
+	<li>Subtitles (<span class="caps">SMPTE</span>-429-5-2009)</li>
 	<li>MPEG2 <span class="caps">MXF</span> Interop. <span class="caps">XDC</span> G3 offers up to 160Mbps (4:2:0, 8 bits/channel, YCbCr), what about other platforms?</li>
 </ul>
       </div>
@@ -293,7 +293,7 @@
 
       <div class="admin">
       <div style="float:left;">
-        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-03-21 12:38:49">Sun Mar 21 12:38:49 -0700 2010</abbr></small>
+        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-08-07 05:52:45">Sat Aug 07 05:52:45 -0700 2010</abbr></small>
 
         <div class="actions">
           <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a>
@@ -304,7 +304,7 @@
 
       <div style="float:right;">
         <small>Versions:</small>
-        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/todo">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/todo/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/todo/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/todo/1">Version 1 by wolfgangw</option></select>
+        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/todo">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/todo/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/todo/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/todo/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/todo/1">Version 1 by wolfgangw</option></select>
       </div>
     </div>
     </div>
@@ -333,7 +333,7 @@
           <div class="company">
             &copy;
             2010
-            <span id="_rrt" title="0.07910s from fe1.rs.github.com">GitHub</span> Inc.
+            <span id="_rrt" title="0.09384s from fe3.rs.github.com">GitHub</span> Inc.
             All rights reserved. |
             <a href="/site/terms">Terms of Service</a> |
             <a href="/site/privacy">Privacy Policy</a>
