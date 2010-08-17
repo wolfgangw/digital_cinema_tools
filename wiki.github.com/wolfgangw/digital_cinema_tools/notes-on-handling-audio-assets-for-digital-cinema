@@ -1,6 +1,5 @@
 
   
-  
 
   
 
@@ -16,17 +15,17 @@
     <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub" />
     <link rel="fluid-icon" href="http://github.com/fluidicon.png" title="GitHub" />
 
-    <link href="http://assets2.github.com/stylesheets/bundle_common.css?6b267442a1cb280630a22902d6ef047807d05cdc" media="screen" rel="stylesheet" type="text/css" />
-<link href="http://assets1.github.com/stylesheets/bundle_github.css?6b267442a1cb280630a22902d6ef047807d05cdc" media="screen" rel="stylesheet" type="text/css" />
+    <link href="http://assets3.github.com/stylesheets/bundle_common.css?05110c23efe3df8234b1145740f221b7862ffb84" media="screen" rel="stylesheet" type="text/css" />
+<link href="http://assets3.github.com/stylesheets/bundle_github.css?05110c23efe3df8234b1145740f221b7862ffb84" media="screen" rel="stylesheet" type="text/css" />
 
     <script type="text/javascript" charset="utf-8">
       var GitHub = {}
       var github_user = null
       
     </script>
-    <script src="http://assets0.github.com/javascripts/jquery/jquery-1.4.2.min.js?6b267442a1cb280630a22902d6ef047807d05cdc" type="text/javascript"></script>
-    <script src="http://assets0.github.com/javascripts/bundle_common.js?6b267442a1cb280630a22902d6ef047807d05cdc" type="text/javascript"></script>
-<script src="http://assets1.github.com/javascripts/bundle_github.js?6b267442a1cb280630a22902d6ef047807d05cdc" type="text/javascript"></script>
+    <script src="http://assets1.github.com/javascripts/jquery/jquery-1.4.2.min.js?05110c23efe3df8234b1145740f221b7862ffb84" type="text/javascript"></script>
+    <script src="http://assets1.github.com/javascripts/bundle_common.js?05110c23efe3df8234b1145740f221b7862ffb84" type="text/javascript"></script>
+<script src="http://assets2.github.com/javascripts/bundle_github.js?05110c23efe3df8234b1145740f221b7862ffb84" type="text/javascript"></script>
 
         <script type="text/javascript" charset="utf-8">
       GitHub.spy({
@@ -60,7 +59,7 @@
 
   
 
-  <body>
+  <body class="logged_out ">
     
 
     
@@ -81,38 +80,29 @@
     
 
     <div class="" id="main">
-      <div id="header" class="pageheaded">
-        <div class="site">
-          <div class="logo">
-            <a href="http://github.com"><img src="/images/modules/header/logov3.png" alt="github" /></a>
-          </div>
-          
-          <div class="topsearch">
-  
-    <form action="http://github.com/search" id="top_search_form" method="get">
-      <a href="http://github.com/search" class="advanced-search tooltipped downwards" title="Advanced Search">Advanced Search</a>
-      <input type="search" class="search my_repos_autocompleter" name="q" results="5" placeholder="Search&hellip;" /> <input type="submit" value="Search" class="button" />
-      <input type="hidden" name="type" value="Everything" />
-      <input type="hidden" name="repo" value="" />
-      <input type="hidden" name="langOverride" value="" />
-      <input type="hidden" name="start_value" value="1" />
-    </form>
-  
+      <div id="header" class="true">
+        
+          <a class="logo boring" href="http://github.com">
+            <img src="/images/modules/header/logov3.png?changed" class="default" alt="github" />
+            <![if !IE]>
+            <img src="/images/modules/header/logov3-hover.png" class="hover" alt="github" />
+            <![endif]>
+          </a>
+        
+        
+        <div class="topsearch">
   
     <ul class="nav logged_out">
-      
-        <li><a href="http://github.com">Home</a></li>
-        <li class="pricing"><a href="http://github.com/plans">Pricing and Signup</a></li>
-        <li><a href="http://github.com/explore">Explore GitHub</a></li>
-        
-        <li><a href="/blog">Blog</a></li>
-      
+      <li><a href="http://github.com">Home</a></li>
+      <li class="pricing"><a href="http://github.com/plans">Pricing and Signup</a></li>
+      <li><a href="http://github.com/training">Training</a></li>
+      <li><a href="http://gist.github.com">Gist</a></li>
+      <li><a href="/blog">Blog</a></li>
       <li></li>
     </ul>
   
 </div>
 
-        </div>
       </div>
 
       
@@ -134,7 +124,7 @@
       
       <li class="repostats">
         <ul class="repo-stats">
-          <li class="watchers"><a href="http://github.com/wolfgangw/digital_cinema_tools/watchers" title="Watchers" class="tooltipped downwards">5</a></li>
+          <li class="watchers"><a href="http://github.com/wolfgangw/digital_cinema_tools/watchers" title="Watchers" class="tooltipped downwards">6</a></li>
           <li class="forks"><a href="http://github.com/wolfgangw/digital_cinema_tools/network" title="Forks" class="tooltipped downwards">2</a></li>
         </ul>
       </li>
@@ -158,9 +148,9 @@
       <li><a href="http://github.com/wolfgangw/digital_cinema_tools/downloads">Downloads</a></li>
     
 
-          
+            
       <li><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Wiki</a></li>
-    
+      
     <li><a href="http://github.com/wolfgangw/digital_cinema_tools/graphs" highlight="repo_graphs">Graphs</a></li>
 
     <li class="contextswitch nochoices">
@@ -272,7 +262,7 @@
     <div class="sidebar">
       <h3>
         Pages
-        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets2.github.com/images/icons/feed.png?6b267442a1cb280630a22902d6ef047807d05cdc" title="Feed of recent digital_cinema_tools wiki edits" /></a>
+        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets0.github.com/images/icons/feed.png?05110c23efe3df8234b1145740f221b7862ffb84" title="Feed of recent digital_cinema_tools wiki edits" /></a>
       </h3>
       
 
@@ -334,45 +324,36 @@
     </div>
   
       
-
-      <div class="push"></div>
     </div>
 
-    <div id="footer">
+    <div id="footer" class="clearfix">
       <div class="site">
-        <div class="info">
-          <div class="links">
-            <a href="http://github.com/blog"><b>Blog</b></a> |
-            <a href="http://support.github.com">Support</a> |
-            <a href="http://github.com/training">Training</a> |
-            <a href="http://github.com/contact">Contact</a> |
-            <a href="http://develop.github.com">API</a> |
-            <a href="http://status.github.com">Status</a> |
-            <a href="http://twitter.com/github">Twitter</a> |
-            <a href="http://help.github.com">Help</a> |
-            <a href="http://github.com/security">Security</a>
-          </div>
-          <div class="company">
-            &copy;
-            2010
-            <span id="_rrt" title="0.08845s from fe2.rs.github.com">GitHub</span> Inc.
-            All rights reserved. |
-            <a href="/site/terms">Terms of Service</a> |
-            <a href="/site/privacy">Privacy Policy</a>
-          </div>
-        </div>
         <div class="sponsor">
-          <div>
-            Powered by the <a href="http://www.rackspace.com">Dedicated
-            Servers</a> and<br/> <a href="http://www.rackspacecloud.com">Cloud
-            Computing</a> of Rackspace Hosting<span>&reg;</span>
-          </div>
-          <a href="http://www.rackspace.com">
-            <img alt="Dedicated Server" src="http://assets0.github.com/images/modules/footer/rackspace_logo.png?6b267442a1cb280630a22902d6ef047807d05cdc" />
+          <a href="http://www.rackspace.com" class="logo">
+            <img alt="Dedicated Server" src="http://assets2.github.com/images/modules/footer/rackspace_logo.png?05110c23efe3df8234b1145740f221b7862ffb84" />
           </a>
+          Powered by the <a href="http://www.rackspace.com ">Dedicated
+          Servers</a> and<br/> <a href="http://www.rackspacecloud.com">Cloud
+          Computing</a> of Rackspace Hosting<span>&reg;</span>
         </div>
+
+        <ul class="links">
+          <li class="blog"><a href="http://github.com/blog">Blog</a></li>
+          <li><a href="http://support.github.com">Support</a></li>
+          <li><a href="http://github.com/training">Training</a></li>
+          <li><a href="http://jobs.github.com">Job Board</a></li>
+          <li><a href="http://github.com/contact">Contact</a></li>
+          <li><a href="http://develop.github.com">API</a></li>
+          <li><a href="http://status.github.com">Status</a></li>
+        </ul>
+        <ul class="sosueme">
+          <li class="main">&copy; 2010 <span id="_rrt" title="0.08750s from fe1.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
+          <li><a href="/site/terms">Terms of Service</a></li>
+          <li><a href="/site/privacy">Privacy</a></li>
+          <li><a href="http://github.com/security">Security</a></li>
+        </ul>
       </div>
-    </div>
+    </div><!-- /#footer -->
 
     
       
@@ -380,116 +361,151 @@
         <!-- current locale:  -->
         <div class="locales">
           <div class="site">
-            <ul class="choices">
+
+            <ul class="choices clearfix limited-locales">
+              <li><span class="current">English</span></li>
               
                 
-                  <li><span class="current">English</span></li>
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://ca.wiki.github.com/DHowett/theos/">Català</a></li>
-                  
+                  <li><a rel="nofollow" href="http://de.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Deutsch</a></li>
                 
               
                 
-                  
-                    <li><a rel="nofollow" href="http://cs.wiki.github.com/DHowett/theos/">Čeština</a></li>
-                  
+                  <li><a rel="nofollow" href="http://fr.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Français</a></li>
                 
               
                 
-                  
-                    <li><a rel="nofollow" href="http://de.wiki.github.com/DHowett/theos/">Deutsch</a></li>
-                  
+                  <li><a rel="nofollow" href="http://ja.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">日本語</a></li>
                 
               
                 
-                  
-                    <li><a rel="nofollow" href="http://es.wiki.github.com/DHowett/theos/">Español</a></li>
-                  
+                  <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Português (BR)</a></li>
                 
               
                 
-                  
-                    <li><a rel="nofollow" href="http://fr.wiki.github.com/DHowett/theos/">Français</a></li>
-                  
+                  <li><a rel="nofollow" href="http://zh.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">中文</a></li>
                 
               
-                
-                  
-                    <li><a rel="nofollow" href="http://hr.wiki.github.com/DHowett/theos/">Hrvatski</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://id.wiki.github.com/DHowett/theos/">Indonesia</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://it.wiki.github.com/DHowett/theos/">Italiano</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://ja.wiki.github.com/DHowett/theos/">日本語</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://nl.wiki.github.com/DHowett/theos/">Nederlands</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://no.wiki.github.com/DHowett/theos/">Norsk</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://pl.wiki.github.com/DHowett/theos/">Polski</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/DHowett/theos/">Português (BR)</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://sr.wiki.github.com/DHowett/theos/">Српски</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://sv.wiki.github.com/DHowett/theos/">Svenska</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://zh.wiki.github.com/DHowett/theos/">中文</a></li>
-                  
-                
-              
+              <li class="all"><a href="#" class="minibutton btn-forward js-all-locales"><span><span class="icon"></span>See all available languages</span></a></li>
             </ul>
+
+            <div class="all-locales clearfix">
+              <h3>Your current locale selection: <strong>English</strong>. Choose another?</h3>
+              
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="http://wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">English</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://af.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Afrikaans</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://ca.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Català</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://cs.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Čeština</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="http://de.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Deutsch</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://es.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Español</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://fr.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Français</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://hr.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Hrvatski</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="http://id.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Indonesia</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://it.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Italiano</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://ja.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">日本語</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://nl.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Nederlands</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="http://no.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Norsk</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://pl.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Polski</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Português (BR)</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://sr.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Српски</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="http://sv.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">Svenska</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://zh.wiki.github.com/raul/translate_routes/notes-on-root-route-prefix-on-default-locale/">中文</a></li>
+                    
+                  
+                </ul>
+              
+            </div>
+
           </div>
+          <div class="fade"></div>
         </div>
       
     
 
     
     
+
+    <!--[if IE 8]>
+    <script type="text/javascript" charset="utf-8">
+      $(document.body).addClass("ie8")
+    </script>
+    <![endif]-->
+
+    <!--[if IE 7]>
+    <script type="text/javascript" charset="utf-8">
+      $(document.body).addClass("ie7")
+    </script>
+    <![endif]-->
 
     <script type="text/javascript">
       _kmq.push(['trackClick', 'entice_banner_link', 'Entice banner clicked']);

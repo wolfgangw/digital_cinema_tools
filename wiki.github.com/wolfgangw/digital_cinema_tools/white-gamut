@@ -1,6 +1,5 @@
 
   
-  
 
   
 
@@ -16,17 +15,17 @@
     <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub" />
     <link rel="fluid-icon" href="http://github.com/fluidicon.png" title="GitHub" />
 
-    <link href="http://assets3.github.com/stylesheets/bundle_common.css?73072a7777cbe88ed1e0d014485753f864b02c5e" media="screen" rel="stylesheet" type="text/css" />
-<link href="http://assets2.github.com/stylesheets/bundle_github.css?73072a7777cbe88ed1e0d014485753f864b02c5e" media="screen" rel="stylesheet" type="text/css" />
+    <link href="http://assets0.github.com/stylesheets/bundle_common.css?9a5ff641c5677d9096893dfcd6853b6969b339ad" media="screen" rel="stylesheet" type="text/css" />
+<link href="http://assets3.github.com/stylesheets/bundle_github.css?9a5ff641c5677d9096893dfcd6853b6969b339ad" media="screen" rel="stylesheet" type="text/css" />
 
     <script type="text/javascript" charset="utf-8">
       var GitHub = {}
       var github_user = null
       
     </script>
-    <script src="http://assets1.github.com/javascripts/jquery/jquery-1.4.2.min.js?73072a7777cbe88ed1e0d014485753f864b02c5e" type="text/javascript"></script>
-    <script src="http://assets1.github.com/javascripts/bundle_common.js?73072a7777cbe88ed1e0d014485753f864b02c5e" type="text/javascript"></script>
-<script src="http://assets2.github.com/javascripts/bundle_github.js?73072a7777cbe88ed1e0d014485753f864b02c5e" type="text/javascript"></script>
+    <script src="http://assets1.github.com/javascripts/jquery/jquery-1.4.2.min.js?9a5ff641c5677d9096893dfcd6853b6969b339ad" type="text/javascript"></script>
+    <script src="http://assets1.github.com/javascripts/bundle_common.js?9a5ff641c5677d9096893dfcd6853b6969b339ad" type="text/javascript"></script>
+<script src="http://assets2.github.com/javascripts/bundle_github.js?9a5ff641c5677d9096893dfcd6853b6969b339ad" type="text/javascript"></script>
 
         <script type="text/javascript" charset="utf-8">
       GitHub.spy({
@@ -60,7 +59,7 @@
 
   
 
-  <body>
+  <body class="logged_out ">
     
 
     
@@ -81,38 +80,29 @@
     
 
     <div class="" id="main">
-      <div id="header" class="pageheaded">
-        <div class="site">
-          <div class="logo">
-            <a href="http://github.com"><img src="/images/modules/header/logov3.png" alt="github" /></a>
-          </div>
-          
-          <div class="topsearch">
-  
-    <form action="http://github.com/search" id="top_search_form" method="get">
-      <a href="http://github.com/search" class="advanced-search tooltipped downwards" title="Advanced Search">Advanced Search</a>
-      <input type="search" class="search my_repos_autocompleter" name="q" results="5" placeholder="Search&hellip;" /> <input type="submit" value="Search" class="button" />
-      <input type="hidden" name="type" value="Everything" />
-      <input type="hidden" name="repo" value="" />
-      <input type="hidden" name="langOverride" value="" />
-      <input type="hidden" name="start_value" value="1" />
-    </form>
-  
+      <div id="header" class="true">
+        
+          <a class="logo boring" href="http://github.com">
+            <img src="/images/modules/header/logov3.png?changed" class="default" alt="github" />
+            <![if !IE]>
+            <img src="/images/modules/header/logov3-hover.png" class="hover" alt="github" />
+            <![endif]>
+          </a>
+        
+        
+        <div class="topsearch">
   
     <ul class="nav logged_out">
-      
-        <li><a href="http://github.com">Home</a></li>
-        <li class="pricing"><a href="http://github.com/plans">Pricing and Signup</a></li>
-        <li><a href="http://github.com/explore">Explore GitHub</a></li>
-        
-        <li><a href="/blog">Blog</a></li>
-      
+      <li><a href="http://github.com">Home</a></li>
+      <li class="pricing"><a href="http://github.com/plans">Pricing and Signup</a></li>
+      <li><a href="http://github.com/training">Training</a></li>
+      <li><a href="http://gist.github.com">Gist</a></li>
+      <li><a href="/blog">Blog</a></li>
       <li></li>
     </ul>
   
 </div>
 
-        </div>
       </div>
 
       
@@ -158,9 +148,9 @@
       <li><a href="http://github.com/wolfgangw/digital_cinema_tools/downloads">Downloads</a></li>
     
 
-          
+            
       <li><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Wiki</a></li>
-    
+      
     <li><a href="http://github.com/wolfgangw/digital_cinema_tools/graphs" highlight="repo_graphs">Graphs</a></li>
 
     <li class="contextswitch nochoices">
@@ -258,7 +248,7 @@ Further, there is significant confusion between White Point, the color with maxi
     <div class="sidebar">
       <h3>
         Pages
-        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets0.github.com/images/icons/feed.png?73072a7777cbe88ed1e0d014485753f864b02c5e" title="Feed of recent digital_cinema_tools wiki edits" /></a>
+        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets0.github.com/images/icons/feed.png?9a5ff641c5677d9096893dfcd6853b6969b339ad" title="Feed of recent digital_cinema_tools wiki edits" /></a>
       </h3>
       
 
@@ -320,46 +310,37 @@ Further, there is significant confusion between White Point, the color with maxi
     </div>
   
       
-
-      <div class="push"></div>
     </div>
 
-    <div id="footer">
+    <div id="footer" class="clearfix">
       <div class="site">
-        <div class="info">
-          <div class="links">
-            <a href="http://github.com/blog"><b>Blog</b></a> |
-            <a href="http://support.github.com">Support</a> |
-            <a href="http://github.com/training">Training</a> |
-            <a href="http://jobs.github.com">Job Board</a> |
-            <a href="http://github.com/contact">Contact</a> |
-            <a href="http://develop.github.com">API</a> |
-            <a href="http://status.github.com">Status</a> |
-            <a href="http://twitter.com/github">Twitter</a> |
-            <a href="http://help.github.com">Help</a> |
-            <a href="http://github.com/security">Security</a>
-          </div>
-          <div class="company">
-            &copy;
-            2010
-            <span id="_rrt" title="0.07968s from fe2.rs.github.com">GitHub</span> Inc.
-            All rights reserved. |
-            <a href="/site/terms">Terms of Service</a> |
-            <a href="/site/privacy">Privacy Policy</a>
-          </div>
-        </div>
         <div class="sponsor">
-          <div>
-            Powered by the <a href="http://www.rackspace.com">Dedicated
-            Servers</a> and<br/> <a href="http://www.rackspacecloud.com">Cloud
-            Computing</a> of Rackspace Hosting<span>&reg;</span>
-          </div>
-          <a href="http://www.rackspace.com">
-            <img alt="Dedicated Server" src="http://assets2.github.com/images/modules/footer/rackspace_logo.png?73072a7777cbe88ed1e0d014485753f864b02c5e" />
+          <a href="http://www.rackspace.com" class="logo">
+            <img alt="Dedicated Server" src="http://assets2.github.com/images/modules/footer/rackspace_logo.png?9a5ff641c5677d9096893dfcd6853b6969b339ad" />
           </a>
+          Powered by the <a href="http://www.rackspace.com ">Dedicated
+          Servers</a> and<br/> <a href="http://www.rackspacecloud.com">Cloud
+          Computing</a> of Rackspace Hosting<span>&reg;</span>
         </div>
+
+        <ul class="links">
+          <li class="blog"><a href="http://github.com/blog">Blog</a></li>
+          <li><a href="http://support.github.com">Support</a></li>
+          <li><a href="http://github.com/training">Training</a></li>
+          <li><a href="http://jobs.github.com">Job Board</a></li>
+          <li><a href="http://shop.github.com">Shop</a></li>
+          <li><a href="http://github.com/contact">Contact</a></li>
+          <li><a href="http://develop.github.com">API</a></li>
+          <li><a href="http://status.github.com">Status</a></li>
+        </ul>
+        <ul class="sosueme">
+          <li class="main">&copy; 2010 <span id="_rrt" title="0.08024s from fe2.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
+          <li><a href="/site/terms">Terms of Service</a></li>
+          <li><a href="/site/privacy">Privacy</a></li>
+          <li><a href="http://github.com/security">Security</a></li>
+        </ul>
       </div>
-    </div>
+    </div><!-- /#footer -->
 
     
       
@@ -367,116 +348,151 @@ Further, there is significant confusion between White Point, the color with maxi
         <!-- current locale:  -->
         <div class="locales">
           <div class="site">
-            <ul class="choices">
+
+            <ul class="choices clearfix limited-locales">
+              <li><span class="current">English</span></li>
               
                 
-                  <li><span class="current">English</span></li>
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://ca.wiki.github.com/saucelabs/sauce/add-a-new-user/">Català</a></li>
-                  
+                  <li><a rel="nofollow" href="http://de.wiki.github.com/kiancheong/XAuthTwitterEngine/">Deutsch</a></li>
                 
               
                 
-                  
-                    <li><a rel="nofollow" href="http://cs.wiki.github.com/saucelabs/sauce/add-a-new-user/">Čeština</a></li>
-                  
+                  <li><a rel="nofollow" href="http://fr.wiki.github.com/kiancheong/XAuthTwitterEngine/">Français</a></li>
                 
               
                 
-                  
-                    <li><a rel="nofollow" href="http://de.wiki.github.com/saucelabs/sauce/add-a-new-user/">Deutsch</a></li>
-                  
+                  <li><a rel="nofollow" href="http://ja.wiki.github.com/kiancheong/XAuthTwitterEngine/">日本語</a></li>
                 
               
                 
-                  
-                    <li><a rel="nofollow" href="http://es.wiki.github.com/saucelabs/sauce/add-a-new-user/">Español</a></li>
-                  
+                  <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/kiancheong/XAuthTwitterEngine/">Português (BR)</a></li>
                 
               
                 
-                  
-                    <li><a rel="nofollow" href="http://fr.wiki.github.com/saucelabs/sauce/add-a-new-user/">Français</a></li>
-                  
+                  <li><a rel="nofollow" href="http://zh.wiki.github.com/kiancheong/XAuthTwitterEngine/">中文</a></li>
                 
               
-                
-                  
-                    <li><a rel="nofollow" href="http://hr.wiki.github.com/saucelabs/sauce/add-a-new-user/">Hrvatski</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://id.wiki.github.com/saucelabs/sauce/add-a-new-user/">Indonesia</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://it.wiki.github.com/saucelabs/sauce/add-a-new-user/">Italiano</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://ja.wiki.github.com/saucelabs/sauce/add-a-new-user/">日本語</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://nl.wiki.github.com/saucelabs/sauce/add-a-new-user/">Nederlands</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://no.wiki.github.com/saucelabs/sauce/add-a-new-user/">Norsk</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://pl.wiki.github.com/saucelabs/sauce/add-a-new-user/">Polski</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/saucelabs/sauce/add-a-new-user/">Português (BR)</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://sr.wiki.github.com/saucelabs/sauce/add-a-new-user/">Српски</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://sv.wiki.github.com/saucelabs/sauce/add-a-new-user/">Svenska</a></li>
-                  
-                
-              
-                
-                  
-                    <li><a rel="nofollow" href="http://zh.wiki.github.com/saucelabs/sauce/add-a-new-user/">中文</a></li>
-                  
-                
-              
+              <li class="all"><a href="#" class="minibutton btn-forward js-all-locales"><span><span class="icon"></span>See all available languages</span></a></li>
             </ul>
+
+            <div class="all-locales clearfix">
+              <h3>Your current locale selection: <strong>English</strong>. Choose another?</h3>
+              
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="http://wiki.github.com/kiancheong/XAuthTwitterEngine/">English</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://af.wiki.github.com/kiancheong/XAuthTwitterEngine/">Afrikaans</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://ca.wiki.github.com/kiancheong/XAuthTwitterEngine/">Català</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://cs.wiki.github.com/kiancheong/XAuthTwitterEngine/">Čeština</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="http://de.wiki.github.com/kiancheong/XAuthTwitterEngine/">Deutsch</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://es.wiki.github.com/kiancheong/XAuthTwitterEngine/">Español</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://fr.wiki.github.com/kiancheong/XAuthTwitterEngine/">Français</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://hr.wiki.github.com/kiancheong/XAuthTwitterEngine/">Hrvatski</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="http://id.wiki.github.com/kiancheong/XAuthTwitterEngine/">Indonesia</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://it.wiki.github.com/kiancheong/XAuthTwitterEngine/">Italiano</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://ja.wiki.github.com/kiancheong/XAuthTwitterEngine/">日本語</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://nl.wiki.github.com/kiancheong/XAuthTwitterEngine/">Nederlands</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="http://no.wiki.github.com/kiancheong/XAuthTwitterEngine/">Norsk</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://pl.wiki.github.com/kiancheong/XAuthTwitterEngine/">Polski</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/kiancheong/XAuthTwitterEngine/">Português (BR)</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://sr.wiki.github.com/kiancheong/XAuthTwitterEngine/">Српски</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="http://sv.wiki.github.com/kiancheong/XAuthTwitterEngine/">Svenska</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://zh.wiki.github.com/kiancheong/XAuthTwitterEngine/">中文</a></li>
+                    
+                  
+                </ul>
+              
+            </div>
+
           </div>
+          <div class="fade"></div>
         </div>
       
     
 
     
     
+
+    <!--[if IE 8]>
+    <script type="text/javascript" charset="utf-8">
+      $(document.body).addClass("ie8")
+    </script>
+    <![endif]-->
+
+    <!--[if IE 7]>
+    <script type="text/javascript" charset="utf-8">
+      $(document.body).addClass("ie7")
+    </script>
+    <![endif]-->
 
     <script type="text/javascript">
       _kmq.push(['trackClick', 'entice_banner_link', 'Entice banner clicked']);
