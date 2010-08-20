@@ -362,9 +362,7 @@ end
 
 def make_black_frame( filename, fps )
   black_asset = File.join( @assetsdir, 'black.' + @output_format )
-  @logger.critical( "black_asset: #{ black_asset }" )
   asset, todo = check_for_asset( black_asset, @output_format, fps )
-  @logger.critical( "asset: #{ asset }" )
   if todo == TRUE
     case @output_type
     when 'preview', 'fullpreview'
