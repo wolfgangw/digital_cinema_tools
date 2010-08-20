@@ -362,7 +362,9 @@ end
 
 def make_black_frame( filename, fps )
   black_asset = File.join( @assetsdir, 'black.' + @output_format )
+  @logger.critical( "black_asset: #{ black_asset }" )
   asset, todo = check_for_asset( black_asset, @output_format, fps )
+  @logger.critical( "asset: #{ asset }" )
   if todo == TRUE
     case @output_type
     when 'preview', 'fullpreview'
@@ -525,7 +527,11 @@ def check_for_asset( filename_s, suffix, fps, level = nil )
     id = `identify -format '%#' #{ filename_s[0] }`.chomp + '_' + `identify -format '%#' #{ filename_s[1] }`.chomp
     origin = [ File.basename( filename_s[ 0 ] ), File.basename( filename_s[ 1 ] ) ].join( ' X ' )
   else # not from crossfade
-    id = `identify -format '%#' #{ filename_s }`.chomp
+    if File.exists?( filename_s )
+      id = `identify -format '%#' #{ filename_s }`.chomp
+    else
+      id = 'black'
+    end
     origin = File.basename( filename_s )
   end
   assetname = File.join( @assetsdir, id + "_#{ @dimensions }#{ level.nil? ? '' : '_' + level.to_s }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' + fps.floor.to_s : '' : '_pre' }_.#{ suffix }" )
@@ -833,7 +839,8 @@ else
 end
 
 
-# set up work dirs
+# set up diretories to write output to. These locations are created upon demand only,
+# hence the mkdir's are clustered out a bit.
 CINEMASLIDESDIR = ENV['CINEMASLIDESDIR']
 if CINEMASLIDESDIR.nil?
   @cinemaslidesdir = File.join( ENV[ 'HOME' ], "cinemaslidesdir" )
@@ -846,14 +853,9 @@ end
 @conformdir = File.join( @workdir, "conform" )
 @thumbsdir = File.join( @cinemaslidesdir, "thumbs" )
 @assetsdir = File.join( @cinemaslidesdir, "assets" )
+Dir.mkdir( @cinemaslidesdir ) unless File.exists?( @cinemaslidesdir )
+Dir.mkdir( @assetsdir ) unless File.exists?( @assetsdir )
 ###
-
-
-@dimensions = width_x_height
-x,y = @dimensions.split( 'x' ) # ugh
-x = x.to_i / 6 # ugh ugh
-y = y.to_i / 6 # ...
-@thumbs_dimensions = [ x,y ].join( 'x' ) # oh dear
 
 
 case @output_type
@@ -867,11 +869,15 @@ when "preview", "fullpreview"
 end
 
 
-Dir.mkdir( @cinemaslidesdir ) unless File.exists?( @cinemaslidesdir )
-Dir.mkdir( @assetsdir ) unless File.exists?( @assetsdir )
-
-
 ### Process all images
+
+
+@dimensions = width_x_height
+x,y = @dimensions.split( 'x' ) # ugh
+x = x.to_i / 6 # ugh ugh
+y = y.to_i / 6 # ...
+@thumbs_dimensions = [ x,y ].join( 'x' ) # oh dear
+
 
 # thumbs and minimontage
 if options.montage == TRUE
@@ -1090,6 +1096,7 @@ end # End Create DCP
 
 
 TODO = <<TODO
+FIXME check availability of cinemaslidesdir and upcoming output location for dcps
 FIXME max number of commandline args 32768
 FIXME See $ cinemaslides 01.jpg 02.jpg -x crossfade,1,0 (temporary @framecount fix in full_level())
 FIXME verbosity level "info" -> jpeg 2000 encoder talk
