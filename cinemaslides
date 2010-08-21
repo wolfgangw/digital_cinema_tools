@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.08.20"
+CinemaSlidesVersion = "v0.2010.08.21"
 Author = "Wolfgang Woehl"
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
@@ -57,6 +57,7 @@ class Optparser
     options.aspect = 'flat'
     options.aspect_choices = [ 'flat', 'scope', 'hd', Regexp.new('\d+(\.\d+)?x\d+(\.\d+)?') ] # custom aspect ratios: match '<numeric>x<numeric>'
     options.aspect_malformed = FALSE
+    options.resize = TRUE # option to _not_ resize images (useful for images which are close to target dimensions and would suffer from scaling/-resize)
     options.fps = 24.0
     options.fps_dcp_choices = [ 24.0, 48.0 ]
     options.fps_asdcp_choices = [ 23.976, 24.0, 25.0, 30.0, 48.0, 50.0, 60.0 ] # 24000/1001 not DCI compliant but shows up in asdcplib. Why?
@@ -65,7 +66,7 @@ class Optparser
     options.output_format = 'jpg'
     options.black = 0
     options.title = 'Cinemaslides test'
-    options.issuer = 'Wolfgang Woehl'
+    options.issuer = ENV[ 'USER' ] + '@' + `hostname`
     options.annotation = 'Cinemaslides test'
     options.montage = FALSE
     options.keep = FALSE
@@ -83,25 +84,25 @@ class Optparser
       opts.banner = <<BANNER
 cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
 
-Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [-m, --montagepreview] [-v, --verbosity <level>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--examples] [--keep] [ --dont-check ] [--dont-drop] image1 [image2 ...]
+Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [ --dont-resize ] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [-m, --montagepreview] [-v, --verbosity <level>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--examples] [--keep] [ --dont-check ] [--dont-drop] image1 [image2 ...]
 
 BANNER
 
-      opts.on("-t", "--type type", String, "Use 'preview' (half size) or 'fullpreview' (full size) or 'dcp' (Default: preview)") do |p|
+      opts.on( '-t', '--type type', String, "Use 'preview' (half size) or 'fullpreview' (full size) or 'dcp' (Default: preview)" ) do |p|
         if options.output_type_choices.include?( p.downcase )
           options.output_type = p.downcase
         else
           options.output_type = 'catch:' + p
         end
       end
-      opts.on("-k", "--size resolution", String, "Use '2k' or '4k' (Default: 2k)") do |p|
+      opts.on( '-k', '--size resolution', String, "Use '2k' or '4k' (Default: 2k)" ) do |p|
         if options.size_choices.include?( p.downcase )
           options.size = p.downcase
         else
           options.size = 'catch:' + p.downcase
         end
       end
-      opts.on("-a", "--aspect ratio", String, "For standard aspect ratios use 'flat', 'scope' or 'hd' (Default: flat). You can also experiment with custom aspect ratios by saying '<width>x<height>'. The numbers given will be scaled to fit into the target container (Default size or specified with '--size').") do |p|
+      opts.on( '-a', '--aspect ratio', String, "For standard aspect ratios use 'flat', 'scope' or 'hd' (Default: flat). You can also experiment with custom aspect ratios by saying '<width>x<height>'. The numbers given will be scaled to fit into the target container (Default size or specified with '--size')." ) do |p|
         if options.aspect_choices.include?( p.downcase )
           options.aspect = p.downcase
         elsif p.match( options.aspect_choices.last )
@@ -110,31 +111,34 @@ BANNER
           options.aspect_malformed = TRUE
         end
       end
-      opts.on("--fps fps", "Framerate (Default: 24)", Float) do |p| # 23.976
+      opts.on( '--dont-resize', 'Do not resize images (Useful for images close to target dimensions)' ) do
+        options.resize = FALSE
+      end
+      opts.on( '--fps fps', 'Framerate (Default: 24)', Float ) do |p| # 23.976
         options.fps = p.to_f
       end
-      opts.on( "-x", "--transition_and_timing transition,seconds,seconds[,seconds]", Array, "Use this option to specify the transition type ('fade' or 'crossfade') and timing parameters. Defaults to '-x #{ options.transition_and_timing.join(',') }' (fade in #{ options.transition_and_timing[ 1 ] } seconds, full level #{ options.transition_and_timing[ 2 ] } seconds, fade out #{ options.transition_and_timing[ 3 ] } seconds). Separate parameters with commas (no spaces)" ) do |p|
+      opts.on( '-x', '--transition_and_timing transition,seconds,seconds[,seconds]', Array, "Use this option to specify the transition type ('fade' or 'crossfade') and timing parameters. Defaults to '-x #{ options.transition_and_timing.join(',') }' (fade in #{ options.transition_and_timing[ 1 ] } seconds, full level #{ options.transition_and_timing[ 2 ] } seconds, fade out #{ options.transition_and_timing[ 3 ] } seconds). Separate parameters with commas (no spaces)" ) do |p|
         options.transition_and_timing = p
       end
-      opts.on("-j", "--encoder codec", String, "Use 'openjpeg' or 'kakadu' for JPEG 2000 encoding (Default: openjpeg)") do |p|
+      opts.on( '-j', '--encoder codec', String, "Use 'openjpeg' or 'kakadu' for JPEG 2000 encoding (Default: openjpeg)" ) do |p|
         options.encoder = p.downcase
       end
-      opts.on("-f", "--output_format", String, "Use 'jpg' or any other image related suffix (Default: jpg for previews, tiff for DCPs)") do |p|
+      opts.on( '-f', '--output_format', String, "Use 'jpg' or any other image related suffix (Default: jpg for previews, tiff for DCPs)" ) do |p|
         options.output_format = p
       end
-      opts.on("-b", "--black seconds", Float, "Length of black leader and tail (Default: 0)") do |p|
+      opts.on( '-b', '--black seconds', Float, 'Length of black leader and tail (Default: 0)' ) do |p|
         options.black = p
       end
-      opts.on("--title title", "DCP title tag", String) do |p|
+      opts.on( '--title title', 'DCP title tag', String ) do |p|
         options.title = p
       end
-      opts.on("--issuer issuer", "DCP issuer tag", String) do |p|
+      opts.on( '--issuer issuer', 'DCP issuer tag', String ) do |p|
         options.issuer = p
       end
-      opts.on("--annotation annotation", "DCP annotation tag", String) do |p|
+      opts.on( '--annotation annotation', 'DCP annotation tag', String ) do |p|
         options.annotation = p
       end
-      opts.on("-m", "--montagepreview", "Display a montage of the images before processing") do
+      opts.on( '-m', '--montagepreview', 'Display a montage of the images before processing' ) do
         options.montage = TRUE
       end
       opts.on( '--keep', 'Do not remove preview/temporary files' ) do
@@ -146,7 +150,7 @@ BANNER
       opts.on( '--dont-drop', 'Do not drop and ignore unreadable files or files ImageMagick cannot decode but nag and exit instead' ) do
         options.dont_drop = TRUE
       end
-      opts.on("-v", "--verbosity level", String, "Use 'quiet', 'info' or 'debug' (Default: info)") do |p|
+      opts.on( '-v', '--verbosity level', String, "Use 'quiet', 'info' or 'debug' (Default: info)" ) do |p|
         if options.verbosity_choices.include?( p )
           options.verbosity = p
         else
@@ -532,7 +536,7 @@ def check_for_asset( filename_s, suffix, fps, level = nil )
     end
     origin = File.basename( filename_s )
   end
-  assetname = File.join( @assetsdir, id + "_#{ @dimensions }#{ level.nil? ? '' : '_' + level.to_s }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' + fps.floor.to_s : '' : '_pre' }_.#{ suffix }" )
+  assetname = File.join( @assetsdir, id + "_#{ @dimensions }_#{ @resize == TRUE ? 'r' : 'nr' }#{ level.nil? ? '' : '_' + level.to_s }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' + fps.floor.to_s : '' : '_pre' }_.#{ suffix }" )
   if File.exists?( assetname )
     @logger.debug( "Skip: Asset exists (#{ origin } -> #{ File.basename( assetname ) })" )
     todo = FALSE
@@ -562,7 +566,7 @@ def convert_resize_extent_color_specs( image, filename )
         -type TrueColor \
         -alpha Off \
         -gamma 0.454545454545455 \
-        -resize #{ @dimensions } \
+        #{ @resize == TRUE ? '-resize ' + @dimensions : '' } \
         -background black \
         -gravity center \
         -extent #{ @dimensions } \
@@ -575,7 +579,7 @@ def convert_resize_extent_color_specs( image, filename )
         -type TrueColor \
         -alpha Off \
         -gamma 0.454545454545455 \
-        -resize #{ @dimensions } \
+        #{ @resize == TRUE ? '-resize ' + @dimensions : '' } \
         -background black \
         -gravity center \
         -extent #{ @dimensions } \
@@ -616,6 +620,7 @@ end
 
 def fadetype( level )
   "-fill black -colorize #{ level.abs }"
+  # composite source -size [source's size] xc:black -blend level.abs result
   #"-modulate #{ level + 100 }"#,#{ level + 100 }" # second parameter is saturation. this one has channel clipping issues
   #"-modulate #{ level + 100 } -blur 0x#{ level }" # experiment, color starvation -> heavy banding
   #"-brightness-contrast #{ level }x#{ level }" # not in ubuntu 10.04's im 6.5.7-8
@@ -670,6 +675,8 @@ end
 
 
 ### Get options and initialize
+@resize = options.resize
+
 case options.aspect_malformed
 when TRUE
   @logger.info( "Malformed aspect ratio. Use #{ options.aspect_choices[ 0, options.aspect_choices.size - 1 ].join( ', ' ) } or <width>x<height>" )
@@ -694,6 +701,7 @@ unless m.nil?
   end
   exit
 end
+
 m = options.output_type.match( /catch:(.*)/ )
 unless m.nil?
   @logger.info( "Specify output type: preview, fullpreview or dcp" )
@@ -856,6 +864,13 @@ Dir.mkdir( @assetsdir ) unless File.exists?( @assetsdir )
 ###
 
 
+@dimensions = width_x_height
+x,y = @dimensions.split( 'x' ) # ugh
+x = x.to_i / 6 # ugh ugh
+y = y.to_i / 6 # ...
+@thumbs_dimensions = [ x,y ].join( 'x' ) # oh dear
+
+
 case @output_type
 when "dcp"
   @logger.info( "Creating #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
@@ -868,13 +883,6 @@ end
 
 
 ### Process all images
-
-
-@dimensions = width_x_height
-x,y = @dimensions.split( 'x' ) # ugh
-x = x.to_i / 6 # ugh ugh
-y = y.to_i / 6 # ...
-@thumbs_dimensions = [ x,y ].join( 'x' ) # oh dear
 
 
 # thumbs and minimontage
@@ -1105,6 +1113,7 @@ FIXME crossfade,5,0 [5 images] -> 720 frames intended 725 frames created
 FIXME cinemaslides multipage.pdf is somewhat borked because of assets creation (name), conforms to <digest>_<dimensions>_-<page_number>.jpg
       which won't fly at pickup time
 
+FEATURE look at polynomial-constrained fades
 FEATURE option to request linear/s-curved/... transitions for comparison (well, for showing off, basically, how nice the sigmoid function works for transitions)
 FEATURE sparse assets via minimum mxfs and playlists
 FEATURE audio
