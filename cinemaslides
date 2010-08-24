@@ -903,21 +903,24 @@ if options.dcp_user_output_path == nil
 else
   @dcpdir = options.dcp_user_output_path
 end
-if options.dcp_user_output_path != nil and File.exists?( @dcpdir ) and Dir.entries( @dcpdir ).size > 2 # platform-agnostic Dir.empty? anyone?
-  if File.writable?( @dcpdir )
-    if ENV[ 'HOME' ] == File.join( File.dirname( @dcpdir ), File.basename( @dcpdir ) ) # confirm direct write into HOME
-      @logger.critical( "Cluttering HOME" )
-      exit if agree( "Are you sure you want to write DCP files directly into #{ ENV[ 'HOME' ] }? " ) == FALSE
-    else
-      exit if agree( "#{ @dcpdir } already exists. Add current DCP files to it? " ) == FALSE
+case @output_type
+when 'dcp' # silently ignore option.dcp_user_output_path when previewing
+  if options.dcp_user_output_path != nil and File.exists?( @dcpdir ) and Dir.entries( @dcpdir ).size > 2 # platform-agnostic Dir.empty? anyone?
+    if File.writable?( @dcpdir )
+      if ENV[ 'HOME' ] == File.join( File.dirname( @dcpdir ), File.basename( @dcpdir ) ) # confirm direct write into HOME
+        @logger.critical( "Cluttering HOME" )
+        exit if agree( "Are you sure you want to write DCP files directly into #{ ENV[ 'HOME' ] }? " ) == FALSE
+      else
+        exit if agree( "#{ @dcpdir } already exists. Add current DCP files to it? " ) == FALSE
+      end
     end
   end
-end
-if confirm_or_create( @dcpdir ) == TRUE
-  @logger.debug( "#{ @dcpdir } is writeable" )
-else
-  @logger.critical( "#{ @dcpdir } is not writeable. Check your mounts and permissions." )
-  exit
+  if confirm_or_create( @dcpdir ) == TRUE
+    @logger.debug( "#{ @dcpdir } is writeable" )
+  else
+    @logger.critical( "#{ @dcpdir } is not writeable. Check your mounts and permissions." )
+    exit
+  end
 end
 ###
 
@@ -1132,7 +1135,13 @@ when "dcp"
 
   # Write PackingList
   @logger.info( "Write PKL" )
-  `mkpkl --issuer '#{ options.issuer }' --annotation '#{ options.annotation } #{ timestamp }' #{ cpl } #{ slidesmxf } > #{ tmp_pkl }`
+  # might be cumulative DCP, end up with 1 pkl to cover all
+  obsolete_pkls = Dir.glob( File.join( @dcpdir, 'pkl_*_.xml' ) ) # there should be 1 if at all. user might have moved some in, though.
+  obsolete_pkls.each do |obsolete_pkl|
+    @logger.debug( "Obsolete:   #{ File.basename( obsolete_pkl ) }" )
+    File.delete( obsolete_pkl )
+  end
+  `cd #{ @dcpdir }; mkpkl --issuer '#{ options.issuer }' --annotation '#{ options.annotation } #{ timestamp }' cpl_*_.xml j2c_*_.mxf > #{ File.basename( tmp_pkl ) }`
   pkl_uuid = Nokogiri::XML( File.open( tmp_pkl ) ).xpath( "//xmlns:PackingList/xmlns:Id" ).text.split( 'urn:uuid:' ).last
   @logger.debug( "pkl uuid      : #{ pkl_uuid }" )
   pkl = File.join( File.dirname( tmp_pkl ), "pkl_" + pkl_uuid + "_.xml" )
@@ -1140,7 +1149,7 @@ when "dcp"
   
   # Write Assetmap
   @logger.info( "Write ASSETMAP and VOLINDEX" )
-  `cd #{ @dcpdir }; mkmap --issuer '#{ options.issuer }' cpl_* pkl_* j2c_*` # pick up all DCP files, user might have added current files to @dcpdir
+  `cd #{ @dcpdir }; mkmap --issuer '#{ options.issuer }' cpl_* pkl_* j2c_*` # pick up all DCP files, might be cumulative DCP
 
   # FIXME report -> dry out
   # report
