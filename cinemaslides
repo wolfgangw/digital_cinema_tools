@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.08.21"
+CinemaSlidesVersion = "v0.2010.08.24"
 Author = "Wolfgang Woehl"
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
@@ -66,7 +66,7 @@ class Optparser
     options.output_format = 'jpg'
     options.black = 0
     options.title = 'Cinemaslides test'
-    options.issuer = ENV[ 'USER' ] + '@' + `hostname`
+    options.issuer = ENV[ 'USER' ] + '@' + `hostname`.chomp
     options.annotation = 'Cinemaslides test'
     options.montage = FALSE
     options.keep = FALSE
@@ -643,6 +643,29 @@ end
 def sequence?( list )
   nil
 end
+
+
+def writeable?( location )
+# location (a directory) might exist and be either writeable or not
+# or not exist and be either writeable (read 'can be created') or not
+  testfile = File.join( location, `kmuuidgen -n` )
+  if File.exists?( location )
+    begin
+      result = `touch #{ testfile } > /dev/null 2>&1`
+      File.delete( testfile )
+      return TRUE # location exists and we can write to it
+    rescue Exception => result
+      return FALSE # location exists but we can't write to it
+    end
+  else
+    begin
+      result = FileUtils.mkdir_p( location )
+      return TRUE # location created, hence writeable
+    rescue Exception => result
+      return FALSE
+    end
+  end
+end
 ###
 
 
@@ -859,7 +882,12 @@ end
 @conformdir = File.join( @workdir, "conform" )
 @thumbsdir = File.join( @cinemaslidesdir, "thumbs" )
 @assetsdir = File.join( @cinemaslidesdir, "assets" )
-Dir.mkdir( @cinemaslidesdir ) unless File.exists?( @cinemaslidesdir )
+if writeable?( @cinemaslidesdir ) == TRUE
+  @logger.debug( "#{ @cinemaslidesdir } is writeable" )
+else
+  @logger.critical( "#{ @cinemaslidesdir } is not writeable. Check your mounts or export CINEMASLIDESDIR to point to a writeable location." )
+  exit
+end
 Dir.mkdir( @assetsdir ) unless File.exists?( @assetsdir )
 ###
 
@@ -1113,6 +1141,7 @@ FIXME crossfade,5,0 [5 images] -> 720 frames intended 725 frames created
 FIXME cinemaslides multipage.pdf is somewhat borked because of assets creation (name), conforms to <digest>_<dimensions>_-<page_number>.jpg
       which won't fly at pickup time
 
+FEATURE look at resize/don't resize thresholds in order to do the "right" thing for mixed source. bit shaky maybe.
 FEATURE look at polynomial-constrained fades
 FEATURE option to request linear/s-curved/... transitions for comparison (well, for showing off, basically, how nice the sigmoid function works for transitions)
 FEATURE sparse assets via minimum mxfs and playlists
