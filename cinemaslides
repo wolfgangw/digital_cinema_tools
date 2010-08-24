@@ -79,12 +79,13 @@ class Optparser
     options.transition_and_timing << 0 # fade_in_time
     options.transition_and_timing << 5 # duration
     options.transition_and_timing << 0 # fade_out_time
+    options.dcp_user_output_path = nil
 
     opts = OptionParser.new do |opts|
       opts.banner = <<BANNER
 cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
 
-Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [ --dont-resize ] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [-m, --montagepreview] [-v, --verbosity <level>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--examples] [--keep] [ --dont-check ] [--dont-drop] image1 [image2 ...]
+Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [ --dont-resize ] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [-o, --dcp_out <path>] [-m, --montagepreview] [--keep] [ --dont-check ] [--dont-drop] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...]
 
 BANNER
 
@@ -123,7 +124,7 @@ BANNER
       opts.on( '-j', '--encoder codec', String, "Use 'openjpeg' or 'kakadu' for JPEG 2000 encoding (Default: openjpeg)" ) do |p|
         options.encoder = p.downcase
       end
-      opts.on( '-f', '--output_format', String, "Use 'jpg' or any other image related suffix (Default: jpg for previews, tiff for DCPs)" ) do |p|
+      opts.on( '-f', '--output_format suffix', String, "Use 'jpg' or any other image related suffix (Default: jpg for previews, tiff for DCPs)" ) do |p|
         options.output_format = p
       end
       opts.on( '-b', '--black seconds', Float, 'Length of black leader and tail (Default: 0)' ) do |p|
@@ -137,6 +138,9 @@ BANNER
       end
       opts.on( '--annotation annotation', 'DCP annotation tag', String ) do |p|
         options.annotation = p
+      end
+      opts.on( '-o', '--dcp-out path', String, 'DCP location and folder name (Full path. Default: Write to working directory)' ) do |p|
+        options.dcp_user_output_path = p
       end
       opts.on( '-m', '--montagepreview', 'Display a montage of the images before processing' ) do
         options.montage = TRUE
@@ -177,7 +181,7 @@ $ #{ app } -t dcp --size 2k --black 5 slides/
   Create slideshow DCP (Preview thumbnails. Aspect ratio: scope):
 $ #{ app } *.raw -m -a scope -t dcp --title 'Slideshow Test' --issuer 'Facility'
 
-  Some kind of timing control:
+  Some kind of finer-grained timing control:
 $ #{ app } -x fade,0,3,0    title title title 1st_slide 2nd_slide disclaimer disclaimer
 $ #{ app } -x crossfade,1,3 title title title 1st_slide 2nd_slide disclaimer disclaimer
 
@@ -307,6 +311,9 @@ def cleanup_workdir( keep )
       @logger.info( "Removing temporary files (Say '--keep' to keep them)" )
       `rm -rf #{ @conformdir }`
       `rm -rf #{ @j2cdir }`
+      if File.dirname( @dcpdir ) != @workdir
+        `rm -rf #{ @workdir }`
+      end
     end
   end
 end
@@ -645,9 +652,10 @@ def sequence?( list )
 end
 
 
-def writeable?( location )
-# location (a directory) might exist and be either writeable or not
-# or not exist and be either writeable (read 'can be created') or not
+def confirm_or_create( location )
+# location (a directory) might exist and be either writeable or not.
+# it might not exist and be either writeable (read 'can be created') or not.
+# since we want to be able to specify a "deep" path (topdir/with/children/...) File.writable?() wouldn't work.
   testfile = File.join( location, `kmuuidgen -n` )
   if File.exists?( location )
     begin
@@ -880,15 +888,37 @@ else
 end
 @workdir = File.join( @cinemaslidesdir, "#{ File.basename( $0 ) }_#{ timestamp }_#{ @output_type }" )
 @conformdir = File.join( @workdir, "conform" )
+@j2cdir = File.join( @workdir, "j2c" )
 @thumbsdir = File.join( @cinemaslidesdir, "thumbs" )
 @assetsdir = File.join( @cinemaslidesdir, "assets" )
-if writeable?( @cinemaslidesdir ) == TRUE
+if confirm_or_create( @cinemaslidesdir ) == TRUE
   @logger.debug( "#{ @cinemaslidesdir } is writeable" )
 else
   @logger.critical( "#{ @cinemaslidesdir } is not writeable. Check your mounts or export CINEMASLIDESDIR to point to a writeable location." )
   exit
 end
 Dir.mkdir( @assetsdir ) unless File.exists?( @assetsdir )
+if options.dcp_user_output_path == nil
+  @dcpdir = File.join( @workdir, "dcp" )
+else
+  @dcpdir = options.dcp_user_output_path
+end
+if options.dcp_user_output_path != nil and File.exists?( @dcpdir ) and Dir.entries( @dcpdir ).size > 2 # platform-agnostic Dir.empty? anyone?
+  if File.writable?( @dcpdir )
+    if ENV[ 'HOME' ] == File.join( File.dirname( @dcpdir ), File.basename( @dcpdir ) ) # confirm direct write into HOME
+      @logger.critical( "Cluttering HOME" )
+      exit if agree( "Are you sure you want to write DCP files directly into #{ ENV[ 'HOME' ] }? " ) == FALSE
+    else
+      exit if agree( "#{ @dcpdir } already exists. Add current DCP files to it? " ) == FALSE
+    end
+  end
+end
+if confirm_or_create( @dcpdir ) == TRUE
+  @logger.debug( "#{ @dcpdir } is writeable" )
+else
+  @logger.critical( "#{ @dcpdir } is not writeable. Check your mounts and permissions." )
+  exit
+end
 ###
 
 
@@ -963,7 +993,7 @@ end # montage
 
 
 ### Create all frames
-Dir.mkdir( @workdir )
+Dir.mkdir( @workdir ) unless  File.exists?( @workdir )
 Dir.mkdir( @conformdir )
 
 
@@ -1036,21 +1066,18 @@ when "preview", "fullpreview"
 
 ### Create DCP (Encoding, asdcplib, oct)
 when "dcp"
-  @j2cdir = File.join( @workdir, "j2c" )
-  @dcpdir = File.join( @workdir, "dcp" )
   tmp_slidesmxf = File.join( @dcpdir, 'tmp_j2c.mxf' )
   tmp_cpl = File.join( @dcpdir, 'tmp_cpl.xml' )
   tmp_pkl = File.join( @dcpdir, 'tmp_pkl.xml' )
 
   Dir.mkdir( @j2cdir )
-  Dir.mkdir( @dcpdir )
 
   ## JPEG 2000 encoding
   @logger.info( "Encode to JPEG 2000" )
   filemask = File.join( @conformdir, "*.#{ @output_format }" )
   files = Dir.glob( filemask ).sort
   
-  # openjpeg's profiles imply rate constraints, kakadu's don't
+  # openjpeg's cinema profiles imply rate constraints, kakadu's don't
   max_bytes_per_image, max_bytes_per_component = jpeg2000_dcp_rate_constraints( fps )
   if @size == "2k"
     kakadu_cinema_profile = "CINEMA2K"
@@ -1113,14 +1140,14 @@ when "dcp"
   
   # Write Assetmap
   @logger.info( "Write ASSETMAP and VOLINDEX" )
-  `cd #{ @dcpdir }; mkmap --issuer '#{ options.issuer }' #{ File.basename( cpl ) } #{ File.basename( pkl ) } #{ File.basename( slidesmxf ) }`
+  `cd #{ @dcpdir }; mkmap --issuer '#{ options.issuer }' cpl_* pkl_* j2c_*` # pick up all DCP files, user might have added current files to @dcpdir
 
   # FIXME report -> dry out
   # report
   if options.transition_and_timing.first == "fade"
     sequence_frames = ( 2 * options.black + @source.length * ( fade_in_time + duration + fade_out_time ) ) * fps
   elsif options.transition_and_timing.first == "crossfade"
-    sequence_frames = ( 2 * options.black + crossfade_time + @source.length * ( crossfade_time + duration ) ) * fps # implicit fade in/out first/last when crossfading
+    sequence_frames = ( 2 * options.black + crossfade_time + @source.length * ( crossfade_time + duration ) ) * fps # implicit fade in/out for first/last images when crossfading
   end
   final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
   cleanup_workdir( options.keep )
@@ -1130,8 +1157,7 @@ end # End Create DCP
 
 
 TODO = <<TODO
-FIXME check availability of cinemaslidesdir and upcoming output location for dcps
-FIXME max number of commandline args 32768
+FIXME max number of commandline args? (32768 here)
 FIXME See $ cinemaslides 01.jpg 02.jpg -x crossfade,1,0 (temporary @framecount fix in full_level())
 FIXME verbosity level "info" -> jpeg 2000 encoder talk
 FIXME crossfades border case: 0.0416666666666667 (1/24) crossfade time -> level shoots off the roof
@@ -1141,6 +1167,7 @@ FIXME crossfade,5,0 [5 images] -> 720 frames intended 725 frames created
 FIXME cinemaslides multipage.pdf is somewhat borked because of assets creation (name), conforms to <digest>_<dimensions>_-<page_number>.jpg
       which won't fly at pickup time
 
+FEATURE end up with 1 pkl instead of numerous in a cumulative @dcpdir
 FEATURE look at resize/don't resize thresholds in order to do the "right" thing for mixed source. bit shaky maybe.
 FEATURE look at polynomial-constrained fades
 FEATURE option to request linear/s-curved/... transitions for comparison (well, for showing off, basically, how nice the sigmoid function works for transitions)
