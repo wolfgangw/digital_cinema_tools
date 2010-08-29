@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.08.24"
+CinemaSlidesVersion = "v0.2010.08.29"
 Author = "Wolfgang Woehl"
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
@@ -579,6 +579,8 @@ def convert_resize_extent_color_specs( image, filename )
         -extent #{ @dimensions } \
         -gamma 2.2 \
         -depth 8 \
+        -strip \
+        -sampling-factor 2x2 \
       #{ filename }`
   # kakadu needs uncompressed 12bpc files # FIXME dep compress on options.encoder
   when "dcp"
@@ -677,7 +679,7 @@ end
 ###
 
 
-requirements = [ 'convert', 'identify', 'montage', 'display', 'mplayer', 'image_to_j2k', 'kdu_compress', 'asdcp-test', 'kmuuidgen', 'mkcpl', 'mkpkl', 'mkmap' ]
+requirements = [ 'convert', 'identify', 'montage', 'display', 'mplayer', 'image_to_j2k', 'kdu_compress', 'asdcp-test', 'kmuuidgen', 'mkcpl', 'mkpkl', 'mkmap', 'sox', 'soxi' ]
 available_tools, missing_tools = check_requirements( requirements )
 if options.output_type == "dcp"
   if missing_tools.include?( "kdu_compress" )
@@ -747,73 +749,6 @@ else
   @size = options.size
 end
 
-@source = ARGV
-unless options.dont_check == TRUE
-  # glob dirs
-  not_readable = Array.new
-  @source_tmp = Array.new
-  @source.each do |element|
-    if File.exists?( element )
-      ftype = File.ftype( element )
-      if ftype == 'directory'
-        more = Dir.glob( "#{ element }/*" ).sort # this breaks fast (subdirs)
-        @source_tmp << more
-      else
-        @source_tmp << element
-      end
-    else
-      not_readable << element
-      @logger.debug( "Not readable: #{ element }" )
-    end
-  end
-  @source = @source_tmp.flatten.compact.dup
-  # check files
-  no_decode_delegate = Array.new
-  drops = FALSE
-  @source_tmp = @source.clone
-  @source.each do |file|
-    identify = `identify -format '%m' #{ file } 2>/dev/null`.chomp
-    if identify.empty?
-      no_decode_delegate << file
-      @source_tmp.delete( file )
-      @logger.debug( "#{ file }: No decode delegate" )
-    elsif identify == "SVG"
-      xml = Nokogiri::XML( File.open( file ) )
-      if xml.search( 'svg' ).empty?
-        no_decode_delegate << file
-        @source_tmp.delete( file )
-        @logger.debug( "No <svg> node: #{ file }" )
-      else # svg maybe useable
-        @logger.debug( "#{ identify }: #{ file }" )
-      end
-    else # file is useable
-      dimensions = `convert #{ file } -format '(%wx%h, 1:%[fx:w/h])' info:`.chomp
-      @logger.debug( "#{ identify } #{ dimensions }: #{ file }" )
-    end
-  end
-  if not_readable.size > 0
-    drops = TRUE
-    @logger.debug( "Not readable: #{ not_readable.join( ', ' ) }" )
-  elsif not_readable.size == 0 and @source_tmp.size > 0
-    @logger.debug( "All files readable" )
-  end
-  if no_decode_delegate.size > 0
-    drops = TRUE
-    @logger.debug( "ImageMagick has no code delegate for #{ no_decode_delegate.join( ', ' ) }" )
-  end
-  if @source_tmp.length == 0
-    @logger.info( drops == FALSE ? "No image files specified" : "No useable image files")
-    exit
-  end
-  if drops == TRUE
-    if options.dont_drop == TRUE
-      exit
-    else
-      @logger.debug( "Dropped some unuseable files. Say '--dont-drop' to exit in that case." )
-    end
-  end
-  @source = @source_tmp.dup
-end
 
 # check dcp related options
 if @output_type == "dcp"
@@ -842,6 +777,106 @@ if @output_type == "dcp"
   @logger.debug( "DCP related options ok" )
 end
 
+
+# check provided files for readability, type and validity
+# come up with 3 lists: images, audio files, unusable files
+@source = ARGV
+unless options.dont_check == TRUE ####
+  # remove un-readable elements
+  not_readable = Array.new
+  @source_tmp = Array.new
+  @source.each do |element|
+    if File.exists?( element )
+      ftype = File.ftype( element )
+      if ftype == 'directory'
+        more = Dir.glob( "#{ element }/*" ).sort # this breaks fast (subdirs)
+        @source_tmp << more
+      else
+        @source_tmp << element
+      end
+    else
+      not_readable << element
+      @logger.debug( "Not readable: #{ element }" )
+    end
+  end
+  @source = @source_tmp.flatten.compact.dup
+  
+  # check type (image/audio)
+  no_decode_delegate = Array.new
+  drops = FALSE
+  @source_audio = Array.new
+  @source_tmp = @source.clone
+  @source.each do |file|
+    image_identify = `identify -format '%m' #{ file } 2>/dev/null`.chomp
+    if image_identify.empty?
+      audio_identify = `soxi -V0 -t #{ file }`.chomp
+      if audio_identify.empty?
+        no_decode_delegate << file
+        @source_tmp.delete( file )
+        @logger.debug( "#{ file }: No decode delegate" )
+      else
+        @source_audio << file
+        @source_tmp.delete( file )
+        @logger.debug( "#{ audio_identify.upcase }: #{ file }" )
+      end
+    # see http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=16398
+    # basically IM defers deep analysis of xml to the coder
+    # the lightweight identify ping of xml might return false positives
+    elsif image_identify == "SVG"
+      xml = Nokogiri::XML( File.open( file ) )
+      if xml.search( 'svg', 'SVG' ).empty?
+        no_decode_delegate << file
+        @source_tmp.delete( file )
+        @logger.debug( "No <svg> node: #{ file }" )
+      else # svg maybe useable
+        @logger.debug( "#{ image_identify }: #{ file }" )
+      end
+    else # file is useable
+      dimensions = `convert #{ file } -format '(%wx%h, 1:%[fx:w/h])' info:`.chomp
+      @logger.debug( "#{ image_identify } #{ dimensions }: #{ file }" )
+    end
+  end
+  if not_readable.size > 0
+    drops = TRUE
+    @logger.debug( "Not readable: #{ not_readable.join( ', ' ) }" )
+  elsif not_readable.size == 0 and @source_tmp.size > 0
+    @logger.debug( "All files readable" )
+  end
+  if no_decode_delegate.size > 0
+    drops = TRUE
+    @logger.debug( "No decode delegates for #{ no_decode_delegate.join( ', ' ) }" )
+  end
+  if @source_tmp.length == 0
+    @logger.info( drops == FALSE ? "No image files specified" : "No useable image files")
+    exit
+  end
+  if drops == TRUE
+    if options.dont_drop == TRUE
+      exit
+    else
+      @logger.debug( "Dropped some unuseable files. Say '--dont-drop' to exit in that case." )
+    end
+  end
+  @source = @source_tmp.dup
+end
+
+if options.dont_check == TRUE
+  # quick and dirty version of audio file pickup (which is the whole point of --dont-check)
+  @source_audio = Array.new
+  @source_tmp = @source.clone
+  @source.each do |element|
+    if element =~ /(mp3|MP3|wav|WAV|flac|FLAC|aiff|AIFF|aif|AIF|ogg|OGG)$/
+      @source_audio << element
+      @source_tmp.delete( element )
+    end
+  end
+  @source = @source_tmp.clone
+end
+
+@logger.critical( "Images: #{ @source.join( ', ' ) }" )
+@logger.critical( "Audio files: #{ @source_audio.join( ', ' ) }" )
+@logger.critical( "No decode delegates for: #{ no_decode_delegate.nil? ? 'Not checked' : no_decode_delegate.join( ', ' ) }" )
+exit
 
 # check options.transition_and_timing
 options.transition_and_timing.first.downcase!
@@ -1053,7 +1088,7 @@ when "preview", "fullpreview"
   else
     @logger.warn( "Loop #{ @output_type }. Exit with ESC or 'q'" )
     mplayer_vo = ""
-    `mplayer -really-quiet mf://#{ sequence } -mf fps=#{ fps }:type=#{ @output_format } -loop 0 #{ mplayer_vo } > /dev/null 2>&1`
+    `mplayer -really-quiet mf://#{ sequence } -mf fps=#{ fps }:type=#{ @output_format } -loop 0 #{ mplayer_vo } -audiofile #{ @source_audio.first } > /dev/null 2>&1`
   end
   if options.transition_and_timing.first == "fade"
     sequence_frames = ( 2 * options.black + @source.length * ( fade_in_time + duration + fade_out_time ) ) * fps
