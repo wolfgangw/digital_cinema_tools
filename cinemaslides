@@ -85,7 +85,7 @@ class Optparser
       opts.banner = <<BANNER
 cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
 
-Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [ --dont-resize ] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [-o, --dcp_out <path>] [-m, --montagepreview] [--keep] [ --dont-check ] [--dont-drop] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...]
+Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [ --dont-resize ] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [-o, --dcp_out <path>] [-m, --montagepreview] [--keep] [ --dont-check ] [--dont-drop] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
 
 BANNER
 
@@ -554,6 +554,19 @@ def check_for_asset( filename_s, suffix, fps, level = nil )
 end
 
 
+def check_for_audio_asset( filename )
+  hash = Digest::SHA1.hexdigest( File.read( filename ) )
+  assetname = File.join( @assetsdir_audio, 'audio-' + hash )
+  if File.exists?( assetname )
+    @logger.debug( "Skip: Audio asset exists (#{ filename } -> #{ File.basename( assetname ) })" )
+    todo = FALSE
+  else
+    todo = TRUE
+  end
+  return assetname, todo
+end
+
+
 # all fade/crossfade ops are based on these assets
 def conform( image, fps )
   @logger.info( "Conform #{ image }" )
@@ -779,8 +792,9 @@ end
 
 
 # check provided files for readability, type and validity
-# come up with 3 lists: images, audio files, unusable files
+# come up with 3 lists: image files, audio files, unusable files
 @source = ARGV
+@source_audio = Array.new
 unless options.dont_check == TRUE ####
   # remove un-readable elements
   not_readable = Array.new
@@ -804,7 +818,6 @@ unless options.dont_check == TRUE ####
   # check type (image/audio)
   no_decode_delegate = Array.new
   drops = FALSE
-  @source_audio = Array.new
   @source_tmp = @source.clone
   @source.each do |file|
     image_identify = `identify -format '%m' #{ file } 2>/dev/null`.chomp
@@ -817,7 +830,8 @@ unless options.dont_check == TRUE ####
       else
         @source_audio << file
         @source_tmp.delete( file )
-        @logger.debug( "#{ audio_identify.upcase }: #{ file }" )
+        audiofile_duration = '(' + `soxi -V0 -d #{ file }`.chomp + ')'
+        @logger.debug( "#{ audio_identify.upcase } #{ audiofile_duration }: #{ file }" )
       end
     # see http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=16398
     # basically IM defers deep analysis of xml to the coder
@@ -876,7 +890,7 @@ end
 @logger.critical( "Images: #{ @source.join( ', ' ) }" )
 @logger.critical( "Audio files: #{ @source_audio.join( ', ' ) }" )
 @logger.critical( "No decode delegates for: #{ no_decode_delegate.nil? ? 'Not checked' : no_decode_delegate.join( ', ' ) }" )
-exit
+
 
 # check options.transition_and_timing
 options.transition_and_timing.first.downcase!
@@ -911,8 +925,16 @@ else
 end
 
 
+# calculate intended number of frames, needed in audio conform and final report
+if options.transition_and_timing.first == "fade"
+  sequence_frames = ( 2 * options.black + @source.length * ( fade_in_time + duration + fade_out_time ) ) * fps
+elsif options.transition_and_timing.first == "crossfade"
+  sequence_frames = ( 2 * options.black + crossfade_time + @source.length * ( crossfade_time + duration ) ) * fps # implicit fade in/out first/last when crossfading
+end
+
+
 # set up diretories to write output to. These locations are created upon demand only,
-# hence the mkdir's are clustered out a bit.
+# hence the mkdir's are clustered out a bit. FIXME
 CINEMASLIDESDIR = ENV['CINEMASLIDESDIR']
 if CINEMASLIDESDIR.nil?
   @cinemaslidesdir = File.join( ENV[ 'HOME' ], "cinemaslidesdir" )
@@ -926,6 +948,7 @@ end
 @j2cdir = File.join( @workdir, "j2c" )
 @thumbsdir = File.join( @cinemaslidesdir, "thumbs" )
 @assetsdir = File.join( @cinemaslidesdir, "assets" )
+@assetsdir_audio = File.join( @cinemaslidesdir, 'assets-audio' )
 if confirm_or_create( @cinemaslidesdir ) == TRUE
   @logger.debug( "#{ @cinemaslidesdir } is writeable" )
 else
@@ -933,6 +956,9 @@ else
   exit
 end
 Dir.mkdir( @assetsdir ) unless File.exists?( @assetsdir )
+unless @source_audio.empty?
+  Dir.mkdir( @assetsdir_audio ) unless File.exists?( @assetsdir_audio )
+end
 if options.dcp_user_output_path == nil
   @dcpdir = File.join( @workdir, "dcp" )
 else
@@ -1031,7 +1057,7 @@ end # montage
 
 
 ### Create all frames
-Dir.mkdir( @workdir ) unless  File.exists?( @workdir )
+Dir.mkdir( @workdir ) unless File.exists?( @workdir )
 Dir.mkdir( @conformdir )
 
 
@@ -1083,19 +1109,15 @@ end
 case @output_type
 when "preview", "fullpreview"
   sequence = File.join( "#{ @conformdir }", "*.#{ @output_format }" )
+  audio = ( @source_audio.empty? ? '' : '-audiofile ' + @source_audio.first )
   if ENV[ "DISPLAY" ].nil?
-    @logger.warn( "DISPLAY not set. Skipping preview. #{ options.keep == TRUE ? nil : 'Say --keep to keep preview files.' }" )
+    @logger.warn( "DISPLAY not set. Skipping preview" )
   else
     @logger.warn( "Loop #{ @output_type }. Exit with ESC or 'q'" )
     mplayer_vo = ""
-    `mplayer -really-quiet mf://#{ sequence } -mf fps=#{ fps }:type=#{ @output_format } -loop 0 #{ mplayer_vo } -audiofile #{ @source_audio.first } > /dev/null 2>&1`
+    `mplayer -really-quiet mf://#{ sequence } #{ audio } -mf fps=#{ fps }:type=#{ @output_format } -loop 0 #{ mplayer_vo } > /dev/null 2>&1`
   end
-  if options.transition_and_timing.first == "fade"
-    sequence_frames = ( 2 * options.black + @source.length * ( fade_in_time + duration + fade_out_time ) ) * fps
-  elsif options.transition_and_timing.first == "crossfade"
-    sequence_frames = ( 2 * options.black + crossfade_time + @source.length * ( crossfade_time + duration ) ) * fps # implicit fade in/out first/last when crossfading
-  end
-  final_report( sequence_frames, fps, options.transition_and_timing, options.keep ) # FIXME
+  final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
   cleanup_workdir( options.keep )
   @logger.info( "Preview done" )
   exit
@@ -1186,13 +1208,7 @@ when "dcp"
   @logger.info( "Write ASSETMAP and VOLINDEX" )
   `cd #{ @dcpdir }; mkmap --issuer '#{ options.issuer }' cpl_* pkl_* j2c_*` # pick up all DCP files, might be cumulative DCP
 
-  # FIXME report -> dry out
   # report
-  if options.transition_and_timing.first == "fade"
-    sequence_frames = ( 2 * options.black + @source.length * ( fade_in_time + duration + fade_out_time ) ) * fps
-  elsif options.transition_and_timing.first == "crossfade"
-    sequence_frames = ( 2 * options.black + crossfade_time + @source.length * ( crossfade_time + duration ) ) * fps # implicit fade in/out for first/last images when crossfading
-  end
   final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
   cleanup_workdir( options.keep )
   @logger.info( "DCP done" )
@@ -1201,6 +1217,8 @@ end # End Create DCP
 
 
 TODO = <<TODO
+FIXME estimate required/check available disk space
+FIXME -o|--dcp-out example
 FIXME max number of commandline args? (32768 here)
 FIXME See $ cinemaslides 01.jpg 02.jpg -x crossfade,1,0 (temporary @framecount fix in full_level())
 FIXME verbosity level "info" -> jpeg 2000 encoder talk
@@ -1225,8 +1243,6 @@ FEATURE DCP naming conventions
 FEATURE MPEG MXFI
 
 CODE slideshow objects
-CODE dry out black header/tail
-CODE report method (also generalize transition types and timings)
 CODE options catch all (missing arguments trace back deep)
 CODE better way to check for and provide requirements alternatives ( mplayer|ffplay, openjpeg|kakadu etc. )
 
