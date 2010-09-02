@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.08.29"
+CinemaSlidesVersion = "v0.2010.09.02"
 Author = "Wolfgang Woehl"
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
@@ -12,11 +12,13 @@ Author = "Wolfgang Woehl"
 #
 # Requires:
 #   ruby, gem, bash
-#   ImageMagick, MPlayer
+#   ImageMagick, MPlayer, SoX
 #   OpenJPEG (http://code.google.com/p/openjpeg/downloads/list) or Kakadu (see the note on Kakadu's terms of use below)
 #   asdcplib (http://www.cinecert.com/asdcplib/) and opencinematools (http://code.google.com/p/opencinematools/)
 #   highline (gem install highline)
 #   nokogiri (gem install nokogiri, requires ruby-dev, libxml2-dev)
+#
+requirements = [ 'convert', 'identify', 'montage', 'display', 'mplayer', 'sox', 'soxi', 'image_to_j2k', 'kdu_compress', 'asdcp-test', 'kmuuidgen', 'mkcpl', 'mkpkl', 'mkmap' ]
 #
 ###
 #   Kakadu (http://www.kakadusoftware.com/index.php) is a proprietary JPEG 2000 implementation, written by Dr. Taubman
@@ -275,7 +277,7 @@ def check_requirements( requirements )
 end
 
 
-def hrs_min_sec( seconds )
+def hours_minutes_seconds_verbose( seconds )
   t = seconds
   hrs = ( ( t / 3600 ) ).to_i
   min = ( ( t / 60 ) % 60 ).to_i
@@ -289,11 +291,26 @@ def hrs_min_sec( seconds )
 end
 
 
+def hms_from_seconds( seconds )
+  hours = ( seconds / 3600.0 ).to_i
+  minutes = ( ( seconds / 60.0 ) % 60 ).to_i
+  secs = seconds % 60
+  return [ hours, minutes, secs ].join( ':' )
+end
+def seconds_from_hms( timestring ) # hh:mm:ss.fraction
+  a = timestring.split( ':' )
+  hours = a[0].to_i
+  minutes = a[1].to_i
+  secs = a[2].to_f
+  return ( hours * 3600 + minutes * 60 + secs )
+end
+
+
 def final_report( sequence_frames, fps, transition_and_timing, keep )
   sequence_duration = sequence_frames / fps
-  @logger.debug( "#{ sequence_frames } frames intended by numbers (#{ hrs_min_sec( sequence_duration ) })" )
+  @logger.debug( "#{ sequence_frames } frames intended by numbers (#{ hours_minutes_seconds_verbose( sequence_duration ) })" )
   @logger.debug( "#{ @framecount -1 } frames written" )
-  @logger.info( "Cinema Slideshow is #{ hrs_min_sec( ( @framecount - 1 ) / fps ) } long (#{ @source.length } image#{ 's' * ( @source.length == 1 ? 0 : 1 )} | #{ transition_and_timing.join(',').gsub(' ', '') } | #{ @framecount - 1 } frames | #{ fps } fps)" )
+  @logger.info( "Cinema Slideshow is #{ hours_minutes_seconds_verbose( ( @framecount - 1 ) / fps ) } long (#{ @source.length } image#{ 's' * ( @source.length == 1 ? 0 : 1 )} | #{ transition_and_timing.join(',').gsub(' ', '') } | #{ @framecount - 1 } frames | #{ fps } fps)" )
   @logger.info( "Pick up preview files at #{ @workdir }/" ) if ( keep == TRUE and @output_type != 'dcp' )
   @logger.info( "Pick up temporary files at #{ @workdir }/" ) if ( keep == TRUE and @output_type == 'dcp' )
   @logger.info( "Pick up DCP at #{ @dcpdir }" ) if @output_type == 'dcp'
@@ -556,7 +573,7 @@ end
 
 def check_for_audio_asset( filename )
   hash = Digest::SHA1.hexdigest( File.read( filename ) )
-  assetname = File.join( @assetsdir_audio, 'audio-' + hash )
+  assetname = File.join( @assetsdir_audio, 'audio-' + hash + '_.wav' )
   if File.exists?( assetname )
     @logger.debug( "Skip: Audio asset exists (#{ filename } -> #{ File.basename( assetname ) })" )
     todo = FALSE
@@ -692,7 +709,6 @@ end
 ###
 
 
-requirements = [ 'convert', 'identify', 'montage', 'display', 'mplayer', 'image_to_j2k', 'kdu_compress', 'asdcp-test', 'kmuuidgen', 'mkcpl', 'mkpkl', 'mkmap', 'sox', 'soxi' ]
 available_tools, missing_tools = check_requirements( requirements )
 if options.output_type == "dcp"
   if missing_tools.include?( "kdu_compress" )
@@ -925,12 +941,14 @@ else
 end
 
 
-# calculate intended number of frames, needed in audio conform and final report
+# calculate intended number of frames including black leader and tail, needed in audio conform and final report
 if options.transition_and_timing.first == "fade"
   sequence_frames = ( 2 * options.black + @source.length * ( fade_in_time + duration + fade_out_time ) ) * fps
 elsif options.transition_and_timing.first == "crossfade"
   sequence_frames = ( 2 * options.black + crossfade_time + @source.length * ( crossfade_time + duration ) ) * fps # implicit fade in/out first/last when crossfading
 end
+# meat of sequence_frames (without black leader/tail), where audio will play
+image_sequence_frames = sequence_frames - ( 2 * options.black * fps )
 
 
 # set up diretories to write output to. These locations are created upon demand only,
@@ -949,13 +967,16 @@ end
 @thumbsdir = File.join( @cinemaslidesdir, "thumbs" )
 @assetsdir = File.join( @cinemaslidesdir, "assets" )
 @assetsdir_audio = File.join( @cinemaslidesdir, 'assets-audio' )
+
 if confirm_or_create( @cinemaslidesdir ) == TRUE
   @logger.debug( "#{ @cinemaslidesdir } is writeable" )
 else
   @logger.critical( "#{ @cinemaslidesdir } is not writeable. Check your mounts or export CINEMASLIDESDIR to point to a writeable location." )
   exit
 end
-Dir.mkdir( @assetsdir ) unless File.exists?( @assetsdir )
+unless @source.empty? # TODO audio-only DCP
+  Dir.mkdir( @assetsdir ) unless File.exists?( @assetsdir )
+end
 unless @source_audio.empty?
   Dir.mkdir( @assetsdir_audio ) unless File.exists?( @assetsdir_audio )
 end
@@ -966,6 +987,7 @@ else
 end
 case @output_type
 when 'dcp' # silently ignore option.dcp_user_output_path when previewing
+  # ask for confirmation to add files if if -o | --dcp_out is set and the location already exists and is not empty
   if options.dcp_user_output_path != nil and File.exists?( @dcpdir ) and Dir.entries( @dcpdir ).size > 2 # platform-agnostic Dir.empty? anyone?
     if File.writable?( @dcpdir )
       if ENV[ 'HOME' ] == File.join( File.dirname( @dcpdir ), File.basename( @dcpdir ) ) # confirm direct write into HOME
@@ -996,11 +1018,56 @@ y = y.to_i / 6 # ...
 case @output_type
 when "dcp"
   @logger.info( "Creating #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
+  @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
   @logger.info( "Title:      #{ options.title } #{timestamp}" )
   @logger.info( "Annotation: #{ options.annotation } #{timestamp}" )
   @logger.info( "Issuer:     #{ options.issuer }" )
 when "preview", "fullpreview"
   @logger.info( "Creating #{ @output_type } (#{ @aspect } #{ @dimensions } @ #{ fps } fps)" )
+  @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
+end
+
+
+### Process audio
+unless @source_audio.empty?
+  @logger.info( 'Conform audio ...' )
+  
+  audiostream = Array.new
+  audiostream_total_length = 0.0
+  source_audio_index = 0
+
+  # make a list of audiofiles with sufficient total length
+  while audiostream_total_length < image_sequence_frames / fps
+    audiostream << @source_audio[ source_audio_index ]
+    @logger.critical( audiostream.inspect )
+    audiostream_total_length += seconds_from_hms( `soxi -d #{ @source_audio[ source_audio_index ] }`.chomp )
+    @logger.critical( "audiostream_total_length: #{ audiostream_total_length }" )
+    if source_audio_index == @source_audio.size - 1
+      source_audio_index = 0 # start over
+    else
+      source_audio_index += 1
+    end
+  end
+  
+  # conform
+  conformed_audiostream = Array.new
+  audiostream.each do |audiofile|
+    audio_asset, todo = check_for_audio_asset( audiofile )
+    @logger.critical( "Asset for #{ audiofile }: #{ audio_asset }" )
+    if todo == TRUE
+      `sox #{ audiofile } -b 24 -s -c 2 -r 48000 -t wavpcm #{ audio_asset }`
+    end
+    conformed_audiostream << audio_asset
+  end
+  # splice and trim/fade
+  sequence_audio_asset = File.join( @assetsdir_audio, 'sequence_asset-audio_' + Digest::SHA1.hexdigest( conformed_audiostream.each { |e| File.basename( e ) }.join( ' ' ) ) + '_.wav' )
+  sequence_audio_asset_tmp = File.join( @assetsdir_audio, 'tmp-' + File.basename( sequence_audio_asset ) )
+  `sox #{ conformed_audiostream.join( ' ' ) } #{ sequence_audio_asset_tmp } splice`
+  image_sequence_duration = hms_from_seconds( image_sequence_frames / fps )
+  @logger.critical( "image_sequence_duration: #{ image_sequence_duration } (Should be #{ image_sequence_frames / fps })" )
+  `sox #{ sequence_audio_asset_tmp } #{ sequence_audio_asset } trim 0 #{ image_sequence_duration }`
+  @logger.critical( "Asset for sequence_audio_asset: #{ sequence_audio_asset }" )
+
 end
 
 
@@ -1109,7 +1176,7 @@ end
 case @output_type
 when "preview", "fullpreview"
   sequence = File.join( "#{ @conformdir }", "*.#{ @output_format }" )
-  audio = ( @source_audio.empty? ? '' : '-audiofile ' + @source_audio.first )
+  audio = ( @source_audio.empty? ? '' : '-audiofile ' + sequence_audio_asset )
   if ENV[ "DISPLAY" ].nil?
     @logger.warn( "DISPLAY not set. Skipping preview" )
   else
