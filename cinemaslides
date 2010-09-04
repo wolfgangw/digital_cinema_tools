@@ -947,7 +947,7 @@ if options.transition_and_timing.first == "fade"
 elsif options.transition_and_timing.first == "crossfade"
   sequence_frames = ( 2 * options.black + crossfade_time + @source.length * ( crossfade_time + duration ) ) * fps # implicit fade in/out first/last when crossfading
 end
-# meat of sequence_frames (without black leader/tail), where audio will play
+# meat of sequence_frames (without black leader/tail) -- where audio will play
 image_sequence_frames = sequence_frames - ( 2 * options.black * fps )
 
 
@@ -1029,19 +1029,27 @@ end
 
 
 ### Process audio
+#
+# user can specify -- alongside with any number of images -- any number of audio files
+# a) cinemaslides makes a list of those audio files which will be equally long as or longer than the calculated image sequence
+# when the specified audio files are in summary not long enough the list-making will loop over the specified audio files
+# b) every element of the list is then checked into the asset depot
+# c) the elements are then spliced together (result is checked into asset depot)
+# d) the result is trimmed to the exact length of the image sequence
+# e) the result is padded with silence to accomodate for black leader/tail
 unless @source_audio.empty?
   @logger.info( 'Conform audio ...' )
   
-  audiostream = Array.new
-  audiostream_total_length = 0.0
+  audio_list = Array.new
+  audio_list_total_length = 0.0
   source_audio_index = 0
 
-  # make a list of audiofiles with sufficient total length
-  while audiostream_total_length < image_sequence_frames / fps
-    audiostream << @source_audio[ source_audio_index ]
-    @logger.critical( audiostream.inspect )
-    audiostream_total_length += seconds_from_hms( `soxi -d #{ @source_audio[ source_audio_index ] }`.chomp )
-    @logger.critical( "audiostream_total_length: #{ audiostream_total_length }" )
+  # a) make a list of audiofiles with sufficient total length
+  while audio_list_total_length < image_sequence_frames / fps
+    audio_list << @source_audio[ source_audio_index ]
+    @logger.critical( audio_list.inspect )
+    audio_list_total_length += seconds_from_hms( `soxi -d #{ @source_audio[ source_audio_index ] }`.chomp )
+    @logger.critical( "audiostream_total_length: #{ audio_list_total_length }" )
     if source_audio_index == @source_audio.size - 1
       source_audio_index = 0 # start over
     else
@@ -1049,24 +1057,31 @@ unless @source_audio.empty?
     end
   end
   
-  # conform
-  conformed_audiostream = Array.new
-  audiostream.each do |audiofile|
+  # b) conform each audiofile
+  conformed_audio_list = Array.new
+  audio_list.each do |audiofile|
     audio_asset, todo = check_for_audio_asset( audiofile )
     @logger.critical( "Asset for #{ audiofile }: #{ audio_asset }" )
     if todo == TRUE
       `sox #{ audiofile } -b 24 -s -c 2 -r 48000 -t wavpcm #{ audio_asset }`
     end
-    conformed_audiostream << audio_asset
+    conformed_audio_list << audio_asset
   end
-  # splice and trim/fade
-  sequence_audio_asset = File.join( @assetsdir_audio, 'sequence_asset-audio_' + Digest::SHA1.hexdigest( conformed_audiostream.each { |e| File.basename( e ) }.join( ' ' ) ) + '_.wav' )
+  
+  sequence_audio_asset = File.join( @assetsdir_audio, 'sequence_asset-audio_' + Digest::SHA1.hexdigest( conformed_audio_list.each { |e| File.basename( e ) }.join( ' ' ) ) + '_.wav' )
   sequence_audio_asset_tmp = File.join( @assetsdir_audio, 'tmp-' + File.basename( sequence_audio_asset ) )
-  `sox #{ conformed_audiostream.join( ' ' ) } #{ sequence_audio_asset_tmp } splice`
+  
+  # c) splice
+  `sox #{ conformed_audio_list.join( ' ' ) } #{ sequence_audio_asset_tmp } splice`
   image_sequence_duration = hms_from_seconds( image_sequence_frames / fps )
   @logger.critical( "image_sequence_duration: #{ image_sequence_duration } (Should be #{ image_sequence_frames / fps })" )
+  
+  # d) trim
   `sox #{ sequence_audio_asset_tmp } #{ sequence_audio_asset } trim 0 #{ image_sequence_duration }`
+  File.delete( sequence_audio_asset_tmp )
   @logger.critical( "Asset for sequence_audio_asset: #{ sequence_audio_asset }" )
+  
+  # e) pad with silence for black leader/tail
 
 end
 
