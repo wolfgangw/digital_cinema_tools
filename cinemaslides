@@ -69,6 +69,10 @@ class Optparser
     options.black = 0.0
     options.black_leader = NIL
     options.black_tail = NIL
+    options.audio_samplerate = 48000
+    options.audio_samplerate_choices = [ '48000', '48k', '96000', '96k' ]
+    options.audio_bps = 24
+    options.audio_bps_choices = [ '16', '24' ]
     options.title = 'Cinemaslides test'
     options.issuer = ENV[ 'USER' ] + '@' + `hostname`.chomp
     options.annotation = 'Cinemaslides test'
@@ -87,9 +91,9 @@ class Optparser
 
     opts = OptionParser.new do |opts|
       opts.banner = <<BANNER
-cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
+cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
 
-Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [ --dont-resize ] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [-o, --dcp_out <path>] [-m, --montagepreview] [--keep] [ --dont-check ] [--dont-drop] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
+Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [ --dont-resize ] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [-o, --dcp_out <path>] [-m, --montagepreview] [--keep] [ --dont-check ] [--dont-drop] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
 
 BANNER
 
@@ -139,6 +143,21 @@ BANNER
       end
       opts.on( '--bt', '--black-tail seconds', Float, 'Length of black tail (Default: 0)' ) do |p|
         options.black_tail = p
+      end
+      opts.on( '-r', '--samplerate rate', String, "Audio samplerate. Use '48000', '48k', '96000' or '96k' (Default: 48k)" ) do |p|
+        if options.audio_samplerate_choices.include?( p.downcase )
+          case p.downcase
+          when '48000', '48k'
+            options.audio_samplerate = 48000
+          when '96000', '96k'
+            options.audio_samplerate = 96000
+          end
+        end
+      end
+      opts.on( '--bps bps', Integer, "Bits per audio sample. Use '16' or '24' (Default: 24)" ) do |p|
+        if options.audio_bps_choices.include?( p )
+          options.audio_bps = p
+        end
       end
       opts.on( '--title title', 'DCP title tag', String ) do |p|
         options.title = p
@@ -746,8 +765,8 @@ end
 
 ### Get options and initialize
 black_leader = black_tail = options.black
-black_leader = options.black_leader unless options.black_leader.nil?
-black_tail = options.black_tail unless options.black_tail.nil?
+black_leader = options.black_leader.abs unless options.black_leader.nil?
+black_tail = options.black_tail.abs unless options.black_tail.nil?
 
 @resize = options.resize
 
@@ -915,9 +934,9 @@ if options.dont_check == TRUE
   @source = @source_tmp.clone
 end
 
-@logger.critical( "Images: #{ @source.join( ', ' ) }" )
-@logger.critical( "Audio files: #{ @source_audio.join( ', ' ) }" )
-@logger.critical( "No decode delegates for: #{ no_decode_delegate.nil? ? 'Not checked' : no_decode_delegate.join( ', ' ) }" )
+@logger.debug( "Images: #{ @source.join( ', ' ) }" )
+@logger.debug( "Audio files: #{ @source_audio.join( ', ' ) }" )
+@logger.debug( "No decode delegates for: #{ no_decode_delegate.nil? ? 'Not checked' : no_decode_delegate.join( ', ' ) }" )
 
 
 # check options.transition_and_timing
@@ -1096,9 +1115,18 @@ unless @source_audio.empty?
   @logger.critical( "Asset for sequence_audio_asset: #{ sequence_audio_asset }" )
   
   # e) pad with silence for black leader/tail
+  audio_leader = silence( black_leader, samplerate, bps, channelcount )
 
 end
-
+def silence( seconds, samplerate, bps, channelcount )
+  silence_conform = File.join( @assetsdir_audio, 'silence_' + seconds.to_s + '_' + samplerate.to_s + '_' + bps.to_s + '_' + channelcount.to_s + '.wav' )
+  @logger.critical( "silence_conform: #{ silence_conform }" )
+  silence_raw = File.join( @assetsdir_audio, 'silence.raw' )
+  `dd if=/dev/zero of=#{ silence_raw } bs=#{ samplerate } count=#{ ( bps / 8 ) * channelcount }`
+  @logger.critical( "silence_raw: #{ silence_raw }" )
+  `sox -t raw -r #{ samplerate } -b #{ bps } -s -c #{ channelcount } #{ silence_raw } #{ silence_conform }`
+  return silence_conform
+end
 
 ### Process all images
 
