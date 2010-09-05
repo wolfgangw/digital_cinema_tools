@@ -1075,7 +1075,6 @@ end
 # e) the result is padded with silence to accomodate for black leader/tail
 def silence( seconds, samplerate, bps, channelcount )
   silence_conform = File.join( @assetsdir_audio, 'silence_' + seconds.to_s + '_' + samplerate.to_s + '_' + bps.to_s + '_' + channelcount.to_s + '.wav' )
-  @logger.critical( "silence_conform: #{ silence_conform }" )
   if File.exists?( silence_conform )
     @logger.debug( "Skip: Silence asset exists (#{ File.basename( silence_conform ) })" )
   else
@@ -1091,13 +1090,14 @@ unless @source_audio.empty?
   audio_list = Array.new
   audio_list_total_length = 0.0
   source_audio_index = 0
-
-  # a) make a list of audiofiles with sufficient total length
-  while audio_list_total_length < image_sequence_frames / fps
+  
+  image_sequence_length_seconds = image_sequence_frames / fps
+  image_sequence_length_hms = hms_from_seconds( image_sequence_length_seconds )
+  
+  # a) make a list of audiofiles with sufficient total length (read 'at least as long as image sequence')
+  while audio_list_total_length < image_sequence_length_seconds
     audio_list << @source_audio[ source_audio_index ]
-    @logger.critical( audio_list.inspect )
     audio_list_total_length += seconds_from_hms( `soxi -d #{ @source_audio[ source_audio_index ] }`.chomp )
-    @logger.critical( "audiostream_total_length: #{ audio_list_total_length }" )
     if source_audio_index == @source_audio.size - 1
       source_audio_index = 0 # start over
     else
@@ -1109,39 +1109,44 @@ unless @source_audio.empty?
   conformed_audio_list = Array.new
   audio_list.each do |audiofile|
     audio_asset, todo = check_for_audio_asset( audiofile )
-    @logger.critical( "Asset for #{ audiofile }: #{ audio_asset }" )
     if todo == TRUE
       # FIXME channelcount
       `sox #{ audiofile } -b #{ options.audio_bps } -s -c 2 -r #{ options.audio_samplerate } -t wavpcm #{ audio_asset }`
+      @logger.info( "Conform #{ File.basename( audiofile ) }" )
+    else
+      @logger.debug( "Skip: Audio asset exists (#{ File.basename( audiofile ) } -> #{ File.basename( audio_asset ) })" )
     end
     conformed_audio_list << audio_asset
   end
   
+  # match for sequence_audio_asset is based on sha1 digest of conformed_audio_list's elements (assets) joined into 1 string
   sequence_audio_asset = File.join( @assetsdir_audio, 'sequence_asset-audio_' + Digest::SHA1.hexdigest( conformed_audio_list.each { |e| File.basename( e ) }.join( ' ' ) ) + '_.wav' )
-  sequence_audio_asset_tmp = File.join( @assetsdir_audio, 'tmp-' + File.basename( sequence_audio_asset ) )
   
   # c) splice and normalise to -20 dB FS (SMPTE 428-2-2006)
+  sequence_audio_asset_tmp = File.join( @assetsdir_audio, 'tmp-' + File.basename( sequence_audio_asset ) )
   `sox #{ conformed_audio_list.join( ' ' ) } #{ sequence_audio_asset_tmp } splice gain -n -20`
 
   # d) trim
-  image_sequence_duration_hms = hms_from_seconds( image_sequence_frames / fps )
-  @logger.critical( "image_sequence_duration: #{ image_sequence_duration_hms } (Should be #{ image_sequence_frames / fps })" )
   if File.exists?( sequence_audio_asset )
     @logger.debug( "Skip: Trimmed audio asset for image sequence exists (#{ File.basename( sequence_audio_asset ) })" )
   else
-    `sox #{ sequence_audio_asset_tmp } #{ sequence_audio_asset } trim 0 #{ image_sequence_duration_hms }`
+    @logger.info( 'Trim audio' )
+    `sox #{ sequence_audio_asset_tmp } #{ sequence_audio_asset } trim 0 #{ image_sequence_length_hms }`
   end
   File.delete( sequence_audio_asset_tmp )
-  @logger.critical( "Asset for sequence_audio_asset: #{ sequence_audio_asset }" )
   
   # e) pad with silence for black leader/tail
   audio_leader = ( black_leader > 0 ? silence( black_leader, options.audio_samplerate, options.audio_bps, 2 ) : '' )
-  audio_tail =   ( black_tail > 0   ? silence( black_tail, options.audio_samplerate, options.audio_bps, 2 ) : '' )
+  audio_tail = ( black_tail > 0   ? silence( black_tail, options.audio_samplerate, options.audio_bps, 2 ) : '' )
   @final_audio = File.join( @assetsdir_audio, 'final-' + File.basename( sequence_audio_asset ) )
-  `sox #{ audio_leader } #{ sequence_audio_asset } #{ audio_tail } #{ @final_audio } splice`
-  @logger.critical( "Final audio: #{ @final_audio }" )
+  if File.exists?( @final_audio )
+    @logger.debug( "Skip: Padded (leader/tail) audio asset exists (#{ File.basename( @final_audio ) })" )
+  else
+    @logger.info( 'Pad audio with leader/tail silence' )
+    `sox #{ audio_leader } #{ sequence_audio_asset } #{ audio_tail } #{ @final_audio } splice`
+  end
   
-  @logger.info( 'Conform audio done' )
+  @logger.info( '... Conform audio done' )
 end
 
 ### Process all images
