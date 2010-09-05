@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.09.02"
+CinemaSlidesVersion = "v0.2010.09.05"
 Author = "Wolfgang Woehl"
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
@@ -351,6 +351,9 @@ def cleanup_workdir( keep )
     when 'preview', 'fullpreview'
       @logger.info( "Removing preview files (Say '--keep' to keep them)" )
       `rm -rf #{ @workdir }`
+      unless @final_audio.nil?
+        `rm #{ @final_audio }` # which lives in @assetsdir_audio, for now
+      end
     when 'dcp'
       @logger.info( "Removing temporary files (Say '--keep' to keep them)" )
       `rm -rf #{ @conformdir }`
@@ -1108,6 +1111,7 @@ unless @source_audio.empty?
     audio_asset, todo = check_for_audio_asset( audiofile )
     @logger.critical( "Asset for #{ audiofile }: #{ audio_asset }" )
     if todo == TRUE
+      # FIXME channelcount
       `sox #{ audiofile } -b #{ options.audio_bps } -s -c 2 -r #{ options.audio_samplerate } -t wavpcm #{ audio_asset }`
     end
     conformed_audio_list << audio_asset
@@ -1118,21 +1122,26 @@ unless @source_audio.empty?
   
   # c) splice
   `sox #{ conformed_audio_list.join( ' ' ) } #{ sequence_audio_asset_tmp } splice`
+
+  # d) trim
   image_sequence_duration_hms = hms_from_seconds( image_sequence_frames / fps )
   @logger.critical( "image_sequence_duration: #{ image_sequence_duration_hms } (Should be #{ image_sequence_frames / fps })" )
-  
-  # d) trim
-  `sox #{ sequence_audio_asset_tmp } #{ sequence_audio_asset } trim 0 #{ image_sequence_duration_hms }`
+  if File.exists?( sequence_audio_asset )
+    @logger.debug( "Skip: Trimmed audio asset for image sequence exists (#{ File.basename( sequence_audio_asset ) })" )
+  else
+    `sox #{ sequence_audio_asset_tmp } #{ sequence_audio_asset } trim 0 #{ image_sequence_duration_hms }`
+  end
   File.delete( sequence_audio_asset_tmp )
   @logger.critical( "Asset for sequence_audio_asset: #{ sequence_audio_asset }" )
   
   # e) pad with silence for black leader/tail
   audio_leader = ( black_leader > 0 ? silence( black_leader, options.audio_samplerate, options.audio_bps, 2 ) : '' )
   audio_tail =   ( black_tail > 0   ? silence( black_tail, options.audio_samplerate, options.audio_bps, 2 ) : '' )
-  final_audio = File.join( @assetsdir_audio, 'final-' + File.basename( sequence_audio_asset ) )
-  `sox #{ audio_leader } #{ sequence_audio_asset } #{ audio_tail } #{ final_audio } splice`
-  @logger.critical( "Final audio: #{ final_audio }" )
-
+  @final_audio = File.join( @assetsdir_audio, 'final-' + File.basename( sequence_audio_asset ) )
+  `sox #{ audio_leader } #{ sequence_audio_asset } #{ audio_tail } #{ @final_audio } splice`
+  @logger.critical( "Final audio: #{ @final_audio }" )
+  
+  @logger.info( 'Conform audio done' )
 end
 
 ### Process all images
@@ -1240,8 +1249,7 @@ end
 case @output_type
 when "preview", "fullpreview"
   sequence = File.join( "#{ @conformdir }", "*.#{ @output_format }" )
-  #audio = ( @source_audio.empty? ? '' : '-audiofile ' + sequence_audio_asset )
-  audio = ( @source_audio.empty? ? '' : '-audiofile ' + final_audio )
+  audio = ( @source_audio.empty? ? '' : '-audiofile ' + @final_audio )
   if ENV[ "DISPLAY" ].nil?
     @logger.warn( "DISPLAY not set. Skipping preview" )
   else
@@ -1258,10 +1266,6 @@ when "preview", "fullpreview"
 
 ### Create DCP (Encoding, asdcplib, oct)
 when "dcp"
-  tmp_slidesmxf = File.join( @dcpdir, 'tmp_j2c.mxf' )
-  tmp_cpl = File.join( @dcpdir, 'tmp_cpl.xml' )
-  tmp_pkl = File.join( @dcpdir, 'tmp_pkl.xml' )
-
   Dir.mkdir( @j2cdir )
 
   ## JPEG 2000 encoding
@@ -1306,19 +1310,30 @@ when "dcp"
 
   `mv #{ File.join( @conformdir, '*.j2c' ) } #{ @j2cdir }`
   
+  # Setup MXF container names
+  image_mxf_uuid = `kmuuidgen -n`
+  audio_mxf_uuid = `kmuuidgen -n`
+  image_mxf = File.join( @dcpdir, "j2c_#{ image_mxf_uuid }_.mxf" )
+  audio_mxf = File.join( @dcpdir, "pcm_#{ audio_mxf_uuid }_.mxf" )
+
   # Make image trackfile
   @logger.info( "Write image trackfile" )
-  slidesmxf_uuid = `kmuuidgen -n`
-  `asdcp-test -L -E -p #{ fps } -a #{ slidesmxf_uuid } -c #{ tmp_slidesmxf } #{ @j2cdir } > /dev/null 2>&1`
-  @logger.debug( "trackfile uuid: #{ slidesmxf_uuid }" )
-  slidesmxf = File.join( File.dirname( tmp_slidesmxf ), "j2c_" + slidesmxf_uuid + "_.mxf" )
-  File.rename( tmp_slidesmxf, slidesmxf )
+  `asdcp-test -L -E -p #{ fps } -a #{ image_mxf_uuid } -c #{ image_mxf } #{ @j2cdir } > /dev/null 2>&1`
+  @logger.debug( "Image trackfile UUID: #{ image_mxf_uuid }" )
+  
+  # Make audio trackfile
+  @logger.info( "Write audio trackfile" )
+  `asdcp-test -L -E -p #{ fps } -a #{ audio_mxf_uuid } -c #{ audio_mxf } #{ @final_audio } > /dev/null 2>&1`
+  @logger.debug( "Audio trackfile UUID: #{ audio_mxf_uuid }" )
+
+  tmp_cpl = File.join( @dcpdir, 'tmp_cpl.xml' )
+  tmp_pkl = File.join( @dcpdir, 'tmp_pkl.xml' )
 
   # Write CompositionPlaylist
   @logger.info( "Write CPL" )
-  `mkcpl --kind test --norating --title '#{ options.title } #{ timestamp }' --annotation '#{ options.annotation } #{ timestamp }' --issuer '#{ options.issuer }' #{ slidesmxf } > #{ tmp_cpl }`
+  `mkcpl --kind test --norating --title '#{ options.title } #{ timestamp }' --annotation '#{ options.annotation } #{ timestamp }' --issuer '#{ options.issuer }' #{ image_mxf } #{ audio_mxf } > #{ tmp_cpl }`
   cpl_uuid = Nokogiri::XML( File.open( tmp_cpl ) ).xpath( "//xmlns:CompositionPlaylist/xmlns:Id" ).text.split( 'urn:uuid:' ).last
-  @logger.debug( "cpl uuid      : #{ cpl_uuid }" )
+  @logger.debug( "CPL UUID:       #{ cpl_uuid }" )
   cpl = File.join( File.dirname( tmp_cpl ), "cpl_" + cpl_uuid + "_.xml" )
   File.rename( tmp_cpl, cpl )
 
@@ -1330,15 +1345,15 @@ when "dcp"
     @logger.debug( "Obsolete:   #{ File.basename( obsolete_pkl ) }" )
     File.delete( obsolete_pkl )
   end
-  `cd #{ @dcpdir }; mkpkl --issuer '#{ options.issuer }' --annotation '#{ options.annotation } #{ timestamp }' cpl_*_.xml j2c_*_.mxf > #{ File.basename( tmp_pkl ) }`
+  `cd #{ @dcpdir }; mkpkl --issuer '#{ options.issuer }' --annotation '#{ options.annotation } #{ timestamp }' cpl_*_.xml j2c_*_.mxf pcm_*_.mxf > #{ File.basename( tmp_pkl ) }`
   pkl_uuid = Nokogiri::XML( File.open( tmp_pkl ) ).xpath( "//xmlns:PackingList/xmlns:Id" ).text.split( 'urn:uuid:' ).last
-  @logger.debug( "pkl uuid      : #{ pkl_uuid }" )
+  @logger.debug( "PKL UUID:       #{ pkl_uuid }" )
   pkl = File.join( File.dirname( tmp_pkl ), "pkl_" + pkl_uuid + "_.xml" )
   File.rename( tmp_pkl, pkl)
   
   # Write Assetmap
   @logger.info( "Write ASSETMAP and VOLINDEX" )
-  `cd #{ @dcpdir }; mkmap --issuer '#{ options.issuer }' cpl_* pkl_* j2c_*` # pick up all DCP files, might be cumulative DCP
+  `cd #{ @dcpdir }; mkmap --issuer '#{ options.issuer }' cpl_* pkl_* j2c_* pcm_*` # pick up all DCP files, might be cumulative DCP
 
   # report
   final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
