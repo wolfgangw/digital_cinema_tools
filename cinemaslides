@@ -600,7 +600,7 @@ end
 
 def check_for_audio_asset( filename )
   hash = Digest::SHA1.hexdigest( File.read( filename ) )
-  assetname = File.join( @assetsdir_audio, 'audio-' + hash + '_.wav' )
+  assetname = File.join( @assetsdir_audio, hash + '_.wav' )
   if File.exists?( assetname )
     @logger.debug( "Skip: Audio asset exists (#{ filename } -> #{ File.basename( assetname ) })" )
     todo = FALSE
@@ -1070,6 +1070,18 @@ end
 # c) the elements are spliced together (result is checked into asset depot)
 # d) the result is trimmed to the exact length of the image sequence
 # e) the result is padded with silence to accomodate for black leader/tail
+def silence( seconds, samplerate, bps, channelcount )
+  silence_conform = File.join( @assetsdir_audio, 'silence_' + seconds.to_s + '_' + samplerate.to_s + '_' + bps.to_s + '_' + channelcount.to_s + '.wav' )
+  @logger.critical( "silence_conform: #{ silence_conform }" )
+  if File.exists?( silence_conform )
+    @logger.debug( "Skip: Silence asset exists (#{ File.basename( silence_conform ) })" )
+  else
+    # alternatively, use asdcplib's blackwave (blackwave -d <frame_count> output)
+    `sox -r #{ samplerate } -b #{ bps } -c #{ channelcount } -s -n #{ silence_conform } synth #{ seconds } sine 0`
+  end
+  return silence_conform
+end
+
 unless @source_audio.empty?
   @logger.info( 'Conform audio ...' )
   
@@ -1096,7 +1108,7 @@ unless @source_audio.empty?
     audio_asset, todo = check_for_audio_asset( audiofile )
     @logger.critical( "Asset for #{ audiofile }: #{ audio_asset }" )
     if todo == TRUE
-      `sox #{ audiofile } -b 24 -s -c 2 -r 48000 -t wavpcm #{ audio_asset }`
+      `sox #{ audiofile } -b #{ options.audio_bps } -s -c 2 -r #{ options.audio_samplerate } -t wavpcm #{ audio_asset }`
     end
     conformed_audio_list << audio_asset
   end
@@ -1115,17 +1127,12 @@ unless @source_audio.empty?
   @logger.critical( "Asset for sequence_audio_asset: #{ sequence_audio_asset }" )
   
   # e) pad with silence for black leader/tail
-  audio_leader = silence( black_leader, samplerate, bps, channelcount )
+  audio_leader = ( black_leader > 0 ? silence( black_leader, options.audio_samplerate, options.audio_bps, 2 ) : '' )
+  audio_tail =   ( black_tail > 0   ? silence( black_tail, options.audio_samplerate, options.audio_bps, 2 ) : '' )
+  final_audio = File.join( @assetsdir_audio, 'final-' + File.basename( sequence_audio_asset ) )
+  `sox #{ audio_leader } #{ sequence_audio_asset } #{ audio_tail } #{ final_audio } splice`
+  @logger.critical( "Final audio: #{ final_audio }" )
 
-end
-def silence( seconds, samplerate, bps, channelcount )
-  silence_conform = File.join( @assetsdir_audio, 'silence_' + seconds.to_s + '_' + samplerate.to_s + '_' + bps.to_s + '_' + channelcount.to_s + '.wav' )
-  @logger.critical( "silence_conform: #{ silence_conform }" )
-  silence_raw = File.join( @assetsdir_audio, 'silence.raw' )
-  `dd if=/dev/zero of=#{ silence_raw } bs=#{ samplerate } count=#{ ( bps / 8 ) * channelcount }`
-  @logger.critical( "silence_raw: #{ silence_raw }" )
-  `sox -t raw -r #{ samplerate } -b #{ bps } -s -c #{ channelcount } #{ silence_raw } #{ silence_conform }`
-  return silence_conform
 end
 
 ### Process all images
@@ -1233,7 +1240,8 @@ end
 case @output_type
 when "preview", "fullpreview"
   sequence = File.join( "#{ @conformdir }", "*.#{ @output_format }" )
-  audio = ( @source_audio.empty? ? '' : '-audiofile ' + sequence_audio_asset )
+  #audio = ( @source_audio.empty? ? '' : '-audiofile ' + sequence_audio_asset )
+  audio = ( @source_audio.empty? ? '' : '-audiofile ' + final_audio )
   if ENV[ "DISPLAY" ].nil?
     @logger.warn( "DISPLAY not set. Skipping preview" )
   else
