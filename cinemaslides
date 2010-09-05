@@ -1148,9 +1148,9 @@ unless @source_audio.empty?
   
   @logger.info( '... Conform audio done' )
 end
+###
 
 ### Process all images
-
 
 # thumbs and minimontage
 if options.montage == TRUE
@@ -1317,9 +1317,11 @@ when "dcp"
   
   # Setup MXF container names
   image_mxf_uuid = `kmuuidgen -n`
-  audio_mxf_uuid = `kmuuidgen -n`
   image_mxf = File.join( @dcpdir, "j2c_#{ image_mxf_uuid }_.mxf" )
-  audio_mxf = File.join( @dcpdir, "pcm_#{ audio_mxf_uuid }_.mxf" )
+  unless @source_audio.empty?
+    audio_mxf_uuid = `kmuuidgen -n`
+    audio_mxf = File.join( @dcpdir, "pcm_#{ audio_mxf_uuid }_.mxf" )
+  end
 
   # Make image trackfile
   @logger.info( "Write image trackfile" )
@@ -1327,16 +1329,18 @@ when "dcp"
   @logger.debug( "Image trackfile UUID: #{ image_mxf_uuid }" )
   
   # Make audio trackfile
-  @logger.info( "Write audio trackfile" )
-  `asdcp-test -L -E -p #{ fps } -a #{ audio_mxf_uuid } -c #{ audio_mxf } #{ @final_audio } > /dev/null 2>&1`
-  @logger.debug( "Audio trackfile UUID: #{ audio_mxf_uuid }" )
+  unless @source_audio.empty?
+    @logger.info( "Write audio trackfile" )
+    `asdcp-test -L -E -p #{ fps } -a #{ audio_mxf_uuid } -c #{ audio_mxf } #{ @final_audio } > /dev/null 2>&1`
+    @logger.debug( "Audio trackfile UUID: #{ audio_mxf_uuid }" )
+  end
 
   tmp_cpl = File.join( @dcpdir, 'tmp_cpl.xml' )
   tmp_pkl = File.join( @dcpdir, 'tmp_pkl.xml' )
 
   # Write CompositionPlaylist
   @logger.info( "Write CPL" )
-  `mkcpl --kind test --norating --title '#{ options.title } #{ timestamp }' --annotation '#{ options.annotation } #{ timestamp }' --issuer '#{ options.issuer }' #{ image_mxf } #{ audio_mxf } > #{ tmp_cpl }`
+  `mkcpl --kind test --norating --title '#{ options.title } #{ timestamp }' --annotation '#{ options.annotation } #{ timestamp }' --issuer '#{ options.issuer }' #{ image_mxf } #{ @source_audio.empty? ? audio_mxf : '' } > #{ tmp_cpl }`
   cpl_uuid = Nokogiri::XML( File.open( tmp_cpl ) ).xpath( "//xmlns:CompositionPlaylist/xmlns:Id" ).text.split( 'urn:uuid:' ).last
   @logger.debug( "CPL UUID:       #{ cpl_uuid }" )
   cpl = File.join( File.dirname( tmp_cpl ), "cpl_" + cpl_uuid + "_.xml" )
@@ -1350,7 +1354,7 @@ when "dcp"
     @logger.debug( "Obsolete:   #{ File.basename( obsolete_pkl ) }" )
     File.delete( obsolete_pkl )
   end
-  `cd #{ @dcpdir }; mkpkl --issuer '#{ options.issuer }' --annotation '#{ options.annotation } #{ timestamp }' cpl_*_.xml j2c_*_.mxf pcm_*_.mxf > #{ File.basename( tmp_pkl ) }`
+  `cd #{ @dcpdir }; mkpkl --issuer '#{ options.issuer }' --annotation '#{ options.annotation } #{ timestamp }' cpl_*_.xml *_.mxf > #{ File.basename( tmp_pkl ) }`
   pkl_uuid = Nokogiri::XML( File.open( tmp_pkl ) ).xpath( "//xmlns:PackingList/xmlns:Id" ).text.split( 'urn:uuid:' ).last
   @logger.debug( "PKL UUID:       #{ pkl_uuid }" )
   pkl = File.join( File.dirname( tmp_pkl ), "pkl_" + pkl_uuid + "_.xml" )
@@ -1358,7 +1362,7 @@ when "dcp"
   
   # Write Assetmap
   @logger.info( "Write ASSETMAP and VOLINDEX" )
-  `cd #{ @dcpdir }; mkmap --issuer '#{ options.issuer }' cpl_* pkl_* j2c_* pcm_*` # pick up all DCP files, might be cumulative DCP
+  `cd #{ @dcpdir }; mkmap --issuer '#{ options.issuer }' cpl_* pkl_* *_.mxf` # pick up all DCP files, might be cumulative DCP
 
   # report
   final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
@@ -1381,12 +1385,10 @@ FIXME crossfade,5,0 [5 images] -> 720 frames intended 725 frames created
 FIXME cinemaslides multipage.pdf is somewhat borked because of assets creation (name), conforms to <digest>_<dimensions>_-<page_number>.jpg
       which won't fly at pickup time
 
-FEATURE end up with 1 pkl instead of numerous in a cumulative @dcpdir
 FEATURE look at resize/don't resize thresholds in order to do the "right" thing for mixed source. bit shaky maybe.
 FEATURE look at polynomial-constrained fades
 FEATURE option to request linear/s-curved/... transitions for comparison (well, for showing off, basically, how nice the sigmoid function works for transitions)
 FEATURE sparse assets via minimum mxfs and playlists
-FEATURE audio
 FEATURE 3D
 FEATURE custom preview sizes
 FEATURE black/mono pause between slides
