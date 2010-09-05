@@ -1120,8 +1120,8 @@ unless @source_audio.empty?
   sequence_audio_asset = File.join( @assetsdir_audio, 'sequence_asset-audio_' + Digest::SHA1.hexdigest( conformed_audio_list.each { |e| File.basename( e ) }.join( ' ' ) ) + '_.wav' )
   sequence_audio_asset_tmp = File.join( @assetsdir_audio, 'tmp-' + File.basename( sequence_audio_asset ) )
   
-  # c) splice
-  `sox #{ conformed_audio_list.join( ' ' ) } #{ sequence_audio_asset_tmp } splice`
+  # c) splice and normalise to -20 dB FS (SMPTE 428-2-2006)
+  `sox #{ conformed_audio_list.join( ' ' ) } #{ sequence_audio_asset_tmp } splice gain -n -20`
 
   # d) trim
   image_sequence_duration_hms = hms_from_seconds( image_sequence_frames / fps )
