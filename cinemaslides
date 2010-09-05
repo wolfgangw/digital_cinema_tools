@@ -66,7 +66,9 @@ class Optparser
     options.encoder = 'openjpeg'
     options.encoder_choices = [ 'openjpeg', 'kakadu' ]
     options.output_format = 'jpg'
-    options.black = 0
+    options.black = 0.0
+    options.black_leader = NIL
+    options.black_tail = NIL
     options.title = 'Cinemaslides test'
     options.issuer = ENV[ 'USER' ] + '@' + `hostname`.chomp
     options.annotation = 'Cinemaslides test'
@@ -87,7 +89,7 @@ class Optparser
       opts.banner = <<BANNER
 cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, dcps (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
 
-Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [ --dont-resize ] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [-o, --dcp_out <path>] [-m, --montagepreview] [--keep] [ --dont-check ] [--dont-drop] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
+Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [ --dont-resize ] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [-o, --dcp_out <path>] [-m, --montagepreview] [--keep] [ --dont-check ] [--dont-drop] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
 
 BANNER
 
@@ -131,6 +133,12 @@ BANNER
       end
       opts.on( '-b', '--black seconds', Float, 'Length of black leader and tail (Default: 0)' ) do |p|
         options.black = p
+      end
+      opts.on( '--bl', '--black-leader seconds', Float, 'Length of black leader (Default: 0)' ) do |p|
+        options.black_leader = p
+      end
+      opts.on( '--bt', '--black-tail seconds', Float, 'Length of black tail (Default: 0)' ) do |p|
+        options.black_tail = p
       end
       opts.on( '--title title', 'DCP title tag', String ) do |p|
         options.title = p
@@ -662,7 +670,7 @@ def fadetype( level )
   # composite source -size [source's size] xc:black -blend level.abs result
   #"-modulate #{ level + 100 }"#,#{ level + 100 }" # second parameter is saturation. this one has channel clipping issues
   #"-modulate #{ level + 100 } -blur 0x#{ level }" # experiment, color starvation -> heavy banding
-  #"-brightness-contrast #{ level }x#{ level }" # not in ubuntu 10.04's im 6.5.7-8
+  #"-brightness-contrast #{ level }x#{ level }" # not in ubuntu 10.04's im 6.5.7-8, rolls off into crushed blacks
 end
 
 
@@ -737,6 +745,10 @@ end
 
 
 ### Get options and initialize
+black_leader = black_tail = options.black
+black_leader = options.black_leader unless options.black_leader.nil?
+black_tail = options.black_tail unless options.black_tail.nil?
+
 @resize = options.resize
 
 case options.aspect_malformed
@@ -943,12 +955,12 @@ end
 
 # calculate intended number of frames including black leader and tail, needed in audio conform and final report
 if options.transition_and_timing.first == "fade"
-  sequence_frames = ( 2 * options.black + @source.length * ( fade_in_time + duration + fade_out_time ) ) * fps
+  sequence_frames = ( ( black_leader + black_tail ) + @source.length * ( fade_in_time + duration + fade_out_time ) ) * fps
 elsif options.transition_and_timing.first == "crossfade"
-  sequence_frames = ( 2 * options.black + crossfade_time + @source.length * ( crossfade_time + duration ) ) * fps # implicit fade in/out first/last when crossfading
+  sequence_frames = ( ( black_leader + black_tail ) + crossfade_time + @source.length * ( crossfade_time + duration ) ) * fps # implicit fade in/out first/last when crossfading
 end
 # meat of sequence_frames (without black leader/tail) -- where audio will play
-image_sequence_frames = sequence_frames - ( 2 * options.black * fps )
+image_sequence_frames = sequence_frames - ( ( black_leader + black_tail ) * fps )
 
 
 # set up diretories to write output to. These locations are created upon demand only,
@@ -1031,10 +1043,12 @@ end
 ### Process audio
 #
 # user can specify -- alongside with any number of images -- any number of audio files
-# a) cinemaslides makes a list of those audio files which will be equally long as or longer than the calculated image sequence
-# when the specified audio files are in summary not long enough the list-making will loop over the specified audio files
+# a) cinemaslides makes a list which will be equally long as or longer than the calculated image sequence
+#    when the total length of the specified audio files is not long enough the list-making process will start over until length is sufficient
+#    (e.g. user specifies [a.wav b.wav c.wav] with 1 min total length, image sequence is 1:30 min, audio list will be [a.wav b.wav c.wav a.wav b.wav]
+#     and will be trimmed to 1:30 min)
 # b) every element of the list is then checked into the asset depot
-# c) the elements are then spliced together (result is checked into asset depot)
+# c) the elements are spliced together (result is checked into asset depot)
 # d) the result is trimmed to the exact length of the image sequence
 # e) the result is padded with silence to accomodate for black leader/tail
 unless @source_audio.empty?
@@ -1073,11 +1087,11 @@ unless @source_audio.empty?
   
   # c) splice
   `sox #{ conformed_audio_list.join( ' ' ) } #{ sequence_audio_asset_tmp } splice`
-  image_sequence_duration = hms_from_seconds( image_sequence_frames / fps )
-  @logger.critical( "image_sequence_duration: #{ image_sequence_duration } (Should be #{ image_sequence_frames / fps })" )
+  image_sequence_duration_hms = hms_from_seconds( image_sequence_frames / fps )
+  @logger.critical( "image_sequence_duration: #{ image_sequence_duration_hms } (Should be #{ image_sequence_frames / fps })" )
   
   # d) trim
-  `sox #{ sequence_audio_asset_tmp } #{ sequence_audio_asset } trim 0 #{ image_sequence_duration }`
+  `sox #{ sequence_audio_asset_tmp } #{ sequence_audio_asset } trim 0 #{ image_sequence_duration_hms }`
   File.delete( sequence_audio_asset_tmp )
   @logger.critical( "Asset for sequence_audio_asset: #{ sequence_audio_asset }" )
   
@@ -1144,8 +1158,8 @@ Dir.mkdir( @conformdir )
 
 
 # Create black leader
-if options.black > 0
-  make_black_sequence( 'leader', options.black, fps)
+if black_leader > 0
+  make_black_sequence( 'leader', black_leader, fps)
 end
 
 # Process all images
@@ -1181,8 +1195,8 @@ keeper = nil # keep a conform for the next crossfade (2nd will be 1st then, don'
 end
 
 # Create black tail
-if options.black > 0
-  make_black_sequence( 'tail', options.black, fps )
+if black_tail > 0
+  make_black_sequence( 'tail', black_tail, fps )
 end
 ###
 
