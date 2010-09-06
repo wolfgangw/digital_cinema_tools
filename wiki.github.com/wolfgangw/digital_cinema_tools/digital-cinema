@@ -231,7 +231,8 @@
 
       <div class="wikistyle">
         <h2>What is it?</h2>
-<p>It&#8217;s a platform (Like 35mm film is a platform): Fully spec&#8217;d and standardized. High quality motion pictures in the age of files. The point of a platform is everyone knows how to use it. Anyone can target it, be it a major studio or so-called <em>Indies</em>. Results are reproducible, be it on a digital screen in Bombay or in Anchorage.</p>
+<p>It&#8217;s a platform (Like 35mm film is a platform): Fully spec&#8217;d and standardized. High quality motion pictures in the age of files.</p>
+<p>The point of a platform is: Everyone knows how to use it and it works the same anywhere. Anyone can target it, be it a major studio or so-called <em>Indies</em>. Results are reproducible, be it on a digital screen in Bombay or in Anchorage.</p>
 <p>Another aspect of the platform is its quality level. Once you&#8217;ve seen a standard digital cinema screening you will quite likely not miss film. The latter is disputed, naturally. It&#8217;s what they call <em>labor pains</em>. They&#8217;re finite and then a baby is born.</p>
 <p>By the way, <i>Avatar</i> ran on ~26.000 screens worldwide. 8000 of those were Digital Cinema screens (7.382 digital 3D, 553 digital 2D). Baby is out of school already.</p>
 <h2>What&#8217;s the benefit?</h2>
@@ -242,7 +243,7 @@
 	<li>A digital cinema projector can be color-corrected. Which means authors &#8212; for the first time in film history &#8212; can actually get their graded colors back from theatre&#8217;s screens. With 35mm projectors you could, of course, also correct color shifts introduced by the Xenon lamp, the mirror and the heat shield. But it&#8217;s not practical, hence not done. Ever saw a black and white feature on a changeover setup? Every reel change means a jump in color temperature. With digital cinema projectors color correction and calibration is <i>built-in</i>.</li>
 </ul>
 <ul>
-	<li>Pristine image quality from opening night until the end of time. No more mutilated prints. What <em>some</em> projectionists do to film prints goes well beyond a motion picture engineer&#8217;s worst nightmares. Prints with perfect changeover cues get the <em>Big X Scratch</em> treatment &#8212; not once, but many times. Up to entire scenes go missing at reel boundaries. Show up again in random places &#8212; if you&#8217;re lucky. Headers and tails get mixed up. Tail 3 ends up as header 4. Emulsion gets licked to see whether it&#8217;s, well, the emulsion side. Prints are dragged through projectors that haven&#8217;t been touched ever again after installation, let alone <em>cleaned</em>. All in all: It&#8217;s nothing short of a miracle we have <em>any</em>  film history artifacts left. Digital cinema ends this.</li>
+	<li>Pristine image quality from opening night until the end of time. No more mutilated prints. What <em>some</em> projectionists do to film prints goes well beyond a motion picture engineer&#8217;s worst nightmares. Prints with perfect changeover cues get the <em>big X scratch</em> treatment &#8212; not once, but many times. Up to entire scenes go missing at reel boundaries. Show up again in random places &#8212; if you&#8217;re lucky. Headers and tails get mixed up. Tail 3 ends up as header 4. Emulsion gets licked to see whether it&#8217;s, well, the emulsion side. Prints are dragged through projectors that haven&#8217;t been taken proper care of, ever. All in all: It&#8217;s nothing short of a miracle we have <em>any</em>  film history artefacts left.<sup class="footnote"><a href="#fn1">1</a></sup> Digital cinema ends this.</li>
 </ul>
 <ul>
 	<li>With digital cinema it&#8217;s inherently cheap to reach the big screen with no/low/modest budget productions. Current quotes from post facilities and labs offering digital cinema authoring might suggest the opposite. But this will change, you can bet on that.</li>
@@ -250,7 +251,9 @@
 <h2>How does it work?</h2>
 <p>Basically an image sequence (the film) is encoded to a well-defined, cinema-specific <span class="caps">JPEG</span> 2000 codestream. Packed up (alongside with sound and subtitles) in <span class="caps">MXF</span> containers and composed through the means of descriptive <span class="caps">XML</span> to what will be shown on the screen. These <em>compositions</em> are what make <span class="caps">DCP</span> such a powerful and flexible format because a <span class="caps">DCP</span> can carry a number of them. Final package gets copied onto harddrive, memory stick, optical medium, and ingested on a digital cinema server. Finally, someone hits <em>Play</em>.</p>
 <h2>Can I do it?</h2>
-<p><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline">Absolutely</a>. Keep in mind that Digital Cinema will not, through some magic spells, turn 8bpc material into smooth 12bpc delight. It will not make up for the shortcomings of your acquisition gear. It <em>might</em> turn a dull story into epic drama, though, and it just <em>might</em> deliver world peace in due time.</p>
+<p><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline">Absolutely</a>. Keep in mind that Digital Cinema will not, through some magic spells, turn 8bpc material into smooth 12bpc delight. It will not make up for the shortcomings of your acquisition gear and post-production decisions. It <em>might</em> turn a dull story into epic drama, though, and it just <em>might</em> deliver world peace in due time.</p>
+<h2></h2>
+<p class="footnote" id="fn1"><sup>1</sup> <em>What&#8217;s a release print got to do with anything?</em> you might wonder. Well, in film preservation and restoration very often the only surviving materials are release prints. Also, when you deal with color film, a release print often is the only surviving color/contrast etc. reference. Think of a <em>day for night</em> shot on camera negative: Without a release reference you might end up with a re-release which has a peculiar daylight scene noone ever saw before &#8230; So, apart from the obvious shortcomings for contemporary audiences, that&#8217;s why the state of release prints matters.</p>
       </div>
     </div>
     
@@ -305,7 +308,7 @@
 
       <div class="admin">
       <div style="float:left;">
-        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-08-16 22:21:58">Mon Aug 16 22:21:58 -0700 2010</abbr></small>
+        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-09-06 09:10:21">Mon Sep 06 09:10:21 -0700 2010</abbr></small>
 
         <div class="actions">
           <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a>
@@ -316,7 +319,7 @@
 
       <div style="float:right;">
         <small>Versions:</small>
-        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/digital-cinema">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/25">Version 25 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/24">Version 24 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/23">Version 23 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/22">Version 22 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/21">Version 21 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/20">Version 20 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/19">Version 19 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/18">Version 18 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/17">Version 17 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/16">Version 16 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/15">Version 15 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/14">Version 14 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/13">Version 13 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/12">Version 12 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/11">Version 11 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/10">Version 10 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/9">Version 9 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/8">Version 8 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/7">Version 7 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/6">Version 6 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/5">Version 5 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/1">Version 1 by wolfgangw</option></select>
+        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/digital-cinema">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/32">Version 32 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/31">Version 31 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/30">Version 30 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/29">Version 29 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/28">Version 28 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/27">Version 27 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/26">Version 26 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/25">Version 25 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/24">Version 24 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/23">Version 23 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/22">Version 22 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/21">Version 21 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/20">Version 20 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/19">Version 19 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/18">Version 18 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/17">Version 17 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/16">Version 16 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/15">Version 15 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/14">Version 14 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/13">Version 13 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/12">Version 12 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/11">Version 11 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/10">Version 10 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/9">Version 9 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/8">Version 8 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/7">Version 7 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/6">Version 6 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/5">Version 5 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/1">Version 1 by wolfgangw</option></select>
       </div>
     </div>
     </div>
@@ -347,7 +350,7 @@
           <li><a href="http://status.github.com">Status</a></li>
         </ul>
         <ul class="sosueme">
-          <li class="main">&copy; 2010 <span id="_rrt" title="0.07784s from fe1.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
+          <li class="main">&copy; 2010 <span id="_rrt" title="0.11715s from fe4.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
           <li><a href="/site/terms">Terms of Service</a></li>
           <li><a href="/site/privacy">Privacy</a></li>
           <li><a href="http://github.com/security">Security</a></li>
@@ -366,23 +369,23 @@
               <li><span class="current">English</span></li>
               
                 
-                  <li><a rel="nofollow" href="http://de.wiki.github.com/flash/soundmanager2.swf/">Deutsch</a></li>
+                  <li><a rel="nofollow" href="http://de.wiki.github.com/nko/3-2-1/api/">Deutsch</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://fr.wiki.github.com/flash/soundmanager2.swf/">Français</a></li>
+                  <li><a rel="nofollow" href="http://fr.wiki.github.com/nko/3-2-1/api/">Français</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://ja.wiki.github.com/flash/soundmanager2.swf/">日本語</a></li>
+                  <li><a rel="nofollow" href="http://ja.wiki.github.com/nko/3-2-1/api/">日本語</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/flash/soundmanager2.swf/">Português (BR)</a></li>
+                  <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/nko/3-2-1/api/">Português (BR)</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://zh.wiki.github.com/flash/soundmanager2.swf/">中文</a></li>
+                  <li><a rel="nofollow" href="http://zh.wiki.github.com/nko/3-2-1/api/">中文</a></li>
                 
               
               <li class="all"><a href="#" class="minibutton btn-forward js-all-locales"><span><span class="icon"></span>See all available languages</span></a></li>
@@ -395,39 +398,19 @@
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://wiki.github.com/flash/soundmanager2.swf/">English</a></li>
+                      <li><a rel="nofollow" href="http://wiki.github.com/nko/3-2-1/api/">English</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://af.wiki.github.com/flash/soundmanager2.swf/">Afrikaans</a></li>
+                      <li><a rel="nofollow" href="http://af.wiki.github.com/nko/3-2-1/api/">Afrikaans</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://ca.wiki.github.com/flash/soundmanager2.swf/">Català</a></li>
+                      <li><a rel="nofollow" href="http://ca.wiki.github.com/nko/3-2-1/api/">Català</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://cs.wiki.github.com/flash/soundmanager2.swf/">Čeština</a></li>
-                    
-                  
-                </ul>
-              
-                <ul class="choices">
-                  
-                    
-                      <li><a rel="nofollow" href="http://de.wiki.github.com/flash/soundmanager2.swf/">Deutsch</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://es.wiki.github.com/flash/soundmanager2.swf/">Español</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://fr.wiki.github.com/flash/soundmanager2.swf/">Français</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://hr.wiki.github.com/flash/soundmanager2.swf/">Hrvatski</a></li>
+                      <li><a rel="nofollow" href="http://cs.wiki.github.com/nko/3-2-1/api/">Čeština</a></li>
                     
                   
                 </ul>
@@ -435,39 +418,19 @@
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://id.wiki.github.com/flash/soundmanager2.swf/">Indonesia</a></li>
+                      <li><a rel="nofollow" href="http://de.wiki.github.com/nko/3-2-1/api/">Deutsch</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://it.wiki.github.com/flash/soundmanager2.swf/">Italiano</a></li>
+                      <li><a rel="nofollow" href="http://es.wiki.github.com/nko/3-2-1/api/">Español</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://ja.wiki.github.com/flash/soundmanager2.swf/">日本語</a></li>
+                      <li><a rel="nofollow" href="http://fr.wiki.github.com/nko/3-2-1/api/">Français</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://nl.wiki.github.com/flash/soundmanager2.swf/">Nederlands</a></li>
-                    
-                  
-                </ul>
-              
-                <ul class="choices">
-                  
-                    
-                      <li><a rel="nofollow" href="http://no.wiki.github.com/flash/soundmanager2.swf/">Norsk</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://pl.wiki.github.com/flash/soundmanager2.swf/">Polski</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/flash/soundmanager2.swf/">Português (BR)</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://sr.wiki.github.com/flash/soundmanager2.swf/">Српски</a></li>
+                      <li><a rel="nofollow" href="http://hr.wiki.github.com/nko/3-2-1/api/">Hrvatski</a></li>
                     
                   
                 </ul>
@@ -475,11 +438,51 @@
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://sv.wiki.github.com/flash/soundmanager2.swf/">Svenska</a></li>
+                      <li><a rel="nofollow" href="http://id.wiki.github.com/nko/3-2-1/api/">Indonesia</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://zh.wiki.github.com/flash/soundmanager2.swf/">中文</a></li>
+                      <li><a rel="nofollow" href="http://it.wiki.github.com/nko/3-2-1/api/">Italiano</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://ja.wiki.github.com/nko/3-2-1/api/">日本語</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://nl.wiki.github.com/nko/3-2-1/api/">Nederlands</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="http://no.wiki.github.com/nko/3-2-1/api/">Norsk</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://pl.wiki.github.com/nko/3-2-1/api/">Polski</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/nko/3-2-1/api/">Português (BR)</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://sr.wiki.github.com/nko/3-2-1/api/">Српски</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="http://sv.wiki.github.com/nko/3-2-1/api/">Svenska</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://zh.wiki.github.com/nko/3-2-1/api/">中文</a></li>
                     
                   
                 </ul>

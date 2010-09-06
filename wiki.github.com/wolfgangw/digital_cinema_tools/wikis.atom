@@ -4,19 +4,43 @@
   <link type="text/html" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/home" rel="alternate"/>
   <link type="application/atom+xml" href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom" rel="self"/>
   <title>digital_cinema_tools: Recent Wiki Updates</title>
-  <updated>2010-09-05T12:47:56-07:00</updated>
+  <updated>2010-09-06T15:36:10-07:00</updated>
   <entry>
-    <id>tag:wiki.github.com,2008:Wiki/945836</id>
-    <published>2010-09-05T22:51:47-07:00</published>
-    <updated>2010-09-05T12:47:56-07:00</updated>
-    <link type="text/html" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/cinemaslides-usage" rel="alternate"/>
-    <title>Cinemaslides Usage</title>
-    <updated>Sun Sep 05 12:47:56 -0700 2010</updated>
-    <published>Sun Sep 05 22:51:47 -0700 2010</published>
-    <content type="html">&lt;h2&gt;Basic usage&lt;/h2&gt;
-&lt;h2&gt;Not so basic usage&lt;/h2&gt;
-&lt;h2&gt;The asset depot&lt;/h2&gt;
-&lt;h2&gt;And then what? &lt;span class=&quot;caps&quot;&gt;GUI&lt;/span&gt;?&lt;/h2&gt;</content>
+    <id>tag:wiki.github.com,2008:Wiki/514320</id>
+    <published>2010-09-06T15:37:02-07:00</published>
+    <updated>2010-09-06T15:36:10-07:00</updated>
+    <link type="text/html" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/home" rel="alternate"/>
+    <title>Home</title>
+    <updated>Mon Sep 06 15:36:10 -0700 2010</updated>
+    <published>Mon Sep 06 15:37:02 -0700 2010</published>
+    <content type="html">&lt;p&gt;Hi and welcome.&lt;/p&gt;
+&lt;p&gt;Here you&amp;#8217;ll find a growing collection of useful documents, &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/scripts&quot;&gt;scripts&lt;/a&gt; and &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/notes&quot;&gt;notes&lt;/a&gt; which deal, in the broadest sense, with &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema&quot;&gt;Digital Cinema&lt;/a&gt; mastering and authoring. Read &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat&quot;&gt;Mystery Meat&lt;/a&gt; to learn where the beef is.&lt;/p&gt;
+&lt;p&gt;I work at the Munich Filmmuseum, Munich&amp;#8217;s municipal cinematheque, which houses an extensive film collection. In addition we restore and publish forgotten, so-called &lt;i&gt;lost&lt;/i&gt; gems of film history and provide daily screenings &amp;#8212; spanning film history in all of its fascinating diversity.&lt;/p&gt;
+&lt;p&gt;What we take away from tracking down and screening thousands of film prints throughout the years, are, from a technical point of view, two major trends:&lt;/p&gt;
+&lt;ul&gt;
+	&lt;li&gt;Significant deterioration of most prints (not only old prints, mind you)&lt;/li&gt;
+	&lt;li&gt;Serious and, in many cases, scientific effort and investment to restore and secure select historic works and produce new negatives and screening prints&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In other words: While some select works enjoy proper attention and care, large parts of our film heritage are literally doomed, mostly due to the lack of incentive and the significant costs of re-releases to screening prints (which begin to deteriorate the moment they leave the lab). It became clear that digital tools would offer a chance, at least, to improve that situation. So we were thrilled when, in the summer of 2009, we could muster the budget to take our first steps into this promising terrain.&lt;/p&gt;
+&lt;p&gt;To establish an open platform for digital cinema production and distribution was the general idea of the &lt;a href=&quot;http://www.dcimovies.com/&quot;&gt;Digital Cinema Initiative&lt;/a&gt; and their &lt;a href=&quot;http://www.dcimovies.com/specification/index.tt2&quot;&gt;specification&lt;/a&gt;. Much like the &lt;i&gt;35mm&lt;/i&gt; platform (specified in 1916) which has had a lot of breath.&lt;/p&gt;
+&lt;p&gt;The &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt;&lt;sup class=&quot;footnote&quot;&gt;&lt;a href=&quot;#fn1&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; had realized that in order to create a platform good for decades to come they needed to adhere to tried and tested standards. As a result you can satisfy the requirements for &lt;span class=&quot;caps&quot;&gt;DCDM&lt;/span&gt;&lt;sup class=&quot;footnote&quot;&gt;&lt;a href=&quot;#fn2&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;/&lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt;&lt;sup class=&quot;footnote&quot;&gt;&lt;a href=&quot;#fn3&quot;&gt;3&lt;/a&gt;&lt;/sup&gt; mastering and authoring with a set of freely available (open source) tools. Which is the laudable kind of &lt;i&gt;Good Thing&lt;/i&gt; geeks feel irresistibly attracted to, like bears to the honey pot.&lt;/p&gt;
+&lt;p&gt;Film production, on the technical side of the imaging part, is all about workflows. Parties involved include cinematography, editorial, color mastering, archiving, delivery (film prints, digital cinema packages, BluRay/&lt;span class=&quot;caps&quot;&gt;DVD&lt;/span&gt;, TV deliverables). They need to get on the same track in order to deliver photons to the silver screen. When film production was a film-only process (up until the early 1990s) the steps and techniques involved were, for the most part, clearly defined&lt;sup class=&quot;footnote&quot;&gt;&lt;a href=&quot;#fn4&quot;&gt;4&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+&lt;p&gt;This changed dramatically with the advent of digital tools and processes. Connecting the dots (which is what intra- and inter-facility workflows must accomplish) in the age of digital became more flexible and less defined at the same time.&lt;/p&gt;
+&lt;p&gt;Because &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt; was aiming for a well-defined digital cinema standard the engineers came up with a gatekeeper mechanism (my words) that would precede the authoring of digital cinema packages (digital equivalent of screening prints): It is called &lt;i&gt;Digital Cinema Distribution Master&lt;/i&gt; (&lt;span class=&quot;caps&quot;&gt;DCDM&lt;/span&gt;) and consists of image, sound and subtitle/caption files with, for the most part, clearly defined properties:&lt;/p&gt;
+&lt;ul&gt;
+	&lt;li&gt;Black and white levels, bits per color channel, transfer function, colorspace and aspect ratio for images&lt;/li&gt;
+	&lt;li&gt;Bit depth, sample rate, channel count and reference level for sound&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;A &lt;span class=&quot;caps&quot;&gt;DCDM&lt;/span&gt; is transformed &amp;#8212; via a meticulously defined process &amp;#8212; into a &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;See &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline&quot;&gt;Open source tools for a digital cinema pipeline&lt;/a&gt; for commandline examples (keeping in mind that, due to the nature of these ad-hoc examples, the border between &lt;span class=&quot;caps&quot;&gt;DCDM&lt;/span&gt; and &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; can be rather blurry).&lt;/p&gt;
+&lt;p&gt;The required information and knowledge is, while public, somewhat buried in man-pages, specs and &lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; standards. However, there is no reason &lt;span class=&quot;caps&quot;&gt;DCDM&lt;/span&gt;/&lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; production should remain more complicated and opaque than, say, the creation of DVDs or BluRay media.&lt;/p&gt;
+&lt;p&gt;Feedback, corrections, insights, code etc. very welcomed and much appreciated.&lt;br /&gt;
+Wolfgang Woehl&lt;/p&gt;
+&lt;h2&gt;&lt;/h2&gt;
+&lt;p class=&quot;footnote&quot; id=&quot;fn1&quot;&gt;&lt;sup&gt;1&lt;/sup&gt; Founding &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt; members (2002): Disney, Fox, &lt;span class=&quot;caps&quot;&gt;MGM&lt;/span&gt;, Paramount, Sony, Universal, Warner&lt;/p&gt;
+&lt;p class=&quot;footnote&quot; id=&quot;fn2&quot;&gt;&lt;sup&gt;2&lt;/sup&gt; &lt;span class=&quot;caps&quot;&gt;DCDM&lt;/span&gt;: &lt;i&gt;Digital Cinema Distribution Master&lt;/i&gt;, collection of image, sound and subtitle/caption files ready (in compliance with &lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; standards 428-1, 428-2, 428-3, 428-7, 428-9 and 428-10) for packaging.&lt;/p&gt;
+&lt;p class=&quot;footnote&quot; id=&quot;fn3&quot;&gt;&lt;sup&gt;3&lt;/sup&gt; &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt;: &lt;i&gt;Digital Cinema Package&lt;/i&gt;, collection of, at least, one packing list and all its referenced assets. Possible assets are &lt;span class=&quot;caps&quot;&gt;MXF&lt;/span&gt; containers with compressed (&lt;span class=&quot;caps&quot;&gt;JPEG&lt;/span&gt; 2000, MPEG2 elementary stream) and optionally encrypted image and sound essence, subtitle resources and playlists.&lt;/p&gt;
+&lt;p class=&quot;footnote&quot; id=&quot;fn4&quot;&gt;&lt;sup&gt;4&lt;/sup&gt; A voice, coming from an unidentified lab, says &lt;i&gt;Define defined&lt;/i&gt;. Right. Color timers were actually considered wizard magicians. It is outright stunning what they could achieve with the limited tools (in comparison to today&amp;#8217;s digital color kits) they had. Also, alas, I&amp;#8217;m not aware of extensive collections of the work of color timers. Which means that although we&amp;#8217;d have the technical means to reproduce and create any kind of color work in restoration, in many cases we simply don&amp;#8217;t know how the original releases were graded. Therefore color restoration projects have to &amp;#8212; in the best case &amp;#8212; rely on the memories of production members, or come up with &amp;#8212; in most cases &amp;#8212; a lot of guesswork decisions.&lt;/p&gt;</content>
     <media:thumbnail url="http://www.gravatar.com/avatar/7d5278537426ee8ad94d2ae71e6df1f8?s=30&amp;d=http%3A%2F%2Fgithub.com%2Fimages%2Fgravatars%2Fgravatar-140.png"/>
     <author>
       <name>wolfgangw</name>
@@ -24,13 +48,14 @@
   </entry>
   <entry>
     <id>tag:wiki.github.com,2008:Wiki/625913</id>
-    <published>2010-09-05T22:51:47-07:00</published>
-    <updated>2010-09-05T09:03:40-07:00</updated>
+    <published>2010-09-06T15:37:02-07:00</published>
+    <updated>2010-09-06T13:11:52-07:00</updated>
     <link type="text/html" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/misc" rel="alternate"/>
     <title>MISC</title>
-    <updated>Sun Sep 05 09:03:40 -0700 2010</updated>
-    <published>Sun Sep 05 22:51:47 -0700 2010</published>
+    <updated>Mon Sep 06 13:11:52 -0700 2010</updated>
+    <published>Mon Sep 06 15:37:02 -0700 2010</published>
     <content type="html">&lt;ul&gt;
+	&lt;li&gt;&lt;a href=&quot;http://www.aoa.org/x5352.xml&quot;&gt;The Eye and Night Vision&lt;/a&gt;, an excellent article about human vision (Scotopic, mesopic, photopic vision) and night-vision-related phenomena.&lt;/li&gt;
 	&lt;li&gt;Leonard Levy, over on &lt;a href=&quot;http://www.cinematography.net/&quot;&gt;&lt;span class=&quot;caps&quot;&gt;CML&lt;/span&gt;&lt;/a&gt;, mentions how to fade-out your own vision: Close one eye and don&amp;#8217;t move your head. Stare at a single point. Avoid &lt;em&gt;looking&lt;/em&gt;.&lt;/li&gt;
 	&lt;li&gt;&lt;a href=&quot;http://x264dev.multimedia.cx/?p=317&quot;&gt;The problems with wavelets&lt;/a&gt;&lt;/li&gt;
 	&lt;li&gt;&lt;code&gt;-recolor&lt;/code&gt; and &lt;code&gt;-color-matrix&lt;/code&gt; related: &lt;a href=&quot;http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&amp;amp;t=16312&quot;&gt;-recolor missing from options page&lt;/a&gt;. Turns out the -recolor functionality actually moved to &lt;code&gt;magick/deprecate.c&lt;/code&gt; in ImageMagick 6.6.1 (which means it is still working).&lt;/li&gt;
@@ -80,60 +105,20 @@ Example ~/.magick/magic.xml to solve the issue:&lt;br /&gt;
     </author>
   </entry>
   <entry>
-    <id>tag:wiki.github.com,2008:Wiki/514320</id>
-    <published>2010-09-05T22:51:47-07:00</published>
-    <updated>2010-09-05T08:16:45-07:00</updated>
-    <link type="text/html" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/home" rel="alternate"/>
-    <title>Home</title>
-    <updated>Sun Sep 05 08:16:45 -0700 2010</updated>
-    <published>Sun Sep 05 22:51:47 -0700 2010</published>
-    <content type="html">&lt;p&gt;Hi and welcome.&lt;/p&gt;
-&lt;p&gt;Here you&amp;#8217;ll find a growing collection of useful documents, &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/scripts&quot;&gt;scripts&lt;/a&gt; and &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/notes&quot;&gt;notes&lt;/a&gt; which deal, in the broadest sense, with &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema&quot;&gt;Digital Cinema&lt;/a&gt; mastering and authoring. Read &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat&quot;&gt;Mystery Meat&lt;/a&gt; to learn where the beef is.&lt;/p&gt;
-&lt;p&gt;I work at the Munich Filmmuseum, Munich&amp;#8217;s municipal cinematheque, which houses an extensive film collection. In addition we restore and publish forgotten, so-called &lt;i&gt;lost&lt;/i&gt; gems of film history and provide daily screenings &amp;#8212; spanning film history in all of its fascinating diversity.&lt;/p&gt;
-&lt;p&gt;What we take away from tracking down and screening thousands of film prints throughout the years, are, from a technical point of view, two major trends:&lt;/p&gt;
-&lt;ul&gt;
-	&lt;li&gt;Significant deterioration of most prints (not only old prints, mind you)&lt;/li&gt;
-	&lt;li&gt;Serious and, in many cases, scientific effort and investment to restore and secure select historic works and produce new negatives and screening prints&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;In other words: While some select works enjoy proper attention and care, large parts of our film heritage are literally doomed, mostly due to the lack of incentive and the significant costs of re-releases to screening prints (which begin to deteriorate the moment they leave the lab). It became clear that digital tools would offer a chance, at least, to improve that situation. So we were thrilled when, in the summer of 2009, we could muster the budget to take our first steps into this promising terrain.&lt;/p&gt;
-&lt;p&gt;To establish an open platform for digital cinema production and distribution was the general idea of the &lt;a href=&quot;http://www.dcimovies.com/&quot;&gt;Digital Cinema Initiative&lt;/a&gt; and their &lt;a href=&quot;http://www.dcimovies.com/specification/index.tt2&quot;&gt;specification&lt;/a&gt;. Much like the &lt;i&gt;35mm&lt;/i&gt; platform (specified in 1916) which has had a lot of breath.&lt;/p&gt;
-&lt;p&gt;The &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt;&lt;sup class=&quot;footnote&quot;&gt;&lt;a href=&quot;#fn1&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; had realized that in order to create a platform good for decades to come they needed to adhere to tried and tested standards. As a result you can satisfy the requirements for &lt;span class=&quot;caps&quot;&gt;DCDM&lt;/span&gt;&lt;sup class=&quot;footnote&quot;&gt;&lt;a href=&quot;#fn2&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;/&lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt;&lt;sup class=&quot;footnote&quot;&gt;&lt;a href=&quot;#fn3&quot;&gt;3&lt;/a&gt;&lt;/sup&gt; mastering and authoring with a set of freely available (open source) tools. Which is the laudable kind of &lt;i&gt;Good Thing&lt;/i&gt; geeks feel irresistibly attracted to, like bears to the honey pot.&lt;/p&gt;
-&lt;p&gt;Film production, on the technical side of the imaging part, is all about workflows. Parties involved include cinematography, editorial, color mastering, archiving, delivery (film prints, digital cinema packages, BluRay/&lt;span class=&quot;caps&quot;&gt;DVD&lt;/span&gt;, TV deliverables). They need to get on the same track in order to deliver photons to the silver screen. When film production was a film-only process (up until the early 1990s) the steps and techniques involved were, for the most part, clearly defined&lt;sup class=&quot;footnote&quot;&gt;&lt;a href=&quot;#fn4&quot;&gt;4&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
-&lt;p&gt;This changed dramatically with the advent of digital tools and processes. Connecting the dots (which is what intra- and inter-facility workflows must accomplish) in the age of digital became more flexible and less defined at the same time.&lt;/p&gt;
-&lt;p&gt;Because &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt; was aiming for a well-defined digital cinema standard the engineers came up with a gatekeeper mechanism (my words) that would precede the authoring of digital cinema packages (digital equivalent of screening prints): It is called &lt;i&gt;Digital Cinema Distribution Master&lt;/i&gt; (&lt;span class=&quot;caps&quot;&gt;DCDM&lt;/span&gt;) and consists of image, sound and subtitle/caption files with, for the most part, clearly defined properties:&lt;/p&gt;
-&lt;ul&gt;
-	&lt;li&gt;Black and white levels, bits per color channel, transfer function, colorspace and aspect ratio for images&lt;/li&gt;
-	&lt;li&gt;Bit depth, sample rate, channel count and reference level for sound&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;A &lt;span class=&quot;caps&quot;&gt;DCDM&lt;/span&gt; is transformed &amp;#8212; via a meticulously defined process &amp;#8212; into a &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt;.&lt;/p&gt;
-&lt;p&gt;See &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline&quot;&gt;Open source tools for a digital cinema pipeline&lt;/a&gt; for commandline examples (keeping in mind that, due to the nature of these ad-hoc examples, the border between &lt;span class=&quot;caps&quot;&gt;DCDM&lt;/span&gt; and &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; can be rather blurry).&lt;/p&gt;
-&lt;p&gt;The required information and knowledge is, while public, somewhat buried in man-pages, specs and &lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; standards. However, there is no reason &lt;span class=&quot;caps&quot;&gt;DCDM&lt;/span&gt;/&lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; production should remain more complicated and opaque than, say, the creation of DVDs or BluRay media.&lt;/p&gt;
-&lt;p&gt;Feedback, corrections, insights, code etc. very welcomed and much appreciated.&lt;br /&gt;
-Wolfgang Woehl&lt;/p&gt;
-&lt;p class=&quot;footnote&quot; id=&quot;fn1&quot;&gt;&lt;sup&gt;1&lt;/sup&gt; Founding &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt; members (2002): Disney, Fox, &lt;span class=&quot;caps&quot;&gt;MGM&lt;/span&gt;, Paramount, Sony, Universal, Warner&lt;/p&gt;
-&lt;p class=&quot;footnote&quot; id=&quot;fn2&quot;&gt;&lt;sup&gt;2&lt;/sup&gt; &lt;span class=&quot;caps&quot;&gt;DCDM&lt;/span&gt;: &lt;i&gt;Digital Cinema Distribution Master&lt;/i&gt;, collection of image, sound and subtitle/caption files ready (in compliance with &lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; standards 428-1, 428-2, 428-3, 428-7, 428-9 and 428-10) for packaging.&lt;/p&gt;
-&lt;p class=&quot;footnote&quot; id=&quot;fn3&quot;&gt;&lt;sup&gt;3&lt;/sup&gt; &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt;: &lt;i&gt;Digital Cinema Package&lt;/i&gt;, collection of, at least, one packing list and all its referenced assets. Possible assets are &lt;span class=&quot;caps&quot;&gt;MXF&lt;/span&gt; containers with compressed (&lt;span class=&quot;caps&quot;&gt;JPEG&lt;/span&gt; 2000, MPEG2 elementary stream) and optionally encrypted image and sound essence, subtitle resources and playlists.&lt;/p&gt;
-&lt;p class=&quot;footnote&quot; id=&quot;fn4&quot;&gt;&lt;sup&gt;4&lt;/sup&gt; A voice, coming from an unidentified lab, says &lt;i&gt;Define defined&lt;/i&gt;. Right. Color timers were actually considered wizard magicians. It is outright stunning what they could achieve with the limited tools (in comparison to today&amp;#8217;s digital color kits) they had.&lt;/p&gt;</content>
-    <media:thumbnail url="http://www.gravatar.com/avatar/7d5278537426ee8ad94d2ae71e6df1f8?s=30&amp;d=http%3A%2F%2Fgithub.com%2Fimages%2Fgravatars%2Fgravatar-140.png"/>
-    <author>
-      <name>wolfgangw</name>
-    </author>
-  </entry>
-  <entry>
     <id>tag:wiki.github.com,2008:Wiki/739120</id>
-    <published>2010-09-05T22:51:47-07:00</published>
-    <updated>2010-09-05T07:51:10-07:00</updated>
+    <published>2010-09-06T15:37:02-07:00</published>
+    <updated>2010-09-06T09:48:02-07:00</updated>
     <link type="text/html" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/cinemaslides" rel="alternate"/>
     <title>Cinemaslides</title>
-    <updated>Sun Sep 05 07:51:10 -0700 2010</updated>
-    <published>Sun Sep 05 22:51:47 -0700 2010</published>
+    <updated>Mon Sep 06 09:48:02 -0700 2010</updated>
+    <published>Mon Sep 06 15:37:02 -0700 2010</published>
     <content type="html">&lt;p&gt;&lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/cinemaslides&quot;&gt;Cinemaslides&lt;/a&gt; is a commandline-tool to build slideshows and pack them up as &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema&quot; title=&quot;DCPs&quot;&gt;digital cinema packages&lt;/a&gt;. It has preview modes to check how transitions (fades, crossfades, cuts) and timings play out.&lt;/p&gt;
-&lt;p&gt;Look at &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides-usage&quot;&gt;Cinemaslides Usage&lt;/a&gt; for examples and tips.&lt;/p&gt;
+&lt;p&gt;Look at &lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides-usage&quot;&gt;cinemaslides usage&lt;/a&gt; for examples and tips.&lt;/p&gt;
 &lt;p&gt;It &amp;#8212; or rather &lt;a href=&quot;http://www.imagemagick.org/script/index.php&quot;&gt;ImageMagick&lt;/a&gt;, source of endless awesomeness, as well as &lt;a href=&quot;http://sox.sourceforge.net/&quot;&gt;Sound eXchange&lt;/a&gt; &amp;#8212; conforms a wide range of image and audio files to cinema specs and tries to be smart and fast (Couple of todo&amp;#8217;s lurking right there).&lt;/p&gt;
-&lt;p&gt;Also, it is a work in progress (wrt 3D). Thanks go out to Ronan Delacroix for discussion and patches wrt cinemaslides&amp;#8217; audio section.&lt;/p&gt;
+&lt;p&gt;Also, it is a work in progress (e.g. no 3D slideshows yet). Thanks go out to Ronan Delacroix for discussion and patches wrt cinemaslides&amp;#8217; audio section.&lt;/p&gt;
 &lt;p&gt;Technically, it&amp;#8217;s a ruby script acting as glue and organizer between a number of tools: CineCert&amp;#8217;s/John Hurst&amp;#8217;s reference implementation for AS-&lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; file access &lt;a href=&quot;http://www.cinecert.com/asdcplib/&quot;&gt;asdcplib&lt;/a&gt;, ImageMagick, SoX, MPlayer, OpenJPEG / Kakadu (which is available for demonstration purposes), opencinematools and bash.&lt;/p&gt;
-&lt;p&gt;Cinemaslides provides a basic set of transitions: Cuts, Fades and Crossfades. The latter step through a sigmoid function which creates a much nicer look than linear transitioning. (If you love fades make sure to watch Almod&#243;var&amp;#8217;s &lt;em&gt;Los abrazos rotos&lt;/em&gt;)&lt;br /&gt;
-By the way: As of now (v0.2010.09.05) there&amp;#8217;s no black fill between fades. Which is a problem when you watch fades in a dark theater on a big screen because human vision tends to &amp;#8220;burn in&amp;#8221; images. The darker the environment the stronger the effect, it seems. Thinking about automatically providing that fill (possibly in relation to fade-out duration). Coming up.&lt;/p&gt;
+&lt;p&gt;Cinemaslides provides a basic set of transitions: Cuts, Fades and Crossfades. The latter step through a sigmoid function which creates a much nicer look than linear transitioning. (If you love fades make sure to watch Almod&#243;var&amp;#8217;s &lt;em&gt;Los abrazos rotos&lt;/em&gt;. Also, every now and then, I have to remind myself to sit down and watch the two all-time greatest of all fades.)&lt;/p&gt;
+&lt;p&gt;By the way: As of now (v0.2010.09.05) there&amp;#8217;s no black &lt;em&gt;fill&lt;/em&gt; between fades. Which is a problem when you watch fades in a dark theater on a big screen because human vision adapts to darkness. There are a number of non-trivial effects going on when you watch dark images, surrounded by darkness. The darker the environment the stronger the effect, it seems. (Thinking about an option to automatically provide that fill, possibly in relation to fade-out duration.)&lt;/p&gt;
 &lt;p&gt;Cinemaslides checks for and tells you about missing tools. It stores assets (frames that were cpu-expensive to create) in a depot and picks them up when they&amp;#8217;re eventually needed again. Instead of copying files it links to files whenever it makes sense.&lt;/p&gt;
 &lt;p&gt;One thing that bugs me about it: For now cinemaslides creates full-length trackfiles which is kind of nuts for slideshows. One way to reduce size is to use &lt;em&gt;sparse assets&lt;/em&gt; &amp;#8212; minimum-length trackfiles (1 second each) or one store-all trackfile with minimum-length runs for each slide &amp;#8212; and to reference those via reels for the full-length run of each slide.&lt;/p&gt;
 &lt;p&gt;Another idea is to merely build new composition playlists targeting &lt;em&gt;fat&lt;/em&gt; slideshow essence already ingested on a cinema server. Like daily remixes.&lt;/p&gt;
@@ -153,13 +138,81 @@ By the way: As of now (v0.2010.09.05) there&amp;#8217;s no black fill between fa
     </author>
   </entry>
   <entry>
+    <id>tag:wiki.github.com,2008:Wiki/617910</id>
+    <published>2010-09-06T15:37:03-07:00</published>
+    <updated>2010-09-06T09:10:21-07:00</updated>
+    <link type="text/html" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/digital-cinema" rel="alternate"/>
+    <title>Digital Cinema</title>
+    <updated>Mon Sep 06 09:10:21 -0700 2010</updated>
+    <published>Mon Sep 06 15:37:03 -0700 2010</published>
+    <content type="html">&lt;h2&gt;What is it?&lt;/h2&gt;
+&lt;p&gt;It&amp;#8217;s a platform (Like 35mm film is a platform): Fully spec&amp;#8217;d and standardized. High quality motion pictures in the age of files.&lt;/p&gt;
+&lt;p&gt;The point of a platform is: Everyone knows how to use it and it works the same anywhere. Anyone can target it, be it a major studio or so-called &lt;em&gt;Indies&lt;/em&gt;. Results are reproducible, be it on a digital screen in Bombay or in Anchorage.&lt;/p&gt;
+&lt;p&gt;Another aspect of the platform is its quality level. Once you&amp;#8217;ve seen a standard digital cinema screening you will quite likely not miss film. The latter is disputed, naturally. It&amp;#8217;s what they call &lt;em&gt;labor pains&lt;/em&gt;. They&amp;#8217;re finite and then a baby is born.&lt;/p&gt;
+&lt;p&gt;By the way, &lt;i&gt;Avatar&lt;/i&gt; ran on ~26.000 screens worldwide. 8000 of those were Digital Cinema screens (7.382 digital 3D, 553 digital 2D). Baby is out of school already.&lt;/p&gt;
+&lt;h2&gt;What&amp;#8217;s the benefit?&lt;/h2&gt;
+&lt;ul&gt;
+	&lt;li&gt;A digital cinema package (&lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt;, digital cinema&amp;#8217;s equivalent of a distribution print) can carry a number of sound/language versions, title versions, subtitles, even different edits of the film if it&amp;#8217;s called for. It&amp;#8217;s a very flexible format.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ul&gt;
+	&lt;li&gt;A digital cinema projector can be color-corrected. Which means authors &amp;#8212; for the first time in film history &amp;#8212; can actually get their graded colors back from theatre&amp;#8217;s screens. With 35mm projectors you could, of course, also correct color shifts introduced by the Xenon lamp, the mirror and the heat shield. But it&amp;#8217;s not practical, hence not done. Ever saw a black and white feature on a changeover setup? Every reel change means a jump in color temperature. With digital cinema projectors color correction and calibration is &lt;i&gt;built-in&lt;/i&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ul&gt;
+	&lt;li&gt;Pristine image quality from opening night until the end of time. No more mutilated prints. What &lt;em&gt;some&lt;/em&gt; projectionists do to film prints goes well beyond a motion picture engineer&amp;#8217;s worst nightmares. Prints with perfect changeover cues get the &lt;em&gt;big X scratch&lt;/em&gt; treatment &amp;#8212; not once, but many times. Up to entire scenes go missing at reel boundaries. Show up again in random places &amp;#8212; if you&amp;#8217;re lucky. Headers and tails get mixed up. Tail 3 ends up as header 4. Emulsion gets licked to see whether it&amp;#8217;s, well, the emulsion side. Prints are dragged through projectors that haven&amp;#8217;t been taken proper care of, ever. All in all: It&amp;#8217;s nothing short of a miracle we have &lt;em&gt;any&lt;/em&gt;  film history artefacts left.&lt;sup class=&quot;footnote&quot;&gt;&lt;a href=&quot;#fn1&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; Digital cinema ends this.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ul&gt;
+	&lt;li&gt;With digital cinema it&amp;#8217;s inherently cheap to reach the big screen with no/low/modest budget productions. Current quotes from post facilities and labs offering digital cinema authoring might suggest the opposite. But this will change, you can bet on that.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;How does it work?&lt;/h2&gt;
+&lt;p&gt;Basically an image sequence (the film) is encoded to a well-defined, cinema-specific &lt;span class=&quot;caps&quot;&gt;JPEG&lt;/span&gt; 2000 codestream. Packed up (alongside with sound and subtitles) in &lt;span class=&quot;caps&quot;&gt;MXF&lt;/span&gt; containers and composed through the means of descriptive &lt;span class=&quot;caps&quot;&gt;XML&lt;/span&gt; to what will be shown on the screen. These &lt;em&gt;compositions&lt;/em&gt; are what make &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; such a powerful and flexible format because a &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; can carry a number of them. Final package gets copied onto harddrive, memory stick, optical medium, and ingested on a digital cinema server. Finally, someone hits &lt;em&gt;Play&lt;/em&gt;.&lt;/p&gt;
+&lt;h2&gt;Can I do it?&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline&quot;&gt;Absolutely&lt;/a&gt;. Keep in mind that Digital Cinema will not, through some magic spells, turn 8bpc material into smooth 12bpc delight. It will not make up for the shortcomings of your acquisition gear and post-production decisions. It &lt;em&gt;might&lt;/em&gt; turn a dull story into epic drama, though, and it just &lt;em&gt;might&lt;/em&gt; deliver world peace in due time.&lt;/p&gt;
+&lt;h2&gt;&lt;/h2&gt;
+&lt;p class=&quot;footnote&quot; id=&quot;fn1&quot;&gt;&lt;sup&gt;1&lt;/sup&gt; &lt;em&gt;What&amp;#8217;s a release print got to do with anything?&lt;/em&gt; you might wonder. Well, in film preservation and restoration very often the only surviving materials are release prints. Also, when you deal with color film, a release print often is the only surviving color/contrast etc. reference. Think of a &lt;em&gt;day for night&lt;/em&gt; shot on camera negative: Without a release reference you might end up with a re-release which has a peculiar daylight scene noone ever saw before &amp;#8230; So, apart from the obvious shortcomings for contemporary audiences, that&amp;#8217;s why the state of release prints matters.&lt;/p&gt;</content>
+    <media:thumbnail url="http://www.gravatar.com/avatar/7d5278537426ee8ad94d2ae71e6df1f8?s=30&amp;d=http%3A%2F%2Fgithub.com%2Fimages%2Fgravatars%2Fgravatar-140.png"/>
+    <author>
+      <name>wolfgangw</name>
+    </author>
+  </entry>
+  <entry>
+    <id>tag:wiki.github.com,2008:Wiki/945836</id>
+    <published>2010-09-06T15:37:03-07:00</published>
+    <updated>2010-09-06T06:03:20-07:00</updated>
+    <link type="text/html" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/cinemaslides-usage" rel="alternate"/>
+    <title>Cinemaslides Usage</title>
+    <updated>Mon Sep 06 06:03:20 -0700 2010</updated>
+    <published>Mon Sep 06 15:37:03 -0700 2010</published>
+    <content type="html">&lt;h2&gt;Basic usage&lt;/h2&gt;
+&lt;p&gt;Cinemaslides lets you create digital slideshows real fast. Pick up your digital camera, shoot some people in the lobby and have them up on the big screen just before the main feature:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;$ cinemaslides --type dcp Madeleine.jpg Happy_Birthday.wav&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Cinemaslides has some defaults so the above will be 5 seconds long, a bit short. Throw some more pictures into the mix and let it play a bit longer:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;$ cinemaslides -t dcp Happy_Birthday.wav Toddler_Madeleine.jpg First_Schoolday.jpg By_the_Sea.jpg Madeleine.jpg -x fade,1,10,1&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;where &lt;code&gt;-x&lt;/code&gt; (or its long form &lt;code&gt;--transition_and_timing&lt;/code&gt;) lets you specify how long each image will hold and how the transition between images will be made: Fade in for 1 second, hold for 10 seconds, fade out for another second.&lt;/p&gt;
+&lt;p&gt;Cinemaslides has (as of &lt;code&gt;v0.2010.09.06&lt;/code&gt;) 3 basic transition types: Cut, fade in/out and crossfade.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;[...] -x crossfade,2,10&lt;/code&gt; will take 2 seconds to blend from 1 image to the next which will then be held for 10 seconds.&lt;/p&gt;
+&lt;p&gt;You can see how both these transition types imply the most basic transition type, the simple cut: Just say &lt;code&gt;0&lt;/code&gt; for the fade in/out or crossfade part, like &lt;code&gt;[...] -x fade,0,10,0&lt;/code&gt; or &lt;code&gt;[...] -x crossfade,0,10&lt;/code&gt;.&lt;sup class=&quot;footnote&quot;&gt;&lt;a href=&quot;#fn1&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Wait&lt;/em&gt;, you might wonder, &lt;em&gt;we have a 4K digital cinema projector and the Scope aspect ratio on these looks stunning&lt;/em&gt;. While any 4K &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt; projector can, of course, play 2K material (cinemaslides defaults to 2K) out of the box, you can also say&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;$ cinemaslides -t dcp --size 4k --aspect scope [...]&lt;/code&gt;. If your source material has the resolution 4K stills will look glorious indeed.&lt;/p&gt;
+&lt;h2&gt;Not so basic usage&lt;/h2&gt;
+&lt;p&gt;Coming up.&lt;/p&gt;
+&lt;h2&gt;The asset depot&lt;/h2&gt;
+&lt;p&gt;Coming up.&lt;/p&gt;
+&lt;h2&gt;And then what? &lt;span class=&quot;caps&quot;&gt;GUI&lt;/span&gt;?&lt;/h2&gt;
+&lt;p&gt;Coming up.&lt;/p&gt;
+&lt;p class=&quot;footnote&quot; id=&quot;fn1&quot;&gt;&lt;sup&gt;1&lt;/sup&gt; Should Cinemaslides have an explicit &lt;code&gt;-x cut,&amp;lt;duration&amp;gt;&lt;/code&gt; argument? Probably :)&lt;/p&gt;</content>
+    <media:thumbnail url="http://www.gravatar.com/avatar/7d5278537426ee8ad94d2ae71e6df1f8?s=30&amp;d=http%3A%2F%2Fgithub.com%2Fimages%2Fgravatars%2Fgravatar-140.png"/>
+    <author>
+      <name>wolfgangw</name>
+    </author>
+  </entry>
+  <entry>
     <id>tag:wiki.github.com,2008:Wiki/540395</id>
-    <published>2010-09-05T22:51:47-07:00</published>
+    <published>2010-09-06T15:37:03-07:00</published>
     <updated>2010-08-16T22:25:45-07:00</updated>
     <link type="text/html" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/open-source-tools-for-a-digital-cinema-pipeline" rel="alternate"/>
     <title>Open source tools for a digital cinema pipeline</title>
     <updated>Mon Aug 16 22:25:45 -0700 2010</updated>
-    <published>Sun Sep 05 22:51:47 -0700 2010</published>
+    <published>Mon Sep 06 15:37:03 -0700 2010</published>
     <content type="html">&lt;p&gt;The following are basic building blocks for an ad-hoc digital cinema pipeline based on open source tools. Keep in mind that none of this is overly practical for production, though.&lt;/p&gt;
 &lt;p&gt;Key problem being the massive amount of cycles the JPEG2000 encoding consumes. There is no way around dedicated hardware to solve this, really. Any general-purpose-&lt;span class=&quot;caps&quot;&gt;CPU&lt;/span&gt;-based implementation will eventually fall behind the parallel computing power of specialized hardware, I reckon: There are &lt;span class=&quot;caps&quot;&gt;FPGA&lt;/span&gt;/&lt;span class=&quot;caps&quot;&gt;ASIC&lt;/span&gt; solutions (not easily affordable) and there is &lt;span class=&quot;caps&quot;&gt;CUDA&lt;/span&gt; (on off-the-shelf GPUs, quite affordable) and the likes. See &lt;a href=&quot;http://cuj2k.sourceforge.net/index.html&quot;&gt;CUJ2K&lt;/a&gt; for an example &amp;#8212; alas, as of February 2010, CUJ2K v1.1 does not produce &lt;span class=&quot;caps&quot;&gt;DCI&lt;/span&gt; compliant &lt;a href=&quot;http://www.digitalpreservation.gov/formats/fdd/fdd000212.shtml&quot;&gt;Profile-3&lt;/a&gt; and &lt;a href=&quot;http://www.digitalpreservation.gov/formats/fdd/fdd000213.shtml&quot;&gt;Profile-4&lt;/a&gt; codestreams. Maybe that can change.&lt;/p&gt;
 &lt;p&gt;Efficiency: Setting up a shell script to walk all those steps is as easy as it is inefficient. Every image file would be touched a number of times. Every step would involve disk access to and fro. Some of the tools are not multi-threaded. Etc.pp.&lt;/p&gt;
@@ -211,47 +264,13 @@ See &lt;a href=&quot;http://en.wikipedia.org/wiki/SRGB#Specification_of_the_tran
     </author>
   </entry>
   <entry>
-    <id>tag:wiki.github.com,2008:Wiki/617910</id>
-    <published>2010-09-05T22:51:47-07:00</published>
-    <updated>2010-08-16T22:21:58-07:00</updated>
-    <link type="text/html" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/digital-cinema" rel="alternate"/>
-    <title>Digital Cinema</title>
-    <updated>Mon Aug 16 22:21:58 -0700 2010</updated>
-    <published>Sun Sep 05 22:51:47 -0700 2010</published>
-    <content type="html">&lt;h2&gt;What is it?&lt;/h2&gt;
-&lt;p&gt;It&amp;#8217;s a platform (Like 35mm film is a platform): Fully spec&amp;#8217;d and standardized. High quality motion pictures in the age of files. The point of a platform is everyone knows how to use it. Anyone can target it, be it a major studio or so-called &lt;em&gt;Indies&lt;/em&gt;. Results are reproducible, be it on a digital screen in Bombay or in Anchorage.&lt;/p&gt;
-&lt;p&gt;Another aspect of the platform is its quality level. Once you&amp;#8217;ve seen a standard digital cinema screening you will quite likely not miss film. The latter is disputed, naturally. It&amp;#8217;s what they call &lt;em&gt;labor pains&lt;/em&gt;. They&amp;#8217;re finite and then a baby is born.&lt;/p&gt;
-&lt;p&gt;By the way, &lt;i&gt;Avatar&lt;/i&gt; ran on ~26.000 screens worldwide. 8000 of those were Digital Cinema screens (7.382 digital 3D, 553 digital 2D). Baby is out of school already.&lt;/p&gt;
-&lt;h2&gt;What&amp;#8217;s the benefit?&lt;/h2&gt;
-&lt;ul&gt;
-	&lt;li&gt;A digital cinema package (&lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt;, digital cinema&amp;#8217;s equivalent of a distribution print) can carry a number of sound/language versions, title versions, subtitles, even different edits of the film if it&amp;#8217;s called for. It&amp;#8217;s a very flexible format.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-	&lt;li&gt;A digital cinema projector can be color-corrected. Which means authors &amp;#8212; for the first time in film history &amp;#8212; can actually get their graded colors back from theatre&amp;#8217;s screens. With 35mm projectors you could, of course, also correct color shifts introduced by the Xenon lamp, the mirror and the heat shield. But it&amp;#8217;s not practical, hence not done. Ever saw a black and white feature on a changeover setup? Every reel change means a jump in color temperature. With digital cinema projectors color correction and calibration is &lt;i&gt;built-in&lt;/i&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-	&lt;li&gt;Pristine image quality from opening night until the end of time. No more mutilated prints. What &lt;em&gt;some&lt;/em&gt; projectionists do to film prints goes well beyond a motion picture engineer&amp;#8217;s worst nightmares. Prints with perfect changeover cues get the &lt;em&gt;Big X Scratch&lt;/em&gt; treatment &amp;#8212; not once, but many times. Up to entire scenes go missing at reel boundaries. Show up again in random places &amp;#8212; if you&amp;#8217;re lucky. Headers and tails get mixed up. Tail 3 ends up as header 4. Emulsion gets licked to see whether it&amp;#8217;s, well, the emulsion side. Prints are dragged through projectors that haven&amp;#8217;t been touched ever again after installation, let alone &lt;em&gt;cleaned&lt;/em&gt;. All in all: It&amp;#8217;s nothing short of a miracle we have &lt;em&gt;any&lt;/em&gt;  film history artifacts left. Digital cinema ends this.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul&gt;
-	&lt;li&gt;With digital cinema it&amp;#8217;s inherently cheap to reach the big screen with no/low/modest budget productions. Current quotes from post facilities and labs offering digital cinema authoring might suggest the opposite. But this will change, you can bet on that.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;How does it work?&lt;/h2&gt;
-&lt;p&gt;Basically an image sequence (the film) is encoded to a well-defined, cinema-specific &lt;span class=&quot;caps&quot;&gt;JPEG&lt;/span&gt; 2000 codestream. Packed up (alongside with sound and subtitles) in &lt;span class=&quot;caps&quot;&gt;MXF&lt;/span&gt; containers and composed through the means of descriptive &lt;span class=&quot;caps&quot;&gt;XML&lt;/span&gt; to what will be shown on the screen. These &lt;em&gt;compositions&lt;/em&gt; are what make &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; such a powerful and flexible format because a &lt;span class=&quot;caps&quot;&gt;DCP&lt;/span&gt; can carry a number of them. Final package gets copied onto harddrive, memory stick, optical medium, and ingested on a digital cinema server. Finally, someone hits &lt;em&gt;Play&lt;/em&gt;.&lt;/p&gt;
-&lt;h2&gt;Can I do it?&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline&quot;&gt;Absolutely&lt;/a&gt;. Keep in mind that Digital Cinema will not, through some magic spells, turn 8bpc material into smooth 12bpc delight. It will not make up for the shortcomings of your acquisition gear. It &lt;em&gt;might&lt;/em&gt; turn a dull story into epic drama, though, and it just &lt;em&gt;might&lt;/em&gt; deliver world peace in due time.&lt;/p&gt;</content>
-    <media:thumbnail url="http://www.gravatar.com/avatar/7d5278537426ee8ad94d2ae71e6df1f8?s=30&amp;d=http%3A%2F%2Fgithub.com%2Fimages%2Fgravatars%2Fgravatar-140.png"/>
-    <author>
-      <name>wolfgangw</name>
-    </author>
-  </entry>
-  <entry>
     <id>tag:wiki.github.com,2008:Wiki/602971</id>
-    <published>2010-09-05T22:51:47-07:00</published>
+    <published>2010-09-06T15:37:03-07:00</published>
     <updated>2010-08-07T05:52:45-07:00</updated>
     <link type="text/html" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/todo" rel="alternate"/>
     <title>TODO</title>
     <updated>Sat Aug 07 05:52:45 -0700 2010</updated>
-    <published>Sun Sep 05 22:51:47 -0700 2010</published>
+    <published>Mon Sep 06 15:37:03 -0700 2010</published>
     <content type="html">&lt;ul&gt;
 	&lt;li&gt;Check FFmpeg&amp;#8217;s handling of video bit-depths&lt;/li&gt;
 	&lt;li&gt;Robust audio conform (frame boundary alignment, resampling, bit-depth, channel mapping)&lt;/li&gt;
@@ -265,12 +284,12 @@ See &lt;a href=&quot;http://en.wikipedia.org/wiki/SRGB#Specification_of_the_tran
   </entry>
   <entry>
     <id>tag:wiki.github.com,2008:Wiki/514368</id>
-    <published>2010-09-05T22:51:47-07:00</published>
+    <published>2010-09-06T15:37:03-07:00</published>
     <updated>2010-08-06T23:28:30-07:00</updated>
     <link type="text/html" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/mystery-meat" rel="alternate"/>
     <title>Mystery Meat</title>
     <updated>Fri Aug 06 23:28:30 -0700 2010</updated>
-    <published>Sun Sep 05 22:51:47 -0700 2010</published>
+    <published>Mon Sep 06 15:37:03 -0700 2010</published>
     <content type="html">&lt;p&gt;&lt;code&gt;2010 Aug 07&lt;/code&gt; &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-430-3-2008-ETM.xsd&quot;&gt;&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-430-3-2008-&lt;span class=&quot;caps&quot;&gt;ETM&lt;/span&gt;.xsd&lt;/a&gt; and &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-430-1-2006-Amd-1-2009-KDM.xsd&quot;&gt;&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-430-1-2006-Amd-1-2009-&lt;span class=&quot;caps&quot;&gt;KDM&lt;/span&gt;.xsd&lt;/a&gt; (including a correction from &lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-Amendment-1-2009) are the normative &lt;span class=&quot;caps&quot;&gt;XML&lt;/span&gt; Schema documents to test key delivery messages (&lt;span class=&quot;caps&quot;&gt;KDM&lt;/span&gt;) for well-formedness and &lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; compliance.  Use &lt;code&gt;schema-check&lt;/code&gt; from DCI&amp;#8217;s &lt;a href=&quot;http://www.dcimovies.com/DCI_CTP_v1_1.pdf&quot;&gt;Compliance Test Plan v1.1&lt;/a&gt; to perform those tests.&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;2010 Jul 30&lt;/code&gt; &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-429-7-2006-CPL.xsd&quot;&gt;&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-429-7-2006-&lt;span class=&quot;caps&quot;&gt;CPL&lt;/span&gt;.xsd&lt;/a&gt;, &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-429-8-2006-PKL.xsd&quot;&gt;&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-429-8-2006-&lt;span class=&quot;caps&quot;&gt;PKL&lt;/span&gt;.xsd&lt;/a&gt; and &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-429-9-2007-AM.xsd&quot;&gt;&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-429-9-2007-AM.xsd&lt;/a&gt; are the normative &lt;span class=&quot;caps&quot;&gt;XML&lt;/span&gt; Schema documents to test composition playlists (&lt;span class=&quot;caps&quot;&gt;CPL&lt;/span&gt;), packing lists (&lt;span class=&quot;caps&quot;&gt;PKL&lt;/span&gt;) and asset mapping (&lt;span class=&quot;caps&quot;&gt;ASSETMAP&lt;/span&gt;, &lt;span class=&quot;caps&quot;&gt;VOLINDEX&lt;/span&gt;) files for well-formedness and &lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt; compliance. Use &lt;code&gt;schema-check&lt;/code&gt; from DCI&amp;#8217;s &lt;a href=&quot;http://www.dcimovies.com/DCI_CTP_v1_1.pdf&quot;&gt;Compliance Test Plan v1.1&lt;/a&gt; to perform those tests.&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;2010 Jul 8&lt;/code&gt; One of the problems when handling image sequences is making sure a given set of files actually is a continuous sequence. See &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/sequential.py&quot;&gt;sequential.py&lt;/a&gt; for a demo script.&lt;/p&gt;
@@ -287,12 +306,12 @@ See &lt;a href=&quot;http://en.wikipedia.org/wiki/SRGB#Specification_of_the_tran
   </entry>
   <entry>
     <id>tag:wiki.github.com,2008:Wiki/517808</id>
-    <published>2010-09-05T22:51:47-07:00</published>
+    <published>2010-09-06T15:37:03-07:00</published>
     <updated>2010-07-19T11:02:27-07:00</updated>
     <link type="text/html" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/notes-on-dci-specification-and-related-smpte-papers" rel="alternate"/>
     <title>Notes on DCI specification and related SMPTE papers</title>
     <updated>Mon Jul 19 11:02:27 -0700 2010</updated>
-    <published>Sun Sep 05 22:51:47 -0700 2010</published>
+    <published>Mon Sep 06 15:37:03 -0700 2010</published>
     <content type="html">&lt;ul&gt;
 	&lt;li&gt;[&lt;span class=&quot;caps&quot;&gt;SMPTE&lt;/span&gt;-429-2-2009, Composition Playlist Constraints (9.11)]: &amp;#8220;The Hash element shall be present in an asset when the KeyId element is present (i.e., when the referenced Track File is encrypted).&amp;#8221;&lt;/li&gt;
 &lt;/ul&gt;
@@ -316,12 +335,12 @@ Source: &lt;a href=&quot;http://www.smpte.org/journal/?p=2652&quot;&gt;Color Pro
   </entry>
   <entry>
     <id>tag:wiki.github.com,2008:Wiki/523679</id>
-    <published>2010-09-05T22:51:47-07:00</published>
+    <published>2010-09-06T15:37:03-07:00</published>
     <updated>2010-07-02T23:33:30-07:00</updated>
     <link type="text/html" href="http://github.com/wolfgangw/digital_cinema_tools/wikis/scripts" rel="alternate"/>
     <title>Scripts</title>
     <updated>Fri Jul 02 23:33:30 -0700 2010</updated>
-    <published>Sun Sep 05 22:51:47 -0700 2010</published>
+    <published>Mon Sep 06 15:37:03 -0700 2010</published>
     <content type="html">&lt;ul&gt;
 	&lt;li&gt;Check a list of strings (e.g. filenames) for numeric sequential streams and produce a composite from skeleton and streams (multiple streams possible) &amp;#8212; like &lt;code&gt;Reel_01_Final_[000121-010119]_former_[000001-009999].tiff&lt;/code&gt;. It also returns stream directions and markers for UUIDs. See demo script &lt;a href=&quot;http://github.com/wolfgangw/digital_cinema_tools/blob/master/sequential.py&quot;&gt;sequential.py&lt;/a&gt;&lt;/li&gt;
 	&lt;li&gt;&lt;a href=&quot;http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides&quot;&gt;Cinemaslides&lt;/a&gt;, feeble attempt to recreate the magic of aunt Mimi&amp;#8217;s hilarious summer-night-shut-all-the-lights slideshow hell.&lt;/li&gt;

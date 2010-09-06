@@ -270,8 +270,9 @@
         <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets2.github.com/images/icons/feed.png?520fe5a77ed8091544f23c25288b84c4a5891160" title="Feed of recent digital_cinema_tools wiki edits" /></a>
       </h3>
       
-<!--# block name="pages" -->
-      <ul>
+
+
+<ul>
   
     <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides">Cinemaslides</a></b></li>
   
@@ -303,9 +304,6 @@
   
 </ul>
 
-<!--# endblock -->
-
-<!--# include virtual="/wolfgangw/digital_cinema_tools/_all_pages" stub="pages" -->
       
     </div>
 

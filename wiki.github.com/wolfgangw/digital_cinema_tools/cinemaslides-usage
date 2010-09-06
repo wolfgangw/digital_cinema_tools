@@ -231,9 +231,23 @@
 
       <div class="wikistyle">
         <h2>Basic usage</h2>
+<p>Cinemaslides lets you create digital slideshows real fast. Pick up your digital camera, shoot some people in the lobby and have them up on the big screen just before the main feature:</p>
+<p><code>$ cinemaslides --type dcp Madeleine.jpg Happy_Birthday.wav</code></p>
+<p>Cinemaslides has some defaults so the above will be 5 seconds long, a bit short. Throw some more pictures into the mix and let it play a bit longer:</p>
+<p><code>$ cinemaslides -t dcp Happy_Birthday.wav Toddler_Madeleine.jpg First_Schoolday.jpg By_the_Sea.jpg Madeleine.jpg -x fade,1,10,1</code></p>
+<p>where <code>-x</code> (or its long form <code>--transition_and_timing</code>) lets you specify how long each image will hold and how the transition between images will be made: Fade in for 1 second, hold for 10 seconds, fade out for another second.</p>
+<p>Cinemaslides has (as of <code>v0.2010.09.06</code>) 3 basic transition types: Cut, fade in/out and crossfade.</p>
+<p><code>[...] -x crossfade,2,10</code> will take 2 seconds to blend from 1 image to the next which will then be held for 10 seconds.</p>
+<p>You can see how both these transition types imply the most basic transition type, the simple cut: Just say <code>0</code> for the fade in/out or crossfade part, like <code>[...] -x fade,0,10,0</code> or <code>[...] -x crossfade,0,10</code>.<sup class="footnote"><a href="#fn1">1</a></sup></p>
+<p><em>Wait</em>, you might wonder, <em>we have a 4K digital cinema projector and the Scope aspect ratio on these looks stunning</em>. While any 4K <span class="caps">DCI</span> projector can, of course, play 2K material (cinemaslides defaults to 2K) out of the box, you can also say</p>
+<p><code>$ cinemaslides -t dcp --size 4k --aspect scope [...]</code>. If your source material has the resolution 4K stills will look glorious indeed.</p>
 <h2>Not so basic usage</h2>
+<p>Coming up.</p>
 <h2>The asset depot</h2>
+<p>Coming up.</p>
 <h2>And then what? <span class="caps">GUI</span>?</h2>
+<p>Coming up.</p>
+<p class="footnote" id="fn1"><sup>1</sup> Should Cinemaslides have an explicit <code>-x cut,&lt;duration&gt;</code> argument? Probably :)</p>
       </div>
     </div>
     
@@ -288,7 +302,7 @@
 
       <div class="admin">
       <div style="float:left;">
-        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-09-05 12:47:56">Sun Sep 05 12:47:56 -0700 2010</abbr></small>
+        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-09-06 06:03:20">Mon Sep 06 06:03:20 -0700 2010</abbr></small>
 
         <div class="actions">
           <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a>
@@ -299,7 +313,7 @@
 
       <div style="float:right;">
         <small>Versions:</small>
-        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/cinemaslides-usage">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides-usage/1">Version 1 by wolfgangw</option></select>
+        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/cinemaslides-usage">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides-usage/6">Version 6 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides-usage/5">Version 5 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides-usage/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides-usage/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides-usage/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides-usage/1">Version 1 by wolfgangw</option></select>
       </div>
     </div>
     </div>
@@ -330,7 +344,7 @@
           <li><a href="http://status.github.com">Status</a></li>
         </ul>
         <ul class="sosueme">
-          <li class="main">&copy; 2010 <span id="_rrt" title="0.05684s from fe4.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
+          <li class="main">&copy; 2010 <span id="_rrt" title="0.07529s from fe3.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
           <li><a href="/site/terms">Terms of Service</a></li>
           <li><a href="/site/privacy">Privacy</a></li>
           <li><a href="http://github.com/security">Security</a></li>

@@ -15,17 +15,17 @@
     <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub" />
     <link rel="fluid-icon" href="http://github.com/fluidicon.png" title="GitHub" />
 
-    <link href="http://assets2.github.com/stylesheets/bundle_common.css?520fe5a77ed8091544f23c25288b84c4a5891160" media="screen" rel="stylesheet" type="text/css" />
-<link href="http://assets1.github.com/stylesheets/bundle_github.css?520fe5a77ed8091544f23c25288b84c4a5891160" media="screen" rel="stylesheet" type="text/css" />
+    <link href="http://assets1.github.com/stylesheets/bundle_common.css?9a9697e12c18b53b202ba7e8b7929e87e4c2bab6" media="screen" rel="stylesheet" type="text/css" />
+<link href="http://assets0.github.com/stylesheets/bundle_github.css?9a9697e12c18b53b202ba7e8b7929e87e4c2bab6" media="screen" rel="stylesheet" type="text/css" />
 
     <script type="text/javascript" charset="utf-8">
       var GitHub = {}
       var github_user = null
       
     </script>
-    <script src="http://assets0.github.com/javascripts/jquery/jquery-1.4.2.min.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
-    <script src="http://assets0.github.com/javascripts/bundle_common.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
-<script src="http://assets1.github.com/javascripts/bundle_github.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
+    <script src="http://assets2.github.com/javascripts/jquery/jquery-1.4.2.min.js?9a9697e12c18b53b202ba7e8b7929e87e4c2bab6" type="text/javascript"></script>
+    <script src="http://assets3.github.com/javascripts/bundle_common.js?9a9697e12c18b53b202ba7e8b7929e87e4c2bab6" type="text/javascript"></script>
+<script src="http://assets3.github.com/javascripts/bundle_github.js?9a9697e12c18b53b202ba7e8b7929e87e4c2bab6" type="text/javascript"></script>
 
         <script type="text/javascript" charset="utf-8">
       GitHub.spy({
@@ -231,6 +231,7 @@
 
       <div class="wikistyle">
         <ul>
+	<li><a href="http://www.aoa.org/x5352.xml">The Eye and Night Vision</a>, an excellent article about human vision (Scotopic, mesopic, photopic vision) and night-vision-related phenomena.</li>
 	<li>Leonard Levy, over on <a href="http://www.cinematography.net/"><span class="caps">CML</span></a>, mentions how to fade-out your own vision: Close one eye and don&#8217;t move your head. Stare at a single point. Avoid <em>looking</em>.</li>
 	<li><a href="http://x264dev.multimedia.cx/?p=317">The problems with wavelets</a></li>
 	<li><code>-recolor</code> and <code>-color-matrix</code> related: <a href="http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&amp;t=16312">-recolor missing from options page</a>. Turns out the -recolor functionality actually moved to <code>magick/deprecate.c</code> in ImageMagick 6.6.1 (which means it is still working).</li>
@@ -282,7 +283,7 @@ Example ~/.magick/magic.xml to solve the issue:<br />
     <div class="sidebar">
       <h3>
         Pages
-        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets2.github.com/images/icons/feed.png?520fe5a77ed8091544f23c25288b84c4a5891160" title="Feed of recent digital_cinema_tools wiki edits" /></a>
+        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets1.github.com/images/icons/feed.png?9a9697e12c18b53b202ba7e8b7929e87e4c2bab6" title="Feed of recent digital_cinema_tools wiki edits" /></a>
       </h3>
       
 
@@ -328,7 +329,7 @@ Example ~/.magick/magic.xml to solve the issue:<br />
 
       <div class="admin">
       <div style="float:left;">
-        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-09-05 09:03:40">Sun Sep 05 09:03:40 -0700 2010</abbr></small>
+        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-09-06 13:11:52">Mon Sep 06 13:11:52 -0700 2010</abbr></small>
 
         <div class="actions">
           <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a>
@@ -339,7 +340,7 @@ Example ~/.magick/magic.xml to solve the issue:<br />
 
       <div style="float:right;">
         <small>Versions:</small>
-        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/misc">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/26">Version 26 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/25">Version 25 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/24">Version 24 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/23">Version 23 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/22">Version 22 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/21">Version 21 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/20">Version 20 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/19">Version 19 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/18">Version 18 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/17">Version 17 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/16">Version 16 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/15">Version 15 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/14">Version 14 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/13">Version 13 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/12">Version 12 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/11">Version 11 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/10">Version 10 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/9">Version 9 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/8">Version 8 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/7">Version 7 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/6">Version 6 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/5">Version 5 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/1">Version 1 by wolfgangw</option></select>
+        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/misc">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/27">Version 27 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/26">Version 26 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/25">Version 25 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/24">Version 24 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/23">Version 23 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/22">Version 22 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/21">Version 21 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/20">Version 20 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/19">Version 19 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/18">Version 18 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/17">Version 17 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/16">Version 16 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/15">Version 15 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/14">Version 14 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/13">Version 13 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/12">Version 12 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/11">Version 11 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/10">Version 10 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/9">Version 9 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/8">Version 8 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/7">Version 7 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/6">Version 6 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/5">Version 5 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc/1">Version 1 by wolfgangw</option></select>
       </div>
     </div>
     </div>
@@ -352,7 +353,7 @@ Example ~/.magick/magic.xml to solve the issue:<br />
       <div class="site">
         <div class="sponsor">
           <a href="http://www.rackspace.com" class="logo">
-            <img alt="Dedicated Server" src="http://assets0.github.com/images/modules/footer/rackspace_logo.png?520fe5a77ed8091544f23c25288b84c4a5891160" />
+            <img alt="Dedicated Server" src="http://assets3.github.com/images/modules/footer/rackspace_logo.png?9a9697e12c18b53b202ba7e8b7929e87e4c2bab6" />
           </a>
           Powered by the <a href="http://www.rackspace.com ">Dedicated
           Servers</a> and<br/> <a href="http://www.rackspacecloud.com">Cloud
@@ -370,7 +371,7 @@ Example ~/.magick/magic.xml to solve the issue:<br />
           <li><a href="http://status.github.com">Status</a></li>
         </ul>
         <ul class="sosueme">
-          <li class="main">&copy; 2010 <span id="_rrt" title="0.09589s from fe2.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
+          <li class="main">&copy; 2010 <span id="_rrt" title="0.13872s from fe2.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
           <li><a href="/site/terms">Terms of Service</a></li>
           <li><a href="/site/privacy">Privacy</a></li>
           <li><a href="http://github.com/security">Security</a></li>
