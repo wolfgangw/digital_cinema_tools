@@ -1120,7 +1120,8 @@ unless @source_audio.empty?
   end
   
   # match for sequence_audio_asset is based on sha1 digest of conformed_audio_list's elements (assets) joined into 1 string
-  sequence_audio_asset = File.join( @assetsdir_audio, 'sequence_asset-audio_' + Digest::SHA1.hexdigest( conformed_audio_list.each { |e| File.basename( e ) }.join( ' ' ) ) + '_.wav' )
+  set = conformed_audio_list.join
+  sequence_audio_asset = File.join( @assetsdir_audio, 'sequence_asset-audio_' + Digest::SHA1.hexdigest( set ) + '_.wav' )
   
   # c) splice and normalise to -20 dB FS (SMPTE 428-2-2006)
   sequence_audio_asset_tmp = File.join( @assetsdir_audio, 'tmp-' + File.basename( sequence_audio_asset ) )
