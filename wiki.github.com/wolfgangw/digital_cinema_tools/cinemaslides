@@ -15,17 +15,17 @@
     <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub" />
     <link rel="fluid-icon" href="http://github.com/fluidicon.png" title="GitHub" />
 
-    <link href="http://assets0.github.com/stylesheets/bundle_common.css?9a5ff641c5677d9096893dfcd6853b6969b339ad" media="screen" rel="stylesheet" type="text/css" />
-<link href="http://assets3.github.com/stylesheets/bundle_github.css?9a5ff641c5677d9096893dfcd6853b6969b339ad" media="screen" rel="stylesheet" type="text/css" />
+    <link href="http://assets2.github.com/stylesheets/bundle_common.css?520fe5a77ed8091544f23c25288b84c4a5891160" media="screen" rel="stylesheet" type="text/css" />
+<link href="http://assets1.github.com/stylesheets/bundle_github.css?520fe5a77ed8091544f23c25288b84c4a5891160" media="screen" rel="stylesheet" type="text/css" />
 
     <script type="text/javascript" charset="utf-8">
       var GitHub = {}
       var github_user = null
       
     </script>
-    <script src="http://assets1.github.com/javascripts/jquery/jquery-1.4.2.min.js?9a5ff641c5677d9096893dfcd6853b6969b339ad" type="text/javascript"></script>
-    <script src="http://assets1.github.com/javascripts/bundle_common.js?9a5ff641c5677d9096893dfcd6853b6969b339ad" type="text/javascript"></script>
-<script src="http://assets2.github.com/javascripts/bundle_github.js?9a5ff641c5677d9096893dfcd6853b6969b339ad" type="text/javascript"></script>
+    <script src="http://assets0.github.com/javascripts/jquery/jquery-1.4.2.min.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
+    <script src="http://assets0.github.com/javascripts/bundle_common.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
+<script src="http://assets1.github.com/javascripts/bundle_github.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
 
         <script type="text/javascript" charset="utf-8">
       GitHub.spy({
@@ -191,6 +191,11 @@
   GitHub.currentRepoOwner = 'wolfgangw'
   GitHub.currentRepo = "digital_cinema_tools"
   GitHub.downloadRepo = '/wolfgangw/digital_cinema_tools/archives/master'
+  GitHub.revType = "master"
+
+  GitHub.controllerName = "wikis"
+  GitHub.actionName     = "show"
+  GitHub.currentAction  = "wikis#show"
 
   
 
@@ -225,10 +230,13 @@
       <h1>Cinemaslides</h1>
 
       <div class="wikistyle">
-        <p><a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/cinemaslides">Cinemaslides</a> is a commandline-tool to build slideshows and pack them up as <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema" title="DCPs">digital cinema packages</a>. It has preview modes to check how transitions (fades, crossfades, cuts) and timings play out. It &#8212; or rather <a href="http://www.imagemagick.org/script/index.php">ImageMagick</a>, source of endless awesomeness &#8212; conforms a wide range of image types to cinema specs and tries to be smart and fast (Couple of todo&#8217;s lurking right there). Also, it is a work in progress (wrt sound, 3D).</p>
-<p>Technically, it&#8217;s a ruby script acting as glue and organizer between a number of tools: CineCert&#8217;s/John Hurst&#8217;s reference implementation for AS-<span class="caps">DCP</span> file access <a href="http://www.cinecert.com/asdcplib/">asdcplib</a>, ImageMagick, MPlayer, OpenJPEG / Kakadu (which is available for demonstration purposes), opencinematools and bash.</p>
+        <p><a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/cinemaslides">Cinemaslides</a> is a commandline-tool to build slideshows and pack them up as <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema" title="DCPs">digital cinema packages</a>. It has preview modes to check how transitions (fades, crossfades, cuts) and timings play out.</p>
+<p>Look at <span style="color:#aaa">Cinemaslides Usage</span><a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/new?title=Cinemaslides+Usage">?</a> for examples and tips.</p>
+<p>It &#8212; or rather <a href="http://www.imagemagick.org/script/index.php">ImageMagick</a>, source of endless awesomeness, as well as <a href="http://sox.sourceforge.net/">Sound eXchange</a> &#8212; conforms a wide range of image and audio files to cinema specs and tries to be smart and fast (Couple of todo&#8217;s lurking right there).</p>
+<p>Also, it is a work in progress (wrt 3D). Thanks go out to Ronan Delacroix for discussion and patches wrt cinemaslides&#8217; audio section.</p>
+<p>Technically, it&#8217;s a ruby script acting as glue and organizer between a number of tools: CineCert&#8217;s/John Hurst&#8217;s reference implementation for AS-<span class="caps">DCP</span> file access <a href="http://www.cinecert.com/asdcplib/">asdcplib</a>, ImageMagick, SoX, MPlayer, OpenJPEG / Kakadu (which is available for demonstration purposes), opencinematools and bash.</p>
 <p>Cinemaslides provides a basic set of transitions: Cuts, Fades and Crossfades. The latter step through a sigmoid function which creates a much nicer look than linear transitioning. (If you love fades make sure to watch Almodóvar&#8217;s <em>Los abrazos rotos</em>)<br />
-By the way: As of now (v0.2010.08.01) there&#8217;s no black fill between fades. Which is a problem when you watch fades in a dark theater on a big screen because human vision tends to &#8220;burn in&#8221; images. The darker the environment the stronger the effect, it seems. I&#8217;m thinking about a solid algorithm to automatically provide that fill (possibly in relation to fade-out duration). Coming up.</p>
+By the way: As of now (v0.2010.09.05) there&#8217;s no black fill between fades. Which is a problem when you watch fades in a dark theater on a big screen because human vision tends to &#8220;burn in&#8221; images. The darker the environment the stronger the effect, it seems. Thinking about automatically providing that fill (possibly in relation to fade-out duration). Coming up.</p>
 <p>Cinemaslides checks for and tells you about missing tools. It stores assets (frames that were cpu-expensive to create) in a depot and picks them up when they&#8217;re eventually needed again. Instead of copying files it links to files whenever it makes sense.</p>
 <p>One thing that bugs me about it: For now cinemaslides creates full-length trackfiles which is kind of nuts for slideshows. One way to reduce size is to use <em>sparse assets</em> &#8212; minimum-length trackfiles (1 second each) or one store-all trackfile with minimum-length runs for each slide &#8212; and to reference those via reels for the full-length run of each slide.</p>
 <p>Another idea is to merely build new composition playlists targeting <em>fat</em> slideshow essence already ingested on a cinema server. Like daily remixes.</p>
@@ -241,7 +249,7 @@ By the way: As of now (v0.2010.08.01) there&#8217;s no black fill between fades.
 <p><code>cinemaslides --help</code> to learn about options and parameters.<br />
 <code>cinemaslides --examples</code> to see a couple of example invocations.<br />
 <code>cinemaslides -m -t dcp -k 2k -a scope -b 10 -x crossfade,1,5 -j openjpeg image1 image2 image3 ...</code> displays a montage summary to check resizes and goes on to create a 2K Scope <span class="caps">DCP</span> with 10 seconds black leader/tail and crossfades for 1 second between all 5 second slides.<br />
-<code>cinemaslides -t dcp -x fade,0,0.0416666666666667,0 motion_sequence/</code> works, too, in a sort of bass-ackwards way.</p>
+<code>cinemaslides -t dcp -x fade,0,0.0416666666666667,0 motion_sequence/ audio.wav</code> works, too, in a sort of bass-ackwards way.</p>
       </div>
     </div>
     
@@ -250,7 +258,7 @@ By the way: As of now (v0.2010.08.01) there&#8217;s no black fill between fades.
     <div class="sidebar">
       <h3>
         Pages
-        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets0.github.com/images/icons/feed.png?9a5ff641c5677d9096893dfcd6853b6969b339ad" title="Feed of recent digital_cinema_tools wiki edits" /></a>
+        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets2.github.com/images/icons/feed.png?520fe5a77ed8091544f23c25288b84c4a5891160" title="Feed of recent digital_cinema_tools wiki edits" /></a>
       </h3>
       
 
@@ -258,6 +266,8 @@ By the way: As of now (v0.2010.08.01) there&#8217;s no black fill between fades.
 <ul>
   
     <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides">Cinemaslides</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides-usage">Cinemaslides Usage</a></b></li>
   
     <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema">Digital Cinema</a></b></li>
   
@@ -294,7 +304,7 @@ By the way: As of now (v0.2010.08.01) there&#8217;s no black fill between fades.
 
       <div class="admin">
       <div style="float:left;">
-        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-08-16 08:09:34">Mon Aug 16 08:09:34 -0700 2010</abbr></small>
+        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-09-05 07:51:10">Sun Sep 05 07:51:10 -0700 2010</abbr></small>
 
         <div class="actions">
           <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a>
@@ -305,7 +315,7 @@ By the way: As of now (v0.2010.08.01) there&#8217;s no black fill between fades.
 
       <div style="float:right;">
         <small>Versions:</small>
-        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/cinemaslides">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/29">Version 29 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/28">Version 28 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/27">Version 27 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/26">Version 26 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/25">Version 25 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/24">Version 24 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/23">Version 23 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/22">Version 22 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/21">Version 21 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/20">Version 20 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/19">Version 19 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/18">Version 18 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/17">Version 17 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/16">Version 16 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/15">Version 15 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/14">Version 14 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/13">Version 13 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/12">Version 12 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/11">Version 11 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/10">Version 10 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/9">Version 9 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/8">Version 8 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/7">Version 7 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/6">Version 6 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/5">Version 5 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/1">Version 1 by wolfgangw</option></select>
+        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/cinemaslides">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/31">Version 31 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/30">Version 30 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/29">Version 29 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/28">Version 28 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/27">Version 27 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/26">Version 26 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/25">Version 25 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/24">Version 24 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/23">Version 23 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/22">Version 22 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/21">Version 21 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/20">Version 20 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/19">Version 19 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/18">Version 18 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/17">Version 17 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/16">Version 16 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/15">Version 15 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/14">Version 14 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/13">Version 13 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/12">Version 12 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/11">Version 11 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/10">Version 10 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/9">Version 9 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/8">Version 8 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/7">Version 7 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/6">Version 6 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/5">Version 5 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides/1">Version 1 by wolfgangw</option></select>
       </div>
     </div>
     </div>
@@ -318,7 +328,7 @@ By the way: As of now (v0.2010.08.01) there&#8217;s no black fill between fades.
       <div class="site">
         <div class="sponsor">
           <a href="http://www.rackspace.com" class="logo">
-            <img alt="Dedicated Server" src="http://assets2.github.com/images/modules/footer/rackspace_logo.png?9a5ff641c5677d9096893dfcd6853b6969b339ad" />
+            <img alt="Dedicated Server" src="http://assets0.github.com/images/modules/footer/rackspace_logo.png?520fe5a77ed8091544f23c25288b84c4a5891160" />
           </a>
           Powered by the <a href="http://www.rackspace.com ">Dedicated
           Servers</a> and<br/> <a href="http://www.rackspacecloud.com">Cloud
@@ -336,7 +346,7 @@ By the way: As of now (v0.2010.08.01) there&#8217;s no black fill between fades.
           <li><a href="http://status.github.com">Status</a></li>
         </ul>
         <ul class="sosueme">
-          <li class="main">&copy; 2010 <span id="_rrt" title="0.10641s from fe4.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
+          <li class="main">&copy; 2010 <span id="_rrt" title="0.10233s from fe3.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
           <li><a href="/site/terms">Terms of Service</a></li>
           <li><a href="/site/privacy">Privacy</a></li>
           <li><a href="http://github.com/security">Security</a></li>
@@ -352,51 +362,51 @@ By the way: As of now (v0.2010.08.01) there&#8217;s no black fill between fades.
           <div class="site">
 
             <ul class="choices clearfix limited-locales">
-              <li><span class="current">Français</span></li>
+              <li><span class="current">English</span></li>
               
                 
-                  <li><a rel="nofollow" href="http://wiki.github.com/pvincent4/fourviere2010/">English</a></li>
-                
-              
-                
-                  <li><a rel="nofollow" href="http://de.wiki.github.com/pvincent4/fourviere2010/">Deutsch</a></li>
+                  <li><a rel="nofollow" href="http://de.wiki.github.com/flash/soundmanager2.swf/">Deutsch</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://ja.wiki.github.com/pvincent4/fourviere2010/">日本語</a></li>
+                  <li><a rel="nofollow" href="http://fr.wiki.github.com/flash/soundmanager2.swf/">Français</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/pvincent4/fourviere2010/">Português (BR)</a></li>
+                  <li><a rel="nofollow" href="http://ja.wiki.github.com/flash/soundmanager2.swf/">日本語</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://zh.wiki.github.com/pvincent4/fourviere2010/">中文</a></li>
+                  <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/flash/soundmanager2.swf/">Português (BR)</a></li>
+                
+              
+                
+                  <li><a rel="nofollow" href="http://zh.wiki.github.com/flash/soundmanager2.swf/">中文</a></li>
                 
               
               <li class="all"><a href="#" class="minibutton btn-forward js-all-locales"><span><span class="icon"></span>See all available languages</span></a></li>
             </ul>
 
             <div class="all-locales clearfix">
-              <h3>Your current locale selection: <strong>Français</strong>. Choose another?</h3>
+              <h3>Your current locale selection: <strong>English</strong>. Choose another?</h3>
               
               
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://wiki.github.com/pvincent4/fourviere2010/">English</a></li>
+                      <li><a rel="nofollow" href="http://wiki.github.com/flash/soundmanager2.swf/">English</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://af.wiki.github.com/pvincent4/fourviere2010/">Afrikaans</a></li>
+                      <li><a rel="nofollow" href="http://af.wiki.github.com/flash/soundmanager2.swf/">Afrikaans</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://ca.wiki.github.com/pvincent4/fourviere2010/">Català</a></li>
+                      <li><a rel="nofollow" href="http://ca.wiki.github.com/flash/soundmanager2.swf/">Català</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://cs.wiki.github.com/pvincent4/fourviere2010/">Čeština</a></li>
+                      <li><a rel="nofollow" href="http://cs.wiki.github.com/flash/soundmanager2.swf/">Čeština</a></li>
                     
                   
                 </ul>
@@ -404,39 +414,19 @@ By the way: As of now (v0.2010.08.01) there&#8217;s no black fill between fades.
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://de.wiki.github.com/pvincent4/fourviere2010/">Deutsch</a></li>
+                      <li><a rel="nofollow" href="http://de.wiki.github.com/flash/soundmanager2.swf/">Deutsch</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://es.wiki.github.com/pvincent4/fourviere2010/">Español</a></li>
+                      <li><a rel="nofollow" href="http://es.wiki.github.com/flash/soundmanager2.swf/">Español</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://fr.wiki.github.com/pvincent4/fourviere2010/">Français</a></li>
+                      <li><a rel="nofollow" href="http://fr.wiki.github.com/flash/soundmanager2.swf/">Français</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://hr.wiki.github.com/pvincent4/fourviere2010/">Hrvatski</a></li>
-                    
-                  
-                </ul>
-              
-                <ul class="choices">
-                  
-                    
-                      <li><a rel="nofollow" href="http://id.wiki.github.com/pvincent4/fourviere2010/">Indonesia</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://it.wiki.github.com/pvincent4/fourviere2010/">Italiano</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://ja.wiki.github.com/pvincent4/fourviere2010/">日本語</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://nl.wiki.github.com/pvincent4/fourviere2010/">Nederlands</a></li>
+                      <li><a rel="nofollow" href="http://hr.wiki.github.com/flash/soundmanager2.swf/">Hrvatski</a></li>
                     
                   
                 </ul>
@@ -444,19 +434,19 @@ By the way: As of now (v0.2010.08.01) there&#8217;s no black fill between fades.
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://no.wiki.github.com/pvincent4/fourviere2010/">Norsk</a></li>
+                      <li><a rel="nofollow" href="http://id.wiki.github.com/flash/soundmanager2.swf/">Indonesia</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://pl.wiki.github.com/pvincent4/fourviere2010/">Polski</a></li>
+                      <li><a rel="nofollow" href="http://it.wiki.github.com/flash/soundmanager2.swf/">Italiano</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/pvincent4/fourviere2010/">Português (BR)</a></li>
+                      <li><a rel="nofollow" href="http://ja.wiki.github.com/flash/soundmanager2.swf/">日本語</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://sr.wiki.github.com/pvincent4/fourviere2010/">Српски</a></li>
+                      <li><a rel="nofollow" href="http://nl.wiki.github.com/flash/soundmanager2.swf/">Nederlands</a></li>
                     
                   
                 </ul>
@@ -464,11 +454,31 @@ By the way: As of now (v0.2010.08.01) there&#8217;s no black fill between fades.
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://sv.wiki.github.com/pvincent4/fourviere2010/">Svenska</a></li>
+                      <li><a rel="nofollow" href="http://no.wiki.github.com/flash/soundmanager2.swf/">Norsk</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://zh.wiki.github.com/pvincent4/fourviere2010/">中文</a></li>
+                      <li><a rel="nofollow" href="http://pl.wiki.github.com/flash/soundmanager2.swf/">Polski</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/flash/soundmanager2.swf/">Português (BR)</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://sr.wiki.github.com/flash/soundmanager2.swf/">Српски</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="http://sv.wiki.github.com/flash/soundmanager2.swf/">Svenska</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://zh.wiki.github.com/flash/soundmanager2.swf/">中文</a></li>
                     
                   
                 </ul>

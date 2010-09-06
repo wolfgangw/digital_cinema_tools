@@ -11,7 +11,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-        <title>Home - digital_cinema_tools - GitHub</title>
+        <title>Cinemaslides Usage - digital_cinema_tools - GitHub</title>
     <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub" />
     <link rel="fluid-icon" href="http://github.com/fluidicon.png" title="GitHub" />
 
@@ -149,7 +149,7 @@
     
 
             
-      <li><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/" class="selected">Wiki</a></li>
+      <li><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Wiki</a></li>
       
     <li><a href="http://github.com/wolfgangw/digital_cinema_tools/graphs" highlight="repo_graphs">Graphs</a></li>
 
@@ -194,8 +194,8 @@
   GitHub.revType = "master"
 
   GitHub.controllerName = "wikis"
-  GitHub.actionName     = "index"
-  GitHub.currentAction  = "wikis#index"
+  GitHub.actionName     = "show"
+  GitHub.currentAction  = "wikis#show"
 
   
 
@@ -221,42 +221,19 @@
       
         <div class="actions">
           <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a> |
-          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/home/edit">Edit</a> |
+          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/cinemaslides-usage/edit">Edit</a> |
           <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/new">New</a>
         </div>
       
 
 
-      <h1>Home</h1>
+      <h1>Cinemaslides Usage</h1>
 
       <div class="wikistyle">
-        <p>Hi and welcome.</p>
-<p>Here you&#8217;ll find a growing collection of useful documents, <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/scripts">scripts</a> and <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes">notes</a> which deal, in the broadest sense, with <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema">Digital Cinema</a> mastering and authoring. Read <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat">Mystery Meat</a> to learn where the beef is.</p>
-<p>I work at the Munich Filmmuseum, Munich&#8217;s municipal cinematheque, which houses an extensive film collection. In addition we restore and publish forgotten, so-called <i>lost</i> gems of film history and provide daily screenings &#8212; spanning film history in all of its fascinating diversity.</p>
-<p>What we take away from tracking down and screening thousands of film prints throughout the years, are, from a technical point of view, two major trends:</p>
-<ul>
-	<li>Significant deterioration of most prints (not only old prints, mind you)</li>
-	<li>Serious and, in many cases, scientific effort and investment to restore and secure select historic works and produce new negatives and screening prints</li>
-</ul>
-<p>In other words: While some select works enjoy proper attention and care, large parts of our film heritage are literally doomed, mostly due to the lack of incentive and the significant costs of re-releases to screening prints (which begin to deteriorate the moment they leave the lab). It became clear that digital tools would offer a chance, at least, to improve that situation. So we were thrilled when, in the summer of 2009, we could muster the budget to take our first steps into this promising terrain.</p>
-<p>To establish an open platform for digital cinema production and distribution was the general idea of the <a href="http://www.dcimovies.com/">Digital Cinema Initiative</a> and their <a href="http://www.dcimovies.com/specification/index.tt2">specification</a>. Much like the <i>35mm</i> platform (specified in 1916) which has had a lot of breath.</p>
-<p>The <span class="caps">DCI</span><sup class="footnote"><a href="#fn1">1</a></sup> had realized that in order to create a platform good for decades to come they needed to adhere to tried and tested standards. As a result you can satisfy the requirements for <span class="caps">DCDM</span><sup class="footnote"><a href="#fn2">2</a></sup>/<span class="caps">DCP</span><sup class="footnote"><a href="#fn3">3</a></sup> mastering and authoring with a set of freely available (open source) tools. Which is the laudable kind of <i>Good Thing</i> geeks feel irresistibly attracted to, like bears to the honey pot.</p>
-<p>Film production, on the technical side of the imaging part, is all about workflows. Parties involved include cinematography, editorial, color mastering, archiving, delivery (film prints, digital cinema packages, BluRay/<span class="caps">DVD</span>, TV deliverables). They need to get on the same track in order to deliver photons to the silver screen. When film production was a film-only process (up until the early 1990s) the steps and techniques involved were, for the most part, clearly defined<sup class="footnote"><a href="#fn4">4</a></sup>.</p>
-<p>This changed dramatically with the advent of digital tools and processes. Connecting the dots (which is what intra- and inter-facility workflows must accomplish) in the age of digital became more flexible and less defined at the same time.</p>
-<p>Because <span class="caps">DCI</span> was aiming for a well-defined digital cinema standard the engineers came up with a gatekeeper mechanism (my words) that would precede the authoring of digital cinema packages (digital equivalent of screening prints): It is called <i>Digital Cinema Distribution Master</i> (<span class="caps">DCDM</span>) and consists of image, sound and subtitle/caption files with, for the most part, clearly defined properties:</p>
-<ul>
-	<li>Black and white levels, bits per color channel, transfer function, colorspace and aspect ratio for images</li>
-	<li>Bit depth, sample rate, channel count and reference level for sound</li>
-</ul>
-<p>A <span class="caps">DCDM</span> is transformed &#8212; via a meticulously defined process &#8212; into a <span class="caps">DCP</span>.</p>
-<p>See <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline">Open source tools for a digital cinema pipeline</a> for commandline examples (keeping in mind that, due to the nature of these ad-hoc examples, the border between <span class="caps">DCDM</span> and <span class="caps">DCP</span> can be rather blurry).</p>
-<p>The required information and knowledge is, while public, somewhat buried in man-pages, specs and <span class="caps">SMPTE</span> standards. However, there is no reason <span class="caps">DCDM</span>/<span class="caps">DCP</span> production should remain more complicated and opaque than, say, the creation of DVDs or BluRay media.</p>
-<p>Feedback, corrections, insights, code etc. very welcomed and much appreciated.<br />
-Wolfgang Woehl</p>
-<p class="footnote" id="fn1"><sup>1</sup> Founding <span class="caps">DCI</span> members (2002): Disney, Fox, <span class="caps">MGM</span>, Paramount, Sony, Universal, Warner</p>
-<p class="footnote" id="fn2"><sup>2</sup> <span class="caps">DCDM</span>: <i>Digital Cinema Distribution Master</i>, collection of image, sound and subtitle/caption files ready (in compliance with <span class="caps">SMPTE</span> standards 428-1, 428-2, 428-3, 428-7, 428-9 and 428-10) for packaging.</p>
-<p class="footnote" id="fn3"><sup>3</sup> <span class="caps">DCP</span>: <i>Digital Cinema Package</i>, collection of, at least, one packing list and all its referenced assets. Possible assets are <span class="caps">MXF</span> containers with compressed (<span class="caps">JPEG</span> 2000, MPEG2 elementary stream) and optionally encrypted image and sound essence, subtitle resources and playlists.</p>
-<p class="footnote" id="fn4"><sup>4</sup> A voice, coming from an unidentified lab, says <i>Define defined</i>. Right. Color timers were actually considered wizard magicians. It is outright stunning what they could achieve with the limited tools (in comparison to today&#8217;s digital color kits) they had.</p>
+        <h2>Basic usage</h2>
+<h2>Not so basic usage</h2>
+<h2>The asset depot</h2>
+<h2>And then what? <span class="caps">GUI</span>?</h2>
       </div>
     </div>
     
@@ -311,18 +288,18 @@ Wolfgang Woehl</p>
 
       <div class="admin">
       <div style="float:left;">
-        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-09-05 08:16:45">Sun Sep 05 08:16:45 -0700 2010</abbr></small>
+        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-09-05 12:47:56">Sun Sep 05 12:47:56 -0700 2010</abbr></small>
 
         <div class="actions">
           <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a>
-          | <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/home/edit">Edit</a> |
+          | <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/cinemaslides-usage/edit">Edit</a> |
           <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/new">New</a>
         </div>
       </div>
 
       <div style="float:right;">
         <small>Versions:</small>
-        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/home">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/49">Version 49 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/48">Version 48 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/47">Version 47 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/46">Version 46 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/45">Version 45 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/44">Version 44 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/43">Version 43 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/42">Version 42 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/41">Version 41 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/40">Version 40 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/39">Version 39 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/38">Version 38 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/37">Version 37 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/36">Version 36 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/35">Version 35 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/34">Version 34 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/33">Version 33 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/32">Version 32 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/31">Version 31 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/30">Version 30 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/29">Version 29 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/28">Version 28 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/27">Version 27 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/26">Version 26 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/25">Version 25 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/24">Version 24 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/23">Version 23 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/22">Version 22 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/21">Version 21 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/20">Version 20 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/19">Version 19 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/18">Version 18 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/17">Version 17 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/16">Version 16 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/15">Version 15 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/14">Version 14 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/13">Version 13 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/12">Version 12 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/11">Version 11 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/10">Version 10 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/9">Version 9 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/8">Version 8 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/7">Version 7 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/6">Version 6 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/5">Version 5 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/home/1">Version 1 by wolfgangw</option></select>
+        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/cinemaslides-usage">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides-usage/1">Version 1 by wolfgangw</option></select>
       </div>
     </div>
     </div>
@@ -353,7 +330,7 @@ Wolfgang Woehl</p>
           <li><a href="http://status.github.com">Status</a></li>
         </ul>
         <ul class="sosueme">
-          <li class="main">&copy; 2010 <span id="_rrt" title="0.23790s from fe4.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
+          <li class="main">&copy; 2010 <span id="_rrt" title="0.05684s from fe4.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
           <li><a href="/site/terms">Terms of Service</a></li>
           <li><a href="/site/privacy">Privacy</a></li>
           <li><a href="http://github.com/security">Security</a></li>

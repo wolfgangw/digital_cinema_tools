@@ -15,17 +15,17 @@
     <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub" />
     <link rel="fluid-icon" href="http://github.com/fluidicon.png" title="GitHub" />
 
-    <link href="http://assets3.github.com/stylesheets/bundle_common.css?d41de198b44b5bba9b4c56aa9ff86762b2b42ed8" media="screen" rel="stylesheet" type="text/css" />
-<link href="http://assets2.github.com/stylesheets/bundle_github.css?d41de198b44b5bba9b4c56aa9ff86762b2b42ed8" media="screen" rel="stylesheet" type="text/css" />
+    <link href="http://assets2.github.com/stylesheets/bundle_common.css?520fe5a77ed8091544f23c25288b84c4a5891160" media="screen" rel="stylesheet" type="text/css" />
+<link href="http://assets1.github.com/stylesheets/bundle_github.css?520fe5a77ed8091544f23c25288b84c4a5891160" media="screen" rel="stylesheet" type="text/css" />
 
     <script type="text/javascript" charset="utf-8">
       var GitHub = {}
       var github_user = null
       
     </script>
-    <script src="http://assets1.github.com/javascripts/jquery/jquery-1.4.2.min.js?d41de198b44b5bba9b4c56aa9ff86762b2b42ed8" type="text/javascript"></script>
-    <script src="http://assets1.github.com/javascripts/bundle_common.js?d41de198b44b5bba9b4c56aa9ff86762b2b42ed8" type="text/javascript"></script>
-<script src="http://assets2.github.com/javascripts/bundle_github.js?d41de198b44b5bba9b4c56aa9ff86762b2b42ed8" type="text/javascript"></script>
+    <script src="http://assets0.github.com/javascripts/jquery/jquery-1.4.2.min.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
+    <script src="http://assets0.github.com/javascripts/bundle_common.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
+<script src="http://assets1.github.com/javascripts/bundle_github.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
 
         <script type="text/javascript" charset="utf-8">
       GitHub.spy({
@@ -191,6 +191,11 @@
   GitHub.currentRepoOwner = 'wolfgangw'
   GitHub.currentRepo = "digital_cinema_tools"
   GitHub.downloadRepo = '/wolfgangw/digital_cinema_tools/archives/master'
+  GitHub.revType = "master"
+
+  GitHub.controllerName = "wikis"
+  GitHub.actionName     = "show"
+  GitHub.currentAction  = "wikis#show"
 
   
 
@@ -240,7 +245,7 @@
     <div class="sidebar">
       <h3>
         Pages
-        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets0.github.com/images/icons/feed.png?d41de198b44b5bba9b4c56aa9ff86762b2b42ed8" title="Feed of recent digital_cinema_tools wiki edits" /></a>
+        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets2.github.com/images/icons/feed.png?520fe5a77ed8091544f23c25288b84c4a5891160" title="Feed of recent digital_cinema_tools wiki edits" /></a>
       </h3>
       
 
@@ -248,6 +253,8 @@
 <ul>
   
     <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides">Cinemaslides</a></b></li>
+  
+    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides-usage">Cinemaslides Usage</a></b></li>
   
     <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema">Digital Cinema</a></b></li>
   
@@ -308,7 +315,7 @@
       <div class="site">
         <div class="sponsor">
           <a href="http://www.rackspace.com" class="logo">
-            <img alt="Dedicated Server" src="http://assets1.github.com/images/modules/footer/rackspace_logo.png?d41de198b44b5bba9b4c56aa9ff86762b2b42ed8" />
+            <img alt="Dedicated Server" src="http://assets0.github.com/images/modules/footer/rackspace_logo.png?520fe5a77ed8091544f23c25288b84c4a5891160" />
           </a>
           Powered by the <a href="http://www.rackspace.com ">Dedicated
           Servers</a> and<br/> <a href="http://www.rackspacecloud.com">Cloud
@@ -326,7 +333,7 @@
           <li><a href="http://status.github.com">Status</a></li>
         </ul>
         <ul class="sosueme">
-          <li class="main">&copy; 2010 <span id="_rrt" title="0.06484s from fe2.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
+          <li class="main">&copy; 2010 <span id="_rrt" title="0.05919s from fe4.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
           <li><a href="/site/terms">Terms of Service</a></li>
           <li><a href="/site/privacy">Privacy</a></li>
           <li><a href="http://github.com/security">Security</a></li>
@@ -345,23 +352,23 @@
               <li><span class="current">English</span></li>
               
                 
-                  <li><a rel="nofollow" href="http://de.wiki.github.com/ioncache/ioncache.github.com/">Deutsch</a></li>
+                  <li><a rel="nofollow" href="http://de.wiki.github.com/flash/soundmanager2.swf/">Deutsch</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://fr.wiki.github.com/ioncache/ioncache.github.com/">Français</a></li>
+                  <li><a rel="nofollow" href="http://fr.wiki.github.com/flash/soundmanager2.swf/">Français</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://ja.wiki.github.com/ioncache/ioncache.github.com/">日本語</a></li>
+                  <li><a rel="nofollow" href="http://ja.wiki.github.com/flash/soundmanager2.swf/">日本語</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/ioncache/ioncache.github.com/">Português (BR)</a></li>
+                  <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/flash/soundmanager2.swf/">Português (BR)</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://zh.wiki.github.com/ioncache/ioncache.github.com/">中文</a></li>
+                  <li><a rel="nofollow" href="http://zh.wiki.github.com/flash/soundmanager2.swf/">中文</a></li>
                 
               
               <li class="all"><a href="#" class="minibutton btn-forward js-all-locales"><span><span class="icon"></span>See all available languages</span></a></li>
@@ -374,39 +381,19 @@
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://wiki.github.com/ioncache/ioncache.github.com/">English</a></li>
+                      <li><a rel="nofollow" href="http://wiki.github.com/flash/soundmanager2.swf/">English</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://af.wiki.github.com/ioncache/ioncache.github.com/">Afrikaans</a></li>
+                      <li><a rel="nofollow" href="http://af.wiki.github.com/flash/soundmanager2.swf/">Afrikaans</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://ca.wiki.github.com/ioncache/ioncache.github.com/">Català</a></li>
+                      <li><a rel="nofollow" href="http://ca.wiki.github.com/flash/soundmanager2.swf/">Català</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://cs.wiki.github.com/ioncache/ioncache.github.com/">Čeština</a></li>
-                    
-                  
-                </ul>
-              
-                <ul class="choices">
-                  
-                    
-                      <li><a rel="nofollow" href="http://de.wiki.github.com/ioncache/ioncache.github.com/">Deutsch</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://es.wiki.github.com/ioncache/ioncache.github.com/">Español</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://fr.wiki.github.com/ioncache/ioncache.github.com/">Français</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://hr.wiki.github.com/ioncache/ioncache.github.com/">Hrvatski</a></li>
+                      <li><a rel="nofollow" href="http://cs.wiki.github.com/flash/soundmanager2.swf/">Čeština</a></li>
                     
                   
                 </ul>
@@ -414,39 +401,19 @@
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://id.wiki.github.com/ioncache/ioncache.github.com/">Indonesia</a></li>
+                      <li><a rel="nofollow" href="http://de.wiki.github.com/flash/soundmanager2.swf/">Deutsch</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://it.wiki.github.com/ioncache/ioncache.github.com/">Italiano</a></li>
+                      <li><a rel="nofollow" href="http://es.wiki.github.com/flash/soundmanager2.swf/">Español</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://ja.wiki.github.com/ioncache/ioncache.github.com/">日本語</a></li>
+                      <li><a rel="nofollow" href="http://fr.wiki.github.com/flash/soundmanager2.swf/">Français</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://nl.wiki.github.com/ioncache/ioncache.github.com/">Nederlands</a></li>
-                    
-                  
-                </ul>
-              
-                <ul class="choices">
-                  
-                    
-                      <li><a rel="nofollow" href="http://no.wiki.github.com/ioncache/ioncache.github.com/">Norsk</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://pl.wiki.github.com/ioncache/ioncache.github.com/">Polski</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/ioncache/ioncache.github.com/">Português (BR)</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://sr.wiki.github.com/ioncache/ioncache.github.com/">Српски</a></li>
+                      <li><a rel="nofollow" href="http://hr.wiki.github.com/flash/soundmanager2.swf/">Hrvatski</a></li>
                     
                   
                 </ul>
@@ -454,11 +421,51 @@
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://sv.wiki.github.com/ioncache/ioncache.github.com/">Svenska</a></li>
+                      <li><a rel="nofollow" href="http://id.wiki.github.com/flash/soundmanager2.swf/">Indonesia</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://zh.wiki.github.com/ioncache/ioncache.github.com/">中文</a></li>
+                      <li><a rel="nofollow" href="http://it.wiki.github.com/flash/soundmanager2.swf/">Italiano</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://ja.wiki.github.com/flash/soundmanager2.swf/">日本語</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://nl.wiki.github.com/flash/soundmanager2.swf/">Nederlands</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="http://no.wiki.github.com/flash/soundmanager2.swf/">Norsk</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://pl.wiki.github.com/flash/soundmanager2.swf/">Polski</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/flash/soundmanager2.swf/">Português (BR)</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://sr.wiki.github.com/flash/soundmanager2.swf/">Српски</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="http://sv.wiki.github.com/flash/soundmanager2.swf/">Svenska</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="http://zh.wiki.github.com/flash/soundmanager2.swf/">中文</a></li>
                     
                   
                 </ul>
