@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.09.06"
+CinemaSlidesVersion = "v0.2010.09.07"
 Author = "Wolfgang Woehl"
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
@@ -351,9 +351,9 @@ def cleanup_workdir( keep )
     when 'preview', 'fullpreview'
       @logger.info( "Removing preview files (Say '--keep' to keep them)" )
       `rm -rf #{ @workdir }`
-      unless @final_audio.nil?
-        `rm #{ @final_audio }` # which lives in @assetsdir_audio, for now
-      end
+      #unless @final_audio.nil?
+      #  `rm #{ @final_audio }` # which lives in @assetsdir_audio, for now
+      #end
     when 'dcp'
       @logger.info( "Removing temporary files (Say '--keep' to keep them)" )
       `rm -rf #{ @conformdir }`
@@ -601,22 +601,9 @@ def check_for_asset( filename_s, suffix, fps, level = nil )
 end
 
 
-def check_for_audio_asset( filename )
-  hash = Digest::SHA1.hexdigest( File.read( filename ) )
-  assetname = File.join( @assetsdir_audio, hash + '_.wav' )
-  if File.exists?( assetname )
-    @logger.debug( "Skip: Audio asset exists (#{ filename } -> #{ File.basename( assetname ) })" )
-    todo = FALSE
-  else
-    todo = TRUE
-  end
-  return assetname, todo
-end
-
-
 # all fade/crossfade ops are based on these assets
 def conform( image, fps )
-  @logger.info( "Conform #{ image }" )
+  @logger.info( "Conform image: #{ image }" )
   asset, todo = check_for_asset( image, @output_format, fps )
   if todo == TRUE
     convert_resize_extent_color_specs( image, asset )
@@ -1062,7 +1049,7 @@ when "preview", "fullpreview"
 end
 
 
-### Process audio
+### Process audio (asset-audio depot is still a moving target, bugs lurking etc., as of v0.2010.09.07)
 #
 # user can specify -- alongside with any number of images -- any number of audio files
 # a) cinemaslides makes a list which will be equally long as or longer than the calculated image sequence
@@ -1073,6 +1060,34 @@ end
 # c) the elements are spliced together (result is checked into asset depot)
 # d) the result is trimmed to the exact length of the image sequence
 # e) the result is padded with silence to accomodate for black leader/tail
+def conform_audio( audiofile, samplerate, bps, channelcount )
+  @logger.info( "Conform audio: #{ audiofile }" )
+  asset, todo = check_for_audio_asset( audiofile, samplerate, bps, channelcount )
+  if todo == TRUE
+    sox_conform( audiofile, samplerate, bps, channelcount, asset )
+  end
+  return asset
+end
+
+
+def check_for_audio_asset( filename, samplerate, bps, channelcount )
+  hexdigest = Digest::SHA1.hexdigest( File.read( filename ) )
+  assetname = File.join( @assetsdir_audio, "#{ samplerate }_#{ bps }_#{ channelcount }_#{ hexdigest }_.wav" )
+  if File.exists?( assetname )
+    @logger.debug( "Skip: Audio asset exists (#{ filename } -> #{ File.basename( assetname ) })" )
+    todo = FALSE
+  else
+    todo = TRUE
+  end
+  return assetname, todo
+end
+
+
+def sox_conform( audiofile, samplerate, bps, channelcount, asset ) # and normalise to -20 dB FS (SMPTE 428-2-2006)
+  `sox #{ audiofile } -r #{ samplerate } -b #{ bps } -c #{ channelcount } -s -t wavpcm #{ asset } gain -n -20`
+end
+
+
 def silence( seconds, samplerate, bps, channelcount )
   silence_conform = File.join( @assetsdir_audio, 'silence_' + seconds.to_s + '_' + samplerate.to_s + '_' + bps.to_s + '_' + channelcount.to_s + '.wav' )
   if File.exists?( silence_conform )
@@ -1084,20 +1099,22 @@ def silence( seconds, samplerate, bps, channelcount )
   return silence_conform
 end
 
+
 unless @source_audio.empty?
   @logger.info( 'Conform audio ...' )
   
   audio_list = Array.new
   audio_list_total_length = 0.0
+  conformed_audio_list = Array.new
   source_audio_index = 0
   
   image_sequence_length_seconds = image_sequence_frames / fps
-  image_sequence_length_hms = hms_from_seconds( image_sequence_length_seconds )
+  image_sequence_length_hms = hms_from_seconds( image_sequence_length_seconds ) #  needed for sox/trim
   
   # a) make a list of audiofiles with sufficient total length (read 'at least as long as image sequence')
   while audio_list_total_length < image_sequence_length_seconds
     audio_list << @source_audio[ source_audio_index ]
-    audio_list_total_length += seconds_from_hms( `soxi -d #{ @source_audio[ source_audio_index ] }`.chomp )
+    audio_list_total_length += `soxi -D #{ @source_audio[ source_audio_index ] }`.chomp.to_f
     if source_audio_index == @source_audio.size - 1
       source_audio_index = 0 # start over
     else
@@ -1105,33 +1122,28 @@ unless @source_audio.empty?
     end
   end
   
-  # b) conform each audiofile
-  conformed_audio_list = Array.new
+  # b) conform the required audiofiles
   audio_list.each do |audiofile|
-    audio_asset, todo = check_for_audio_asset( audiofile )
-    if todo == TRUE
-      # FIXME channelcount
-      @logger.info( "Conform #{ File.basename( audiofile ) }" )
-      `sox #{ audiofile } -b #{ options.audio_bps } -s -c 2 -r #{ options.audio_samplerate } -t wavpcm #{ audio_asset }`
-    else
-      @logger.debug( "Skip: Audio asset exists (#{ File.basename( audiofile ) } -> #{ File.basename( audio_asset ) })" )
-    end
+    audio_asset = conform_audio( audiofile, options.audio_samplerate, options.audio_bps, 2 ) # FIXME channelcount
     conformed_audio_list << audio_asset
   end
   
-  # match for sequence_audio_asset is based on sha1 digest of conformed_audio_list's elements (assets) joined into 1 string
-  set = conformed_audio_list.join
-  sequence_audio_asset = File.join( @assetsdir_audio, 'sequence_asset-audio_' + Digest::SHA1.hexdigest( set ) + '_.wav' )
+  # match for sequence_audio_asset is based on image sequence length and sha1 digest of conformed_audio_list's elements (assets) joined into 1 string
+  set = Array.new
+  conformed_audio_list.each do |e|
+    set << File.basename( e )
+  end
+  sequence_audio_asset = File.join( @assetsdir_audio, "sequence_#{ image_sequence_length_seconds }_#{ Digest::SHA1.hexdigest( set.join ) }_.wav" )
   
-  # c) splice and normalise to -20 dB FS (SMPTE 428-2-2006)
+  # c) splice
   sequence_audio_asset_tmp = File.join( @assetsdir_audio, 'tmp-' + File.basename( sequence_audio_asset ) )
-  `sox #{ conformed_audio_list.join( ' ' ) } #{ sequence_audio_asset_tmp } splice gain -n -20`
+  `sox #{ conformed_audio_list.join( ' ' ) } #{ sequence_audio_asset_tmp } splice`
 
   # d) trim
   if File.exists?( sequence_audio_asset )
     @logger.debug( "Skip: Trimmed audio asset for image sequence exists (#{ File.basename( sequence_audio_asset ) })" )
   else
-    @logger.info( 'Trim audio' )
+    @logger.debug( 'Trim audio' )
     `sox #{ sequence_audio_asset_tmp } #{ sequence_audio_asset } trim 0 #{ image_sequence_length_hms }`
   end
   File.delete( sequence_audio_asset_tmp )
@@ -1139,10 +1151,13 @@ unless @source_audio.empty?
   # e) pad with silence for black leader/tail
   audio_leader = ( black_leader > 0 ? silence( black_leader, options.audio_samplerate, options.audio_bps, 2 ) : '' )
   audio_tail = ( black_tail > 0 ? silence( black_tail, options.audio_samplerate, options.audio_bps, 2 ) : '' )
-  # FIXME match for non-padded/padded audio
-  @final_audio = File.join( @assetsdir_audio, 'final-' + File.basename( sequence_audio_asset ) )
-  @logger.info( 'Pad audio with leader/tail silence' )
-  `sox #{ audio_leader } #{ sequence_audio_asset } #{ audio_tail } #{ @final_audio } splice`
+  if black_leader + black_tail > 0
+    @logger.debug( 'Pad audio with leader/tail silence' )
+    @final_audio = File.join( @assetsdir_audio, 'padded_' + File.basename( sequence_audio_asset ) )
+    `sox #{ audio_leader } #{ sequence_audio_asset } #{ audio_tail } #{ @final_audio } splice`
+  else
+    @final_audio = sequence_audio_asset
+  end
   
   @logger.info( '... Conform audio done' )
 end
