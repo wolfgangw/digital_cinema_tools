@@ -1353,7 +1353,7 @@ when "dcp"
 
   # Write CompositionPlaylist
   @logger.info( "Write CPL" )
-  `mkcpl --kind test --norating --title '#{ options.title } #{ timestamp }' --annotation '#{ options.annotation } #{ timestamp }' --issuer '#{ options.issuer }' #{ image_mxf } #{ @source_audio.empty? ? audio_mxf : '' } > #{ tmp_cpl }`
+  `mkcpl --kind test --norating --title '#{ options.title } #{ timestamp }' --annotation '#{ options.annotation } #{ timestamp }' --issuer '#{ options.issuer }' #{ image_mxf } #{ @source_audio.empty? ? '' : audio_mxf } > #{ tmp_cpl }`
   cpl_uuid = Nokogiri::XML( File.open( tmp_cpl ) ).xpath( "//xmlns:CompositionPlaylist/xmlns:Id" ).text.split( 'urn:uuid:' ).last
   @logger.debug( "CPL UUID:       #{ cpl_uuid }" )
   cpl = File.join( File.dirname( tmp_cpl ), "cpl_" + cpl_uuid + "_.xml" )
@@ -1386,6 +1386,8 @@ end # End Create DCP
 
 
 TODO = <<TODO
+FIXME sox, what's taking you so long? conform_audio()
+FIXME projected length <- frames cast
 FIXME estimate required/check available disk space
 FIXME -o|--dcp-out example
 FIXME max number of commandline args? (32768 here)
