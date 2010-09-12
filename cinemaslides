@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.09.07"
+CinemaSlidesVersion = "v0.2010.09.12"
 Author = "Wolfgang Woehl"
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
@@ -73,9 +73,11 @@ class Optparser
     options.audio_samplerate_choices = [ '48000', '48k', '96000', '96k' ]
     options.audio_bps = 24
     options.audio_bps_choices = [ '16', '24' ]
-    options.title = 'Cinemaslides test'
-    options.issuer = ENV[ 'USER' ] + '@' + `hostname`.chomp
-    options.annotation = 'Cinemaslides test'
+    options.dcp_title = 'Cinemaslides test'
+    options.dcp_issuer = ENV[ 'USER' ] + '@' + `hostname`.chomp
+    options.dcp_annotation = 'Cinemaslides test'
+    options.dcp_kind = 'test'
+    options.dcp_kind_choices = [ 'feature', 'trailer', 'test', 'teaser', 'rating', 'advertisement', 'short', 'transitional', 'psa', 'policy' ]
     options.montage = FALSE
     options.keep = FALSE
     options.dont_check = FALSE
@@ -160,13 +162,18 @@ BANNER
         end
       end
       opts.on( '--title title', 'DCP title tag', String ) do |p|
-        options.title = p
+        options.dcp_title = p
       end
       opts.on( '--issuer issuer', 'DCP issuer tag', String ) do |p|
-        options.issuer = p
+        options.dcp_issuer = p
       end
       opts.on( '--annotation annotation', 'DCP annotation tag', String ) do |p|
-        options.annotation = p
+        options.dcp_annotation = p
+      end
+      opts.on( '--kind kind', "DCP content kind. Use 'feature', 'trailer, 'test', 'teaser', 'rating', 'advertisement', 'short', 'transitional', 'psa' or 'policy' (Default: test)" ) do |p|
+        if options.dcp_kind_choices.include?( p.downcase )
+          options.dcp_kind = p.downcase
+        end
       end
       opts.on( '-o', '--dcp-out path', String, 'DCP location and folder name (Full path. Default: Write to working directory)' ) do |p|
         options.dcp_user_output_path = p
@@ -776,11 +783,11 @@ when FALSE
 end
 
 m = options.size.match( /catch:(.*)/ )
-unless m.nil? 
-  if m[1] == 'eep'
-    @logger.info( "Optparser tango, did you mean to say --keep?" )
+unless m.nil?
+  if [ 'eep', 'ind' ].include?( m[1] )
+    @logger.info( "Did you mean to say '--k#{ m[1] }'?" )
   else
-    @logger.info( "Can't understand -k's parameter" )
+    @logger.info( "Can't understand -k's argument: '#{ m[1] }'. Use #{ options.size_choices.join( ' or ' ) }" )
   end
   exit
 end
@@ -1040,9 +1047,10 @@ case @output_type
 when "dcp"
   @logger.info( "Creating #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
   @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
-  @logger.info( "Title:      #{ options.title } #{timestamp}" )
-  @logger.info( "Annotation: #{ options.annotation } #{timestamp}" )
-  @logger.info( "Issuer:     #{ options.issuer }" )
+  @logger.info( "Title:      #{ options.dcp_title } #{timestamp}" )
+  @logger.info( "Annotation: #{ options.dcp_annotation } #{timestamp}" )
+  @logger.info( "Issuer:     #{ options.dcp_issuer }" )
+  @logger.info( "Kind:       #{ options.dcp_kind }" )
 when "preview", "fullpreview"
   @logger.info( "Creating #{ @output_type } (#{ @aspect } #{ @dimensions } @ #{ fps } fps)" )
   @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
@@ -1353,7 +1361,7 @@ when "dcp"
 
   # Write CompositionPlaylist
   @logger.info( "Write CPL" )
-  `mkcpl --kind test --norating --title '#{ options.title } #{ timestamp }' --annotation '#{ options.annotation } #{ timestamp }' --issuer '#{ options.issuer }' #{ image_mxf } #{ @source_audio.empty? ? '' : audio_mxf } > #{ tmp_cpl }`
+  `mkcpl --kind #{ options.dcp_kind } --norating --title '#{ options.dcp_title }' --annotation '#{ options.dcp_annotation } #{ timestamp }' --issuer '#{ options.dcp_issuer }' #{ image_mxf } #{ @source_audio.empty? ? '' : audio_mxf } > #{ tmp_cpl }`
   cpl_uuid = Nokogiri::XML( File.open( tmp_cpl ) ).xpath( "//xmlns:CompositionPlaylist/xmlns:Id" ).text.split( 'urn:uuid:' ).last
   @logger.debug( "CPL UUID:       #{ cpl_uuid }" )
   cpl = File.join( File.dirname( tmp_cpl ), "cpl_" + cpl_uuid + "_.xml" )
@@ -1362,12 +1370,12 @@ when "dcp"
   # Write PackingList
   @logger.info( "Write PKL" )
   # might be cumulative DCP, end up with 1 pkl to cover all
-  obsolete_pkls = Dir.glob( File.join( @dcpdir, 'pkl_*_.xml' ) ) # there should be 1 if at all. user might have moved some in, though.
+  obsolete_pkls = Dir.glob( File.join( @dcpdir, 'pkl_*_.xml' ) ) # FIXME check xml for packing list
   obsolete_pkls.each do |obsolete_pkl|
     @logger.debug( "Obsolete:   #{ File.basename( obsolete_pkl ) }" )
     File.delete( obsolete_pkl )
   end
-  `cd #{ @dcpdir }; mkpkl --issuer '#{ options.issuer }' --annotation '#{ options.annotation } #{ timestamp }' cpl_*_.xml *_.mxf > #{ File.basename( tmp_pkl ) }`
+  `cd #{ @dcpdir }; mkpkl --issuer '#{ options.dcp_issuer }' --annotation '#{ options.dcp_annotation }' cpl_*_.xml *_.mxf > #{ File.basename( tmp_pkl ) }`
   pkl_uuid = Nokogiri::XML( File.open( tmp_pkl ) ).xpath( "//xmlns:PackingList/xmlns:Id" ).text.split( 'urn:uuid:' ).last
   @logger.debug( "PKL UUID:       #{ pkl_uuid }" )
   pkl = File.join( File.dirname( tmp_pkl ), "pkl_" + pkl_uuid + "_.xml" )
@@ -1375,7 +1383,7 @@ when "dcp"
   
   # Write Assetmap
   @logger.info( "Write ASSETMAP and VOLINDEX" )
-  `cd #{ @dcpdir }; mkmap --issuer '#{ options.issuer }' cpl_* pkl_* *_.mxf` # pick up all DCP files, might be cumulative DCP
+  `cd #{ @dcpdir }; mkmap --issuer '#{ options.dcp_issuer }' cpl_* pkl_* *_.mxf` # pick up all DCP files, might be cumulative DCP
 
   # report
   final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
