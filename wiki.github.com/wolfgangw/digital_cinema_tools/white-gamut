@@ -11,21 +11,21 @@
   <head>
     <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-        <title>White Gamut - digital_cinema_tools - GitHub</title>
+        <title>White gamut - digital_cinema_tools - GitHub</title>
     <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub" />
     <link rel="fluid-icon" href="http://github.com/fluidicon.png" title="GitHub" />
 
-    <link href="http://assets2.github.com/stylesheets/bundle_common.css?520fe5a77ed8091544f23c25288b84c4a5891160" media="screen" rel="stylesheet" type="text/css" />
-<link href="http://assets1.github.com/stylesheets/bundle_github.css?520fe5a77ed8091544f23c25288b84c4a5891160" media="screen" rel="stylesheet" type="text/css" />
+    <link href="http://assets3.github.com/stylesheets/bundle_common.css?a82d4fd2603f3bf18ec470842fc190430030b0e3" media="screen" rel="stylesheet" type="text/css" />
+<link href="http://assets2.github.com/stylesheets/bundle_github.css?a82d4fd2603f3bf18ec470842fc190430030b0e3" media="screen" rel="stylesheet" type="text/css" />
 
     <script type="text/javascript" charset="utf-8">
       var GitHub = {}
       var github_user = null
       
     </script>
-    <script src="http://assets0.github.com/javascripts/jquery/jquery-1.4.2.min.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
-    <script src="http://assets0.github.com/javascripts/bundle_common.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
-<script src="http://assets1.github.com/javascripts/bundle_github.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
+    <script src="http://assets1.github.com/javascripts/jquery/jquery-1.4.2.min.js?a82d4fd2603f3bf18ec470842fc190430030b0e3" type="text/javascript"></script>
+    <script src="http://assets1.github.com/javascripts/bundle_common.js?a82d4fd2603f3bf18ec470842fc190430030b0e3" type="text/javascript"></script>
+<script src="http://assets2.github.com/javascripts/bundle_github.js?a82d4fd2603f3bf18ec470842fc190430030b0e3" type="text/javascript"></script>
 
         <script type="text/javascript" charset="utf-8">
       GitHub.spy({
@@ -34,6 +34,17 @@
     </script>
 
     
+  <script src="/javascripts/other/MathJax/MathJax.js" type="text/javascript">
+    if (window.location.protocol == "https:") {
+      MathJax.OutputJax.fontDir = "https://" + document.location.host + "/assets/MathJax/fonts"
+    } else {
+      MathJax.OutputJax.fontDir = "http://" + document.location.host + "/assets/MathJax/fonts"
+    }
+    MathJax.Hub.Config({
+      jax: ["input/TeX", "output/HTML-CSS"]
+    })
+  </script>
+
   <link href="http://github.com/wolfgangw/digital_cinema_tools/commits/master.atom" rel="alternate" title="Recent Commits to digital_cinema_tools:master" type="application/atom+xml" />
 
         <meta name="description" content="Collection of useful scripts and notes for an open source based digital cinema pipeline" />
@@ -79,7 +90,7 @@
 
     
 
-    <div class="" id="main">
+    <div class="subnavd" id="main">
       <div id="header" class="true">
         
           <a class="logo boring" href="http://github.com">
@@ -94,11 +105,11 @@
   
     <ul class="nav logged_out">
       <li><a href="http://github.com">Home</a></li>
-      <li class="pricing"><a href="http://github.com/plans">Pricing and Signup</a></li>
+      <li class="pricing"><a href="/plans">Pricing and Signup</a></li>
       <li><a href="http://github.com/training">Training</a></li>
       <li><a href="http://gist.github.com">Gist</a></li>
       <li><a href="/blog">Blog</a></li>
-      <li></li>
+      <li><a href="https://github.com/login">Login</a></li>
     </ul>
   
 </div>
@@ -121,11 +132,26 @@
       
 
       
+        <li class="for-owner" style="display:none"><a href="https://github.com/wolfgangw/digital_cinema_tools/edit" class="minibutton btn-admin "><span><span class="icon"></span>Admin</span></a></li>
+        <li>
+          <a href="/wolfgangw/digital_cinema_tools/toggle_watch" class="minibutton btn-watch " id="watch_button" rel="nofollow" style="display:none"><span><span class="icon"></span>Watch</span></a>
+          <a href="/wolfgangw/digital_cinema_tools/toggle_watch" class="minibutton btn-watch " id="unwatch_button" rel="nofollow" style="display:none"><span><span class="icon"></span>Unwatch</span></a>
+        </li>
+        
+          
+            <li class="for-notforked" style="display:none"><a href="/wolfgangw/digital_cinema_tools/fork" class="minibutton btn-fork " id="fork_button" onclick="var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'POST'; f.action = this.href;var s = document.createElement('input'); s.setAttribute('type', 'hidden'); s.setAttribute('name', 'authenticity_token'); s.setAttribute('value', '3c0d826a3c49deb04a5cdc6d110e693f1c16764c'); f.appendChild(s);f.submit();return false;"><span><span class="icon"></span>Fork</span></a></li>
+            <li class="for-hasfork" style="display:none"><a href="#" class="minibutton btn-fork " id="your_fork_button"><span><span class="icon"></span>Your Fork</span></a></li>
+          
+
+          
+          <li><a href="#" class="minibutton btn-download " id="download_button"><span><span class="icon"></span>Download Source</span></a></li>
+        
+      
       
       <li class="repostats">
         <ul class="repo-stats">
-          <li class="watchers"><a href="http://github.com/wolfgangw/digital_cinema_tools/watchers" title="Watchers" class="tooltipped downwards">6</a></li>
-          <li class="forks"><a href="http://github.com/wolfgangw/digital_cinema_tools/network" title="Forks" class="tooltipped downwards">2</a></li>
+          <li class="watchers"><a href="/wolfgangw/digital_cinema_tools/watchers" title="Watchers" class="tooltipped downwards">6</a></li>
+          <li class="forks"><a href="/wolfgangw/digital_cinema_tools/network" title="Forks" class="tooltipped downwards">2</a></li>
         </ul>
       </li>
     </ul>
@@ -137,21 +163,23 @@
     <li><a href="http://github.com/wolfgangw/digital_cinema_tools/commits/master" highlight="repo_commits">Commits</a></li>
 
     
-    <li><a href="http://github.com/wolfgangw/digital_cinema_tools/network" highlight="repo_network">Network</a></li>
-
-    
+    <li><a href="/wolfgangw/digital_cinema_tools/network" highlight="repo_network">Network (2)</a></li>
 
     
 
     
       
-      <li><a href="http://github.com/wolfgangw/digital_cinema_tools/downloads">Downloads</a></li>
+      <li><a href="/wolfgangw/digital_cinema_tools/issues" highlight="issues">Issues (0)</a></li>
     
 
+    
+      
+      <li><a href="/wolfgangw/digital_cinema_tools/downloads">Downloads (0)</a></li>
+    
+
+                  <li><a href="/wolfgangw/digital_cinema_tools/wiki">Wiki (14)</a></li>
             
-      <li><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Wiki</a></li>
-      
-    <li><a href="http://github.com/wolfgangw/digital_cinema_tools/graphs" highlight="repo_graphs">Graphs</a></li>
+    <li><a href="/wolfgangw/digital_cinema_tools/graphs" highlight="repo_graphs">Graphs</a></li>
 
     <li class="contextswitch nochoices">
       <span class="toggle leftwards" >
@@ -170,7 +198,14 @@
   
   
   
-  
+  <div class="subnav-bar">
+  <ul>
+    <li><a href="/wolfgangw/digital_cinema_tools/wiki">Home</a></li>
+    <li><a href="/wolfgangw/digital_cinema_tools/wiki/_pages">Pages</a></li>
+    <li><a href="/wolfgangw/digital_cinema_tools/wiki/_history">Wiki History</a></li>
+    <li><a href="/wolfgangw/digital_cinema_tools/wiki/_access">Git Access</a></li>
+  </ul>
+</div>
 
 
 
@@ -182,8 +217,10 @@
 
       
 
+
+
 <div id="repos">
-  
+    
 
 
 <script type="text/javascript">
@@ -193,9 +230,9 @@
   GitHub.downloadRepo = '/wolfgangw/digital_cinema_tools/archives/master'
   GitHub.revType = "master"
 
-  GitHub.controllerName = "wikis"
+  GitHub.controllerName = "wiki"
   GitHub.actionName     = "show"
-  GitHub.currentAction  = "wikis#show"
+  GitHub.currentAction  = "wiki#show"
 
   
 
@@ -213,107 +250,73 @@
 
 <div id="guides">
   <div class="guide">
-    <!-- main content -->
+    <div class="heading">
+      <ul class="actions">
+        <li>
+           <a href="/wolfgangw/digital_cinema_tools/wiki/White-Gamut/_edit" class="minibutton btn-edit "><span><span class="icon"></span>Edit</span></a>
+        </li>
+        <li>
+          <a href="/wolfgangw/digital_cinema_tools/wiki/White-Gamut/_history" class="minibutton btn-history "><span><span class="icon"></span>History</span></a>
+        </li>
+        <li>
+          <a href="#new_wiki_page" class="minibutton btn-new-page " rel="facebox"><span><span class="icon"></span>New Page</span></a>
+        </li>
+      </ul>
+      <div id="new_wiki_page" style="display:none">
+        <h2>Add a new wiki page</h2>
+        <form action="/wolfgangw/digital_cinema_tools/wiki/_new" method="get">
+          <dl class="form">
+            <dt><label>Page Title</label></dt>
+            <dd>
+              <input type="text" name="wiki[name]" />
+            </dd>
+          </dl>
+          <p><strong>Remember to link your new page!</strong>  If you create a new page, no one will be able to find it unless they know the name of the page.</p>
+          <div class="full-button">
+            <button type="submit" class="classy"><span>Start a new wiki page</span></button>
+          </div>
+        </form>
+        <p>Alternatively, you can <a href="/wolfgangw/digital_cinema_tools/wiki/White-Gamut/_edit">edit this page</a> and add a link to the new page first.</p>
 
-    
-    <div class="main">
+      </div>
 
-      
-        <div class="actions">
-          <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a> |
-          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/white-gamut/edit">Edit</a> |
-          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/new">New</a>
-        </div>
-      
+      <h1>
+        White Gamut
+      </h1>
+    </div>
 
-
-      <h1>White Gamut</h1>
-
-      <div class="wikistyle">
-        <p>In March 2009 <span class="caps">SMPTE</span> published a report on white gamut practices for digital cinema (see <span class="caps">SMPTE</span> Motion Imaging Journal October 2009 for a condensed version). In the report the authors (Pixar&#8217;s Rod Bogart and Rick Sayre) identify a potential mismatch between <span class="caps">DCDM</span> mastering and exhibition practices:</p>
+    <div class="content wikistyle gollum textile">
+      <p>In March 2009 <span class="caps">SMPTE</span> published a report on white gamut practices for digital cinema (see <span class="caps">SMPTE</span> Motion Imaging Journal October 2009 for a condensed version). In the report the authors (Pixar’s Rod Bogart and Rick Sayre) identify a potential mismatch between <span class="caps">DCDM</span> mastering and exhibition practices:</p>
 <blockquote>
-<p>By using the <span class="caps">XYZ</span> color space, the <span class="caps">SMPTE</span> Standards and Recommended Practices effectively allow for an infinite range of reproducible whites. The numerical color encoding chosen in the standard constrains the available colors at peak luminance (48 cd/m²) to a still-large set. However, <span class="caps">SMPTE</span> does not specify which of these encode-able colors are reproducible in exhibition. This means that colors can be mastered (encoded) that may not be seen by audiences in exhibition. Likewise, colors displayed in exhibition may never have been seen in mastering.<br />
-For example, if your DI mastering suite were set up in <span class="caps">RGB</span> for a D55 white point at 48 cd/m², projectors in current digital cinema exhibition practice, using the projector configuration file DCDM_XYZ_239, would not accurately reproduce the encoded master at peak white.<br />
+<p>By using the <span class="caps">XYZ</span> color space, the <span class="caps">SMPTE</span> Standards and Recommended Practices effectively allow for an infinite range of reproducible whites. The numerical color encoding chosen in the standard constrains the available colors at peak luminance (48 cd/m²) to a still-large set. However, <span class="caps">SMPTE</span> does not specify which of these encode-able colors are reproducible in exhibition. This means that colors can be mastered (encoded) that may not be seen by audiences in exhibition. Likewise, colors displayed in exhibition may never have been seen in mastering.<br>
+For example, if your DI mastering suite were set up in <span class="caps">RGB</span> for a D55 white point at 48 cd/m², projectors in current digital cinema exhibition practice, using the projector configuration file DCDM_XYZ_239, would not accurately reproduce the encoded master at peak white.<br>
 Further, there is significant confusion between White Point, the color with maximum possible luminance, and Calibration White, a specific color chosen for calibration or verification purposes.</p>
 </blockquote>
-<p>One of the study group&#8217;s tasks was to survey projector measured color gamuts in the field. The authors collected projector setup data from 245 projectors and conclude:</p>
+<p>One of the study group’s tasks was to survey projector measured color gamuts in the field. The authors collected projector setup data from 245 projectors and conclude:</p>
 <blockquote>
 <p>There is a common perception that current Digital Cinema projectors have a native white point close to <i>Calibration White</i>. It can be clearly seen from Fig. 1 that this is not true because the projector native white points cluster away from <i>Calibration White</i>.</p>
 </blockquote>
 <p>Btw, see the <a href="http://en.wikipedia.org/wiki/Chromatic_adaptation">Wikipedia stub</a> for some background on chromatic adaptation.</p>
 <p>Well, what to make of that?</p>
-<p>Human vision is an immensely capable and fascinating system. Capable in terms of dynamic range, spatial resolution, &#8220;luminance awareness&#8221; etc. Fascinating in that it is the current <i>state of the art</i> with a background of millions of years of merciless selection &#8212; not seeing good, among other things, made you prey, end of story. None of our ancestors could have had bad vision. Granted, at least one prominent exception comes to mind &#8230;</p>
-<p>One of the many fascinating aspects of human vision is its ability to perceive an object illuminated by midday light or by dusk light to be quite similar in color &#8212; although the spectral energy of the 2 illuminants is quite different. You can take pictures of stuff in varying light conditions (auto white-balance off) and crop out color patches. Put them next to each other and compare what you see with your subjective perception at the time.</p>
+<p>Human vision is an immensely capable and fascinating system. Capable in terms of dynamic range, spatial resolution, “luminance awareness” etc. Fascinating in that it is the current <i>state of the art</i> with a background of millions of years of merciless selection — not seeing good, among other things, made you prey, end of story. None of our ancestors could have had bad vision. Granted, at least one prominent exception comes to mind …</p>
+<p>One of the many fascinating aspects of human vision is its ability to perceive an object illuminated by midday light or by dusk light to be quite similar in color — although the spectral energy of the 2 illuminants is quite different. You can take pictures of stuff in varying light conditions (auto white-balance off) and crop out color patches. Put them next to each other and compare what you see with your subjective perception at the time.</p>
 <p>(to be continued: What Glenn Kennel says about white points in digital cinema. What the specs say.)</p>
-      </div>
     </div>
-    
-    <!-- sidebar -->
 
-    <div class="sidebar">
-      <h3>
-        Pages
-        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets2.github.com/images/icons/feed.png?520fe5a77ed8091544f23c25288b84c4a5891160" title="Feed of recent digital_cinema_tools wiki edits" /></a>
-      </h3>
+      </div>
+
+  <!-- admin -->
+
+  
+    <div class="admin">
       
-
-
-<ul>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides">Cinemaslides</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides-usage">Cinemaslides Usage</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema">Digital Cinema</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools">Home</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc">MISC</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/mpeg2-essence-support-for-opencinematools-112">MPEG2 essence support for opencinematools 1.1.2</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat">Mystery Meat</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes">Notes</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-dci-specification-and-related-smpte-papers">Notes on DCI specification and related SMPTE papers</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema">Notes on handling audio assets for Digital Cinema</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline">Open source tools for a digital cinema pipeline</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/scripts">Scripts</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/todo">TODO</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut">White Gamut</a></b></li>
-  
-</ul>
-
-      
+      <div>
+              <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-09-13 14:31:55">Mon Sep 13 14:31:55 -0700 2010</abbr></small><br />
+            </div>
     </div>
+  
+</div>
 
-  </div>
-
-    <!-- admin -->
-
-      <div class="admin">
-      <div style="float:left;">
-        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-03-02 15:28:50">Tue Mar 02 15:28:50 -0800 2010</abbr></small>
-
-        <div class="actions">
-          <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a>
-          | <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/white-gamut/edit">Edit</a> |
-          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/new">New</a>
-        </div>
-      </div>
-
-      <div style="float:right;">
-        <small>Versions:</small>
-        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/white-gamut">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut/9">Version 9 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut/8">Version 8 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut/7">Version 7 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut/6">Version 6 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut/5">Version 5 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut/1">Version 1 by wolfgangw</option></select>
-      </div>
-    </div>
-    </div>
     </div>
   
       
@@ -323,7 +326,7 @@ Further, there is significant confusion between White Point, the color with maxi
       <div class="site">
         <div class="sponsor">
           <a href="http://www.rackspace.com" class="logo">
-            <img alt="Dedicated Server" src="http://assets0.github.com/images/modules/footer/rackspace_logo.png?520fe5a77ed8091544f23c25288b84c4a5891160" />
+            <img alt="Dedicated Server" src="http://assets1.github.com/images/modules/footer/rackspace_logo.png?a82d4fd2603f3bf18ec470842fc190430030b0e3" />
           </a>
           Powered by the <a href="http://www.rackspace.com ">Dedicated
           Servers</a> and<br/> <a href="http://www.rackspacecloud.com">Cloud
@@ -341,7 +344,7 @@ Further, there is significant confusion between White Point, the color with maxi
           <li><a href="http://status.github.com">Status</a></li>
         </ul>
         <ul class="sosueme">
-          <li class="main">&copy; 2010 <span id="_rrt" title="0.07216s from fe3.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
+          <li class="main">&copy; 2010 <span id="_rrt" title="0.22960s from fe5.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
           <li><a href="/site/terms">Terms of Service</a></li>
           <li><a href="/site/privacy">Privacy</a></li>
           <li><a href="http://github.com/security">Security</a></li>
@@ -360,23 +363,27 @@ Further, there is significant confusion between White Point, the color with maxi
               <li><span class="current">English</span></li>
               
                 
-                  <li><a rel="nofollow" href="http://de.wiki.github.com/flash/soundmanager2.swf/">Deutsch</a></li>
+                  <li><a rel="nofollow" href="?locale=de">Deutsch</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://fr.wiki.github.com/flash/soundmanager2.swf/">Français</a></li>
+                  <li><a rel="nofollow" href="?locale=fr">Français</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://ja.wiki.github.com/flash/soundmanager2.swf/">日本語</a></li>
+                  <li><a rel="nofollow" href="?locale=ja">日本語</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/flash/soundmanager2.swf/">Português (BR)</a></li>
+                  <li><a rel="nofollow" href="?locale=pt-BR">Português (BR)</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://zh.wiki.github.com/flash/soundmanager2.swf/">中文</a></li>
+                  <li><a rel="nofollow" href="?locale=ru">Русский</a></li>
+                
+              
+                
+                  <li><a rel="nofollow" href="?locale=zh">中文</a></li>
                 
               
               <li class="all"><a href="#" class="minibutton btn-forward js-all-locales"><span><span class="icon"></span>See all available languages</span></a></li>
@@ -389,39 +396,19 @@ Further, there is significant confusion between White Point, the color with maxi
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://wiki.github.com/flash/soundmanager2.swf/">English</a></li>
+                      <li><a rel="nofollow" href="?locale=en">English</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://af.wiki.github.com/flash/soundmanager2.swf/">Afrikaans</a></li>
+                      <li><a rel="nofollow" href="?locale=af">Afrikaans</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://ca.wiki.github.com/flash/soundmanager2.swf/">Català</a></li>
+                      <li><a rel="nofollow" href="?locale=ca">Català</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://cs.wiki.github.com/flash/soundmanager2.swf/">Čeština</a></li>
-                    
-                  
-                </ul>
-              
-                <ul class="choices">
-                  
-                    
-                      <li><a rel="nofollow" href="http://de.wiki.github.com/flash/soundmanager2.swf/">Deutsch</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://es.wiki.github.com/flash/soundmanager2.swf/">Español</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://fr.wiki.github.com/flash/soundmanager2.swf/">Français</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://hr.wiki.github.com/flash/soundmanager2.swf/">Hrvatski</a></li>
+                      <li><a rel="nofollow" href="?locale=cs">Čeština</a></li>
                     
                   
                 </ul>
@@ -429,39 +416,19 @@ Further, there is significant confusion between White Point, the color with maxi
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://id.wiki.github.com/flash/soundmanager2.swf/">Indonesia</a></li>
+                      <li><a rel="nofollow" href="?locale=de">Deutsch</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://it.wiki.github.com/flash/soundmanager2.swf/">Italiano</a></li>
+                      <li><a rel="nofollow" href="?locale=es">Español</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://ja.wiki.github.com/flash/soundmanager2.swf/">日本語</a></li>
+                      <li><a rel="nofollow" href="?locale=fr">Français</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://nl.wiki.github.com/flash/soundmanager2.swf/">Nederlands</a></li>
-                    
-                  
-                </ul>
-              
-                <ul class="choices">
-                  
-                    
-                      <li><a rel="nofollow" href="http://no.wiki.github.com/flash/soundmanager2.swf/">Norsk</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://pl.wiki.github.com/flash/soundmanager2.swf/">Polski</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/flash/soundmanager2.swf/">Português (BR)</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://sr.wiki.github.com/flash/soundmanager2.swf/">Српски</a></li>
+                      <li><a rel="nofollow" href="?locale=hr">Hrvatski</a></li>
                     
                   
                 </ul>
@@ -469,11 +436,55 @@ Further, there is significant confusion between White Point, the color with maxi
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://sv.wiki.github.com/flash/soundmanager2.swf/">Svenska</a></li>
+                      <li><a rel="nofollow" href="?locale=id">Indonesia</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://zh.wiki.github.com/flash/soundmanager2.swf/">中文</a></li>
+                      <li><a rel="nofollow" href="?locale=it">Italiano</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=ja">日本語</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=nl">Nederlands</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=no">Norsk</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=pl">Polski</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=pt-BR">Português (BR)</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=ru">Русский</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=sr">Српски</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=sv">Svenska</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=zh">中文</a></li>
                     
                   
                 </ul>
@@ -486,7 +497,7 @@ Further, there is significant confusion between White Point, the color with maxi
       
     
 
-    
+    <script>window._auth_token = "3c0d826a3c49deb04a5cdc6d110e693f1c16764c"</script>
     
 
     <!--[if IE 8]>

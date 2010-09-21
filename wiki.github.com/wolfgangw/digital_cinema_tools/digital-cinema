@@ -11,21 +11,21 @@
   <head>
     <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-        <title>Digital Cinema - digital_cinema_tools - GitHub</title>
+        <title>Digital cinema - digital_cinema_tools - GitHub</title>
     <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub" />
     <link rel="fluid-icon" href="http://github.com/fluidicon.png" title="GitHub" />
 
-    <link href="http://assets2.github.com/stylesheets/bundle_common.css?520fe5a77ed8091544f23c25288b84c4a5891160" media="screen" rel="stylesheet" type="text/css" />
-<link href="http://assets1.github.com/stylesheets/bundle_github.css?520fe5a77ed8091544f23c25288b84c4a5891160" media="screen" rel="stylesheet" type="text/css" />
+    <link href="http://assets3.github.com/stylesheets/bundle_common.css?a82d4fd2603f3bf18ec470842fc190430030b0e3" media="screen" rel="stylesheet" type="text/css" />
+<link href="http://assets2.github.com/stylesheets/bundle_github.css?a82d4fd2603f3bf18ec470842fc190430030b0e3" media="screen" rel="stylesheet" type="text/css" />
 
     <script type="text/javascript" charset="utf-8">
       var GitHub = {}
       var github_user = null
       
     </script>
-    <script src="http://assets0.github.com/javascripts/jquery/jquery-1.4.2.min.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
-    <script src="http://assets0.github.com/javascripts/bundle_common.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
-<script src="http://assets1.github.com/javascripts/bundle_github.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
+    <script src="http://assets1.github.com/javascripts/jquery/jquery-1.4.2.min.js?a82d4fd2603f3bf18ec470842fc190430030b0e3" type="text/javascript"></script>
+    <script src="http://assets1.github.com/javascripts/bundle_common.js?a82d4fd2603f3bf18ec470842fc190430030b0e3" type="text/javascript"></script>
+<script src="http://assets2.github.com/javascripts/bundle_github.js?a82d4fd2603f3bf18ec470842fc190430030b0e3" type="text/javascript"></script>
 
         <script type="text/javascript" charset="utf-8">
       GitHub.spy({
@@ -34,6 +34,17 @@
     </script>
 
     
+  <script src="/javascripts/other/MathJax/MathJax.js" type="text/javascript">
+    if (window.location.protocol == "https:") {
+      MathJax.OutputJax.fontDir = "https://" + document.location.host + "/assets/MathJax/fonts"
+    } else {
+      MathJax.OutputJax.fontDir = "http://" + document.location.host + "/assets/MathJax/fonts"
+    }
+    MathJax.Hub.Config({
+      jax: ["input/TeX", "output/HTML-CSS"]
+    })
+  </script>
+
   <link href="http://github.com/wolfgangw/digital_cinema_tools/commits/master.atom" rel="alternate" title="Recent Commits to digital_cinema_tools:master" type="application/atom+xml" />
 
         <meta name="description" content="Collection of useful scripts and notes for an open source based digital cinema pipeline" />
@@ -79,7 +90,7 @@
 
     
 
-    <div class="" id="main">
+    <div class="subnavd" id="main">
       <div id="header" class="true">
         
           <a class="logo boring" href="http://github.com">
@@ -94,11 +105,11 @@
   
     <ul class="nav logged_out">
       <li><a href="http://github.com">Home</a></li>
-      <li class="pricing"><a href="http://github.com/plans">Pricing and Signup</a></li>
+      <li class="pricing"><a href="/plans">Pricing and Signup</a></li>
       <li><a href="http://github.com/training">Training</a></li>
       <li><a href="http://gist.github.com">Gist</a></li>
       <li><a href="/blog">Blog</a></li>
-      <li></li>
+      <li><a href="https://github.com/login">Login</a></li>
     </ul>
   
 </div>
@@ -121,11 +132,26 @@
       
 
       
+        <li class="for-owner" style="display:none"><a href="https://github.com/wolfgangw/digital_cinema_tools/edit" class="minibutton btn-admin "><span><span class="icon"></span>Admin</span></a></li>
+        <li>
+          <a href="/wolfgangw/digital_cinema_tools/toggle_watch" class="minibutton btn-watch " id="watch_button" rel="nofollow" style="display:none"><span><span class="icon"></span>Watch</span></a>
+          <a href="/wolfgangw/digital_cinema_tools/toggle_watch" class="minibutton btn-watch " id="unwatch_button" rel="nofollow" style="display:none"><span><span class="icon"></span>Unwatch</span></a>
+        </li>
+        
+          
+            <li class="for-notforked" style="display:none"><a href="/wolfgangw/digital_cinema_tools/fork" class="minibutton btn-fork " id="fork_button" onclick="var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'POST'; f.action = this.href;var s = document.createElement('input'); s.setAttribute('type', 'hidden'); s.setAttribute('name', 'authenticity_token'); s.setAttribute('value', '3c0d826a3c49deb04a5cdc6d110e693f1c16764c'); f.appendChild(s);f.submit();return false;"><span><span class="icon"></span>Fork</span></a></li>
+            <li class="for-hasfork" style="display:none"><a href="#" class="minibutton btn-fork " id="your_fork_button"><span><span class="icon"></span>Your Fork</span></a></li>
+          
+
+          
+          <li><a href="#" class="minibutton btn-download " id="download_button"><span><span class="icon"></span>Download Source</span></a></li>
+        
+      
       
       <li class="repostats">
         <ul class="repo-stats">
-          <li class="watchers"><a href="http://github.com/wolfgangw/digital_cinema_tools/watchers" title="Watchers" class="tooltipped downwards">6</a></li>
-          <li class="forks"><a href="http://github.com/wolfgangw/digital_cinema_tools/network" title="Forks" class="tooltipped downwards">2</a></li>
+          <li class="watchers"><a href="/wolfgangw/digital_cinema_tools/watchers" title="Watchers" class="tooltipped downwards">6</a></li>
+          <li class="forks"><a href="/wolfgangw/digital_cinema_tools/network" title="Forks" class="tooltipped downwards">2</a></li>
         </ul>
       </li>
     </ul>
@@ -137,21 +163,23 @@
     <li><a href="http://github.com/wolfgangw/digital_cinema_tools/commits/master" highlight="repo_commits">Commits</a></li>
 
     
-    <li><a href="http://github.com/wolfgangw/digital_cinema_tools/network" highlight="repo_network">Network</a></li>
-
-    
+    <li><a href="/wolfgangw/digital_cinema_tools/network" highlight="repo_network">Network (2)</a></li>
 
     
 
     
       
-      <li><a href="http://github.com/wolfgangw/digital_cinema_tools/downloads">Downloads</a></li>
+      <li><a href="/wolfgangw/digital_cinema_tools/issues" highlight="issues">Issues (0)</a></li>
     
 
+    
+      
+      <li><a href="/wolfgangw/digital_cinema_tools/downloads">Downloads (0)</a></li>
+    
+
+                  <li><a href="/wolfgangw/digital_cinema_tools/wiki">Wiki (14)</a></li>
             
-      <li><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Wiki</a></li>
-      
-    <li><a href="http://github.com/wolfgangw/digital_cinema_tools/graphs" highlight="repo_graphs">Graphs</a></li>
+    <li><a href="/wolfgangw/digital_cinema_tools/graphs" highlight="repo_graphs">Graphs</a></li>
 
     <li class="contextswitch nochoices">
       <span class="toggle leftwards" >
@@ -170,7 +198,14 @@
   
   
   
-  
+  <div class="subnav-bar">
+  <ul>
+    <li><a href="/wolfgangw/digital_cinema_tools/wiki">Home</a></li>
+    <li><a href="/wolfgangw/digital_cinema_tools/wiki/_pages">Pages</a></li>
+    <li><a href="/wolfgangw/digital_cinema_tools/wiki/_history">Wiki History</a></li>
+    <li><a href="/wolfgangw/digital_cinema_tools/wiki/_access">Git Access</a></li>
+  </ul>
+</div>
 
 
 
@@ -182,8 +217,10 @@
 
       
 
+
+
 <div id="repos">
-  
+    
 
 
 <script type="text/javascript">
@@ -193,9 +230,9 @@
   GitHub.downloadRepo = '/wolfgangw/digital_cinema_tools/archives/master'
   GitHub.revType = "master"
 
-  GitHub.controllerName = "wikis"
+  GitHub.controllerName = "wiki"
   GitHub.actionName     = "show"
-  GitHub.currentAction  = "wikis#show"
+  GitHub.currentAction  = "wiki#show"
 
   
 
@@ -213,116 +250,82 @@
 
 <div id="guides">
   <div class="guide">
-    <!-- main content -->
+    <div class="heading">
+      <ul class="actions">
+        <li>
+           <a href="/wolfgangw/digital_cinema_tools/wiki/Digital-Cinema/_edit" class="minibutton btn-edit "><span><span class="icon"></span>Edit</span></a>
+        </li>
+        <li>
+          <a href="/wolfgangw/digital_cinema_tools/wiki/Digital-Cinema/_history" class="minibutton btn-history "><span><span class="icon"></span>History</span></a>
+        </li>
+        <li>
+          <a href="#new_wiki_page" class="minibutton btn-new-page " rel="facebox"><span><span class="icon"></span>New Page</span></a>
+        </li>
+      </ul>
+      <div id="new_wiki_page" style="display:none">
+        <h2>Add a new wiki page</h2>
+        <form action="/wolfgangw/digital_cinema_tools/wiki/_new" method="get">
+          <dl class="form">
+            <dt><label>Page Title</label></dt>
+            <dd>
+              <input type="text" name="wiki[name]" />
+            </dd>
+          </dl>
+          <p><strong>Remember to link your new page!</strong>  If you create a new page, no one will be able to find it unless they know the name of the page.</p>
+          <div class="full-button">
+            <button type="submit" class="classy"><span>Start a new wiki page</span></button>
+          </div>
+        </form>
+        <p>Alternatively, you can <a href="/wolfgangw/digital_cinema_tools/wiki/Digital-Cinema/_edit">edit this page</a> and add a link to the new page first.</p>
 
-    
-    <div class="main">
+      </div>
 
-      
-        <div class="actions">
-          <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a> |
-          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/digital-cinema/edit">Edit</a> |
-          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/new">New</a>
-        </div>
-      
+      <h1>
+        Digital Cinema
+      </h1>
+    </div>
 
-
-      <h1>Digital Cinema</h1>
-
-      <div class="wikistyle">
-        <h2>What is it?</h2>
-<p>It&#8217;s a platform (Like 35mm film is a platform): Fully spec&#8217;d and standardized. High quality motion pictures in the age of files.</p>
+    <div class="content wikistyle gollum textile">
+      <h2>What is it?</h2>
+<p>It’s a platform (Like 35mm film is a platform): Fully spec’d and standardized. High quality motion pictures in the age of files.</p>
 <p>The point of a platform is: Everyone knows how to use it and it works the same anywhere. Anyone can target it, be it a major studio or so-called <em>Indies</em>. Results are reproducible, be it on a digital screen in Bombay or in Anchorage.</p>
-<p>Another aspect of the platform is its quality level. Once you&#8217;ve seen a standard digital cinema screening you will quite likely not miss film. The latter is disputed, naturally. It&#8217;s what they call <em>labor pains</em>. They&#8217;re finite and then a baby is born.</p>
+<p>Another aspect of the platform is its quality level. Once you’ve seen a standard digital cinema screening you will quite likely not miss film. The latter is disputed, naturally. It’s what they call <em>labor pains</em>. They’re finite and then a baby is born.</p>
 <p>By the way, <i>Avatar</i> ran on ~26.000 screens worldwide. 8000 of those were Digital Cinema screens (7.382 digital 3D, 553 digital 2D). Baby is out of school already.</p>
-<h2>What&#8217;s the benefit?</h2>
+<h2>What’s the benefit?</h2>
 <ul>
-	<li>A digital cinema package (<span class="caps">DCP</span>, digital cinema&#8217;s equivalent of a distribution print) can carry a number of sound/language versions, title versions, subtitles, even different edits of the film if it&#8217;s called for. It&#8217;s a very flexible format.</li>
+	<li>A digital cinema package (<span class="caps">DCP</span>, digital cinema’s equivalent of a distribution print) can carry a number of sound/language versions, title versions, subtitles, even different edits of the film if it’s called for. It’s a very flexible format.</li>
 </ul>
 <ul>
-	<li>A digital cinema projector can be color-corrected. Which means authors &#8212; for the first time in film history &#8212; can actually get their graded colors back from theatre&#8217;s screens. With 35mm projectors you could, of course, also correct color shifts introduced by the Xenon lamp, the mirror and the heat shield. But it&#8217;s not practical, hence not done. Ever saw a black and white feature on a changeover setup? Every reel change means a jump in color temperature. With digital cinema projectors color correction and calibration is <i>built-in</i>.</li>
+	<li>A digital cinema projector can be color-corrected. Which means authors — for the first time in film history — can actually get their graded colors back from theatre’s screens. With 35mm projectors you could, of course, also correct color shifts introduced by the Xenon lamp, the mirror and the heat shield. But it’s not practical, hence not done. Ever saw a black and white feature on a changeover setup? Every reel change means a jump in color temperature. With digital cinema projectors color correction and calibration is <i>built-in</i>.</li>
 </ul>
 <ul>
-	<li>Pristine image quality from opening night until the end of time. No more mutilated prints. What <em>some</em> projectionists do to film prints goes well beyond a motion picture engineer&#8217;s worst nightmares. Prints with perfect changeover cues get the <em>big X scratch</em> treatment &#8212; not once, but many times. Up to entire scenes go missing at reel boundaries. Show up again in random places &#8212; if you&#8217;re lucky. Headers and tails get mixed up. Tail 3 ends up as header 4. Emulsion gets licked to see whether it&#8217;s, well, the emulsion side. Prints are dragged through projectors that haven&#8217;t been taken proper care of, ever. All in all: It&#8217;s nothing short of a miracle we have <em>any</em>  film history artefacts left.<sup class="footnote"><a href="#fn1">1</a></sup> Digital cinema ends this.</li>
+	<li>Pristine image quality from opening night until the end of time. No more mutilated prints. What <em>some</em> projectionists do to film prints goes well beyond a motion picture engineer’s worst nightmares. Prints with perfect changeover cues get the <em>big X scratch</em> treatment — not once, but many times. Up to entire scenes go missing at reel boundaries. Show up again in random places — if you’re lucky. Headers and tails get mixed up. Tail 3 ends up as header 4. Emulsion gets licked to see whether it’s, well, the emulsion side. Prints are dragged through projectors that haven’t been taken proper care of, ever. All in all: It’s nothing short of a miracle we have <em>any</em>  film history artefacts left.<sup class="footnote"><a href="#fn1">1</a></sup> Digital cinema ends this.</li>
 </ul>
 <ul>
-	<li>With digital cinema it&#8217;s inherently cheap to reach the big screen with no/low/modest budget productions. Current quotes from post facilities and labs offering digital cinema authoring might suggest the opposite. But this will change, you can bet on that.</li>
+	<li>With digital cinema it’s inherently cheap to reach the big screen with no/low/modest budget productions. Current quotes from post facilities and labs offering digital cinema authoring might suggest the opposite. But this will change, you can bet on that.</li>
 </ul>
 <h2>How does it work?</h2>
 <p>Basically an image sequence (the film) is encoded to a well-defined, cinema-specific <span class="caps">JPEG</span> 2000 codestream. Packed up (alongside with sound and subtitles) in <span class="caps">MXF</span> containers and composed through the means of descriptive <span class="caps">XML</span> to what will be shown on the screen. These <em>compositions</em> are what make <span class="caps">DCP</span> such a powerful and flexible format because a <span class="caps">DCP</span> can carry a number of them. Final package gets copied onto harddrive, memory stick, optical medium, and ingested on a digital cinema server. Finally, someone hits <em>Play</em>.</p>
 <h2>Can I do it?</h2>
 <p><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline">Absolutely</a>. Keep in mind that Digital Cinema will not, through some magic spells, turn 8bpc material into smooth 12bpc delight. It will not make up for the shortcomings of your acquisition gear and post-production decisions. It <em>might</em> turn a dull story into epic drama, though, and it just <em>might</em> deliver world peace in due time.</p>
 <h2></h2>
-<p class="footnote" id="fn1"><sup>1</sup> <em>What&#8217;s a release print got to do with anything?</em> you might wonder. Well, in film preservation and restoration very often the only surviving materials are release prints. Also, when you deal with color film, a release print often is the only surviving color/contrast etc. reference. Think of a <em>day for night</em> shot on camera negative: Without a release reference you might end up with a re-release which has a peculiar daylight scene noone ever saw before &#8230; So, apart from the obvious shortcomings for contemporary audiences, that&#8217;s why the state of release prints matters.</p>
-      </div>
+<p class="footnote" id="fn1"><sup>1</sup> <em>What’s a release print got to do with anything?</em> you might wonder. Well, in film preservation and restoration very often the only surviving materials are release prints. Also, when you deal with color film, a release print often is the only surviving color/contrast etc. reference. Think of a <em>day for night</em> shot on camera negative: Without a release reference you might end up with a re-release which has a peculiar daylight scene noone ever saw before … So, apart from the obvious shortcomings for contemporary audiences, that’s why the state of release prints matters.</p>
     </div>
-    
-    <!-- sidebar -->
 
-    <div class="sidebar">
-      <h3>
-        Pages
-        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets2.github.com/images/icons/feed.png?520fe5a77ed8091544f23c25288b84c4a5891160" title="Feed of recent digital_cinema_tools wiki edits" /></a>
-      </h3>
+      </div>
+
+  <!-- admin -->
+
+  
+    <div class="admin">
       
-
-
-<ul>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides">Cinemaslides</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides-usage">Cinemaslides Usage</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema">Digital Cinema</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools">Home</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc">MISC</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/mpeg2-essence-support-for-opencinematools-112">MPEG2 essence support for opencinematools 1.1.2</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat">Mystery Meat</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes">Notes</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-dci-specification-and-related-smpte-papers">Notes on DCI specification and related SMPTE papers</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema">Notes on handling audio assets for Digital Cinema</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline">Open source tools for a digital cinema pipeline</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/scripts">Scripts</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/todo">TODO</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut">White Gamut</a></b></li>
-  
-</ul>
-
-      
+      <div>
+              <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-09-13 14:35:33">Mon Sep 13 14:35:33 -0700 2010</abbr></small><br />
+            </div>
     </div>
+  
+</div>
 
-  </div>
-
-    <!-- admin -->
-
-      <div class="admin">
-      <div style="float:left;">
-        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-09-06 09:10:21">Mon Sep 06 09:10:21 -0700 2010</abbr></small>
-
-        <div class="actions">
-          <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a>
-          | <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/digital-cinema/edit">Edit</a> |
-          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/new">New</a>
-        </div>
-      </div>
-
-      <div style="float:right;">
-        <small>Versions:</small>
-        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/digital-cinema">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/32">Version 32 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/31">Version 31 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/30">Version 30 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/29">Version 29 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/28">Version 28 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/27">Version 27 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/26">Version 26 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/25">Version 25 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/24">Version 24 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/23">Version 23 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/22">Version 22 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/21">Version 21 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/20">Version 20 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/19">Version 19 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/18">Version 18 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/17">Version 17 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/16">Version 16 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/15">Version 15 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/14">Version 14 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/13">Version 13 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/12">Version 12 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/11">Version 11 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/10">Version 10 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/9">Version 9 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/8">Version 8 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/7">Version 7 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/6">Version 6 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/5">Version 5 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema/1">Version 1 by wolfgangw</option></select>
-      </div>
-    </div>
-    </div>
     </div>
   
       
@@ -332,7 +335,7 @@
       <div class="site">
         <div class="sponsor">
           <a href="http://www.rackspace.com" class="logo">
-            <img alt="Dedicated Server" src="http://assets0.github.com/images/modules/footer/rackspace_logo.png?520fe5a77ed8091544f23c25288b84c4a5891160" />
+            <img alt="Dedicated Server" src="http://assets1.github.com/images/modules/footer/rackspace_logo.png?a82d4fd2603f3bf18ec470842fc190430030b0e3" />
           </a>
           Powered by the <a href="http://www.rackspace.com ">Dedicated
           Servers</a> and<br/> <a href="http://www.rackspacecloud.com">Cloud
@@ -350,7 +353,7 @@
           <li><a href="http://status.github.com">Status</a></li>
         </ul>
         <ul class="sosueme">
-          <li class="main">&copy; 2010 <span id="_rrt" title="0.11715s from fe4.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
+          <li class="main">&copy; 2010 <span id="_rrt" title="0.29250s from fe2.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
           <li><a href="/site/terms">Terms of Service</a></li>
           <li><a href="/site/privacy">Privacy</a></li>
           <li><a href="http://github.com/security">Security</a></li>
@@ -369,23 +372,27 @@
               <li><span class="current">English</span></li>
               
                 
-                  <li><a rel="nofollow" href="http://de.wiki.github.com/nko/3-2-1/api/">Deutsch</a></li>
+                  <li><a rel="nofollow" href="?locale=de">Deutsch</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://fr.wiki.github.com/nko/3-2-1/api/">Français</a></li>
+                  <li><a rel="nofollow" href="?locale=fr">Français</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://ja.wiki.github.com/nko/3-2-1/api/">日本語</a></li>
+                  <li><a rel="nofollow" href="?locale=ja">日本語</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/nko/3-2-1/api/">Português (BR)</a></li>
+                  <li><a rel="nofollow" href="?locale=pt-BR">Português (BR)</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://zh.wiki.github.com/nko/3-2-1/api/">中文</a></li>
+                  <li><a rel="nofollow" href="?locale=ru">Русский</a></li>
+                
+              
+                
+                  <li><a rel="nofollow" href="?locale=zh">中文</a></li>
                 
               
               <li class="all"><a href="#" class="minibutton btn-forward js-all-locales"><span><span class="icon"></span>See all available languages</span></a></li>
@@ -398,39 +405,19 @@
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://wiki.github.com/nko/3-2-1/api/">English</a></li>
+                      <li><a rel="nofollow" href="?locale=en">English</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://af.wiki.github.com/nko/3-2-1/api/">Afrikaans</a></li>
+                      <li><a rel="nofollow" href="?locale=af">Afrikaans</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://ca.wiki.github.com/nko/3-2-1/api/">Català</a></li>
+                      <li><a rel="nofollow" href="?locale=ca">Català</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://cs.wiki.github.com/nko/3-2-1/api/">Čeština</a></li>
-                    
-                  
-                </ul>
-              
-                <ul class="choices">
-                  
-                    
-                      <li><a rel="nofollow" href="http://de.wiki.github.com/nko/3-2-1/api/">Deutsch</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://es.wiki.github.com/nko/3-2-1/api/">Español</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://fr.wiki.github.com/nko/3-2-1/api/">Français</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://hr.wiki.github.com/nko/3-2-1/api/">Hrvatski</a></li>
+                      <li><a rel="nofollow" href="?locale=cs">Čeština</a></li>
                     
                   
                 </ul>
@@ -438,39 +425,19 @@
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://id.wiki.github.com/nko/3-2-1/api/">Indonesia</a></li>
+                      <li><a rel="nofollow" href="?locale=de">Deutsch</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://it.wiki.github.com/nko/3-2-1/api/">Italiano</a></li>
+                      <li><a rel="nofollow" href="?locale=es">Español</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://ja.wiki.github.com/nko/3-2-1/api/">日本語</a></li>
+                      <li><a rel="nofollow" href="?locale=fr">Français</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://nl.wiki.github.com/nko/3-2-1/api/">Nederlands</a></li>
-                    
-                  
-                </ul>
-              
-                <ul class="choices">
-                  
-                    
-                      <li><a rel="nofollow" href="http://no.wiki.github.com/nko/3-2-1/api/">Norsk</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://pl.wiki.github.com/nko/3-2-1/api/">Polski</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/nko/3-2-1/api/">Português (BR)</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://sr.wiki.github.com/nko/3-2-1/api/">Српски</a></li>
+                      <li><a rel="nofollow" href="?locale=hr">Hrvatski</a></li>
                     
                   
                 </ul>
@@ -478,11 +445,55 @@
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://sv.wiki.github.com/nko/3-2-1/api/">Svenska</a></li>
+                      <li><a rel="nofollow" href="?locale=id">Indonesia</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://zh.wiki.github.com/nko/3-2-1/api/">中文</a></li>
+                      <li><a rel="nofollow" href="?locale=it">Italiano</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=ja">日本語</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=nl">Nederlands</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=no">Norsk</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=pl">Polski</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=pt-BR">Português (BR)</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=ru">Русский</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=sr">Српски</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=sv">Svenska</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=zh">中文</a></li>
                     
                   
                 </ul>
@@ -495,7 +506,7 @@
       
     
 
-    
+    <script>window._auth_token = "3c0d826a3c49deb04a5cdc6d110e693f1c16764c"</script>
     
 
     <!--[if IE 8]>

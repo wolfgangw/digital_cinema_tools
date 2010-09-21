@@ -15,17 +15,17 @@
     <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub" />
     <link rel="fluid-icon" href="http://github.com/fluidicon.png" title="GitHub" />
 
-    <link href="http://assets2.github.com/stylesheets/bundle_common.css?520fe5a77ed8091544f23c25288b84c4a5891160" media="screen" rel="stylesheet" type="text/css" />
-<link href="http://assets1.github.com/stylesheets/bundle_github.css?520fe5a77ed8091544f23c25288b84c4a5891160" media="screen" rel="stylesheet" type="text/css" />
+    <link href="http://assets3.github.com/stylesheets/bundle_common.css?a82d4fd2603f3bf18ec470842fc190430030b0e3" media="screen" rel="stylesheet" type="text/css" />
+<link href="http://assets2.github.com/stylesheets/bundle_github.css?a82d4fd2603f3bf18ec470842fc190430030b0e3" media="screen" rel="stylesheet" type="text/css" />
 
     <script type="text/javascript" charset="utf-8">
       var GitHub = {}
       var github_user = null
       
     </script>
-    <script src="http://assets0.github.com/javascripts/jquery/jquery-1.4.2.min.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
-    <script src="http://assets0.github.com/javascripts/bundle_common.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
-<script src="http://assets1.github.com/javascripts/bundle_github.js?520fe5a77ed8091544f23c25288b84c4a5891160" type="text/javascript"></script>
+    <script src="http://assets1.github.com/javascripts/jquery/jquery-1.4.2.min.js?a82d4fd2603f3bf18ec470842fc190430030b0e3" type="text/javascript"></script>
+    <script src="http://assets1.github.com/javascripts/bundle_common.js?a82d4fd2603f3bf18ec470842fc190430030b0e3" type="text/javascript"></script>
+<script src="http://assets2.github.com/javascripts/bundle_github.js?a82d4fd2603f3bf18ec470842fc190430030b0e3" type="text/javascript"></script>
 
         <script type="text/javascript" charset="utf-8">
       GitHub.spy({
@@ -34,6 +34,17 @@
     </script>
 
     
+  <script src="/javascripts/other/MathJax/MathJax.js" type="text/javascript">
+    if (window.location.protocol == "https:") {
+      MathJax.OutputJax.fontDir = "https://" + document.location.host + "/assets/MathJax/fonts"
+    } else {
+      MathJax.OutputJax.fontDir = "http://" + document.location.host + "/assets/MathJax/fonts"
+    }
+    MathJax.Hub.Config({
+      jax: ["input/TeX", "output/HTML-CSS"]
+    })
+  </script>
+
   <link href="http://github.com/wolfgangw/digital_cinema_tools/commits/master.atom" rel="alternate" title="Recent Commits to digital_cinema_tools:master" type="application/atom+xml" />
 
         <meta name="description" content="Collection of useful scripts and notes for an open source based digital cinema pipeline" />
@@ -79,7 +90,7 @@
 
     
 
-    <div class="" id="main">
+    <div class="subnavd" id="main">
       <div id="header" class="true">
         
           <a class="logo boring" href="http://github.com">
@@ -94,11 +105,11 @@
   
     <ul class="nav logged_out">
       <li><a href="http://github.com">Home</a></li>
-      <li class="pricing"><a href="http://github.com/plans">Pricing and Signup</a></li>
+      <li class="pricing"><a href="/plans">Pricing and Signup</a></li>
       <li><a href="http://github.com/training">Training</a></li>
       <li><a href="http://gist.github.com">Gist</a></li>
       <li><a href="/blog">Blog</a></li>
-      <li></li>
+      <li><a href="https://github.com/login">Login</a></li>
     </ul>
   
 </div>
@@ -121,11 +132,26 @@
       
 
       
+        <li class="for-owner" style="display:none"><a href="https://github.com/wolfgangw/digital_cinema_tools/edit" class="minibutton btn-admin "><span><span class="icon"></span>Admin</span></a></li>
+        <li>
+          <a href="/wolfgangw/digital_cinema_tools/toggle_watch" class="minibutton btn-watch " id="watch_button" rel="nofollow" style="display:none"><span><span class="icon"></span>Watch</span></a>
+          <a href="/wolfgangw/digital_cinema_tools/toggle_watch" class="minibutton btn-watch " id="unwatch_button" rel="nofollow" style="display:none"><span><span class="icon"></span>Unwatch</span></a>
+        </li>
+        
+          
+            <li class="for-notforked" style="display:none"><a href="/wolfgangw/digital_cinema_tools/fork" class="minibutton btn-fork " id="fork_button" onclick="var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'POST'; f.action = this.href;var s = document.createElement('input'); s.setAttribute('type', 'hidden'); s.setAttribute('name', 'authenticity_token'); s.setAttribute('value', '3c0d826a3c49deb04a5cdc6d110e693f1c16764c'); f.appendChild(s);f.submit();return false;"><span><span class="icon"></span>Fork</span></a></li>
+            <li class="for-hasfork" style="display:none"><a href="#" class="minibutton btn-fork " id="your_fork_button"><span><span class="icon"></span>Your Fork</span></a></li>
+          
+
+          
+          <li><a href="#" class="minibutton btn-download " id="download_button"><span><span class="icon"></span>Download Source</span></a></li>
+        
+      
       
       <li class="repostats">
         <ul class="repo-stats">
-          <li class="watchers"><a href="http://github.com/wolfgangw/digital_cinema_tools/watchers" title="Watchers" class="tooltipped downwards">6</a></li>
-          <li class="forks"><a href="http://github.com/wolfgangw/digital_cinema_tools/network" title="Forks" class="tooltipped downwards">2</a></li>
+          <li class="watchers"><a href="/wolfgangw/digital_cinema_tools/watchers" title="Watchers" class="tooltipped downwards">6</a></li>
+          <li class="forks"><a href="/wolfgangw/digital_cinema_tools/network" title="Forks" class="tooltipped downwards">2</a></li>
         </ul>
       </li>
     </ul>
@@ -137,21 +163,23 @@
     <li><a href="http://github.com/wolfgangw/digital_cinema_tools/commits/master" highlight="repo_commits">Commits</a></li>
 
     
-    <li><a href="http://github.com/wolfgangw/digital_cinema_tools/network" highlight="repo_network">Network</a></li>
-
-    
+    <li><a href="/wolfgangw/digital_cinema_tools/network" highlight="repo_network">Network (2)</a></li>
 
     
 
     
       
-      <li><a href="http://github.com/wolfgangw/digital_cinema_tools/downloads">Downloads</a></li>
+      <li><a href="/wolfgangw/digital_cinema_tools/issues" highlight="issues">Issues (0)</a></li>
     
 
+    
+      
+      <li><a href="/wolfgangw/digital_cinema_tools/downloads">Downloads (0)</a></li>
+    
+
+                  <li><a href="/wolfgangw/digital_cinema_tools/wiki">Wiki (14)</a></li>
             
-      <li><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Wiki</a></li>
-      
-    <li><a href="http://github.com/wolfgangw/digital_cinema_tools/graphs" highlight="repo_graphs">Graphs</a></li>
+    <li><a href="/wolfgangw/digital_cinema_tools/graphs" highlight="repo_graphs">Graphs</a></li>
 
     <li class="contextswitch nochoices">
       <span class="toggle leftwards" >
@@ -170,7 +198,14 @@
   
   
   
-  
+  <div class="subnav-bar">
+  <ul>
+    <li><a href="/wolfgangw/digital_cinema_tools/wiki">Home</a></li>
+    <li><a href="/wolfgangw/digital_cinema_tools/wiki/_pages">Pages</a></li>
+    <li><a href="/wolfgangw/digital_cinema_tools/wiki/_history">Wiki History</a></li>
+    <li><a href="/wolfgangw/digital_cinema_tools/wiki/_access">Git Access</a></li>
+  </ul>
+</div>
 
 
 
@@ -182,8 +217,10 @@
 
       
 
+
+
 <div id="repos">
-  
+    
 
 
 <script type="text/javascript">
@@ -193,9 +230,9 @@
   GitHub.downloadRepo = '/wolfgangw/digital_cinema_tools/archives/master'
   GitHub.revType = "master"
 
-  GitHub.controllerName = "wikis"
+  GitHub.controllerName = "wiki"
   GitHub.actionName     = "show"
-  GitHub.currentAction  = "wikis#show"
+  GitHub.currentAction  = "wiki#show"
 
   
 
@@ -213,98 +250,68 @@
 
 <div id="guides">
   <div class="guide">
-    <!-- main content -->
+    <div class="heading">
+      <ul class="actions">
+        <li>
+           <a href="/wolfgangw/digital_cinema_tools/wiki/Scripts/_edit" class="minibutton btn-edit "><span><span class="icon"></span>Edit</span></a>
+        </li>
+        <li>
+          <a href="/wolfgangw/digital_cinema_tools/wiki/Scripts/_history" class="minibutton btn-history "><span><span class="icon"></span>History</span></a>
+        </li>
+        <li>
+          <a href="#new_wiki_page" class="minibutton btn-new-page " rel="facebox"><span><span class="icon"></span>New Page</span></a>
+        </li>
+      </ul>
+      <div id="new_wiki_page" style="display:none">
+        <h2>Add a new wiki page</h2>
+        <form action="/wolfgangw/digital_cinema_tools/wiki/_new" method="get">
+          <dl class="form">
+            <dt><label>Page Title</label></dt>
+            <dd>
+              <input type="text" name="wiki[name]" />
+            </dd>
+          </dl>
+          <p><strong>Remember to link your new page!</strong>  If you create a new page, no one will be able to find it unless they know the name of the page.</p>
+          <div class="full-button">
+            <button type="submit" class="classy"><span>Start a new wiki page</span></button>
+          </div>
+        </form>
+        <p>Alternatively, you can <a href="/wolfgangw/digital_cinema_tools/wiki/Scripts/_edit">edit this page</a> and add a link to the new page first.</p>
 
-    
-    <div class="main">
+      </div>
 
-      
-        <div class="actions">
-          <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a> |
-          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/scripts/edit">Edit</a> |
-          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/new">New</a>
-        </div>
-      
+      <h1>
+        Scripts
+      </h1>
+    </div>
 
-
-      <h1>Scripts</h1>
-
-      <div class="wikistyle">
-        <ul>
-	<li>Check a list of strings (e.g. filenames) for numeric sequential streams and produce a composite from skeleton and streams (multiple streams possible) &#8212; like <code>Reel_01_Final_[000121-010119]_former_[000001-009999].tiff</code>. It also returns stream directions and markers for UUIDs. See demo script <a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/sequential.py">sequential.py</a></li>
-	<li><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides">Cinemaslides</a>, feeble attempt to recreate the magic of aunt Mimi&#8217;s hilarious summer-night-shut-all-the-lights slideshow hell.</li>
-	<li><a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/chromatic_adaptation.rb">Calculate chromatic adaptation transformation matrices</a>. See <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut">White Gamut</a> for more.</li>
-	<li>A script to calculate the 3&#215;3 matrix needed to transform <span class="caps">ITU</span> <span class="caps">REC</span>. 709 to <span class="caps">XYZ</span>: <a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/rec709-xyz_matrix.rb">rec709-xyz_matrix.rb</a></li>
+    <div class="content wikistyle gollum textile">
+      <ul>
+	<li>Check a list of strings (e.g. filenames) for numeric sequential streams and produce a composite from skeleton and streams (multiple streams possible) — like <code>Reel_01_Final_[000121-010119]_former_[000001-009999].tiff</code>. It also returns stream directions and markers for UUIDs. See demo script <a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/sequential.py">sequential.py</a>
+</li>
+	<li>
+<a href="/wolfgangw/digital_cinema_tools/wiki/Cinemaslides" class="internal present">Cinemaslides</a>, feeble attempt to recreate the magic of aunt Mimi’s hilarious summer-night-shut-all-the-lights slideshow hell.</li>
+	<li>
+<a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/chromatic_adaptation.rb">Calculate chromatic adaptation transformation matrices</a>. See <a href="/wolfgangw/digital_cinema_tools/wiki/White-Gamut" class="internal present">White Gamut</a> for more.</li>
+	<li>A script to calculate the 3×3 matrix needed to transform <span class="caps">ITU</span> <span class="caps">REC</span>. 709 to <span class="caps">XYZ</span>: <a href="http://github.com/wolfgangw/digital_cinema_tools/blob/master/rec709-xyz_matrix.rb">rec709-xyz_matrix.rb</a>
+</li>
 </ul>
-      </div>
     </div>
-    
-    <!-- sidebar -->
 
-    <div class="sidebar">
-      <h3>
-        Pages
-        <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/wikis.atom"><img alt="feed" src="http://assets2.github.com/images/icons/feed.png?520fe5a77ed8091544f23c25288b84c4a5891160" title="Feed of recent digital_cinema_tools wiki edits" /></a>
-      </h3>
+      </div>
+
+  <!-- admin -->
+
+  
+    <div class="admin">
       
-
-
-<ul>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides">Cinemaslides</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/cinemaslides-usage">Cinemaslides Usage</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema">Digital Cinema</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools">Home</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/misc">MISC</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/mpeg2-essence-support-for-opencinematools-112">MPEG2 essence support for opencinematools 1.1.2</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/mystery-meat">Mystery Meat</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes">Notes</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-dci-specification-and-related-smpte-papers">Notes on DCI specification and related SMPTE papers</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/notes-on-handling-audio-assets-for-digital-cinema">Notes on handling audio assets for Digital Cinema</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/open-source-tools-for-a-digital-cinema-pipeline">Open source tools for a digital cinema pipeline</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/scripts">Scripts</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/todo">TODO</a></b></li>
-  
-    <li><b><a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/white-gamut">White Gamut</a></b></li>
-  
-</ul>
-
-      
+      <div>
+              <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-09-13 14:34:16">Mon Sep 13 14:34:16 -0700 2010</abbr></small><br />
+            </div>
     </div>
+  
+</div>
 
-  </div>
-
-    <!-- admin -->
-
-      <div class="admin">
-      <div style="float:left;">
-        <small>Last edited by <b>wolfgangw</b>, <abbr class="relatize" title="2010-07-02 23:33:30">Fri Jul 02 23:33:30 -0700 2010</abbr></small>
-
-        <div class="actions">
-          <a href="http://wiki.github.com/wolfgangw/digital_cinema_tools/">Home</a>
-          | <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/scripts/edit">Edit</a> |
-          <a href="http://github.com/wolfgangw/digital_cinema_tools/wikis/new">New</a>
-        </div>
-      </div>
-
-      <div style="float:right;">
-        <small>Versions:</small>
-        <select id="versions_select" name="versions_select"><option value="http://github.com/wolfgangw/digital_cinema_tools/wikis/scripts">Current</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/scripts/4">Version 4 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/scripts/3">Version 3 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/scripts/2">Version 2 by wolfgangw</option><option value="http://wiki.github.com/wolfgangw/digital_cinema_tools/scripts/1">Version 1 by wolfgangw</option></select>
-      </div>
-    </div>
-    </div>
     </div>
   
       
@@ -314,7 +321,7 @@
       <div class="site">
         <div class="sponsor">
           <a href="http://www.rackspace.com" class="logo">
-            <img alt="Dedicated Server" src="http://assets0.github.com/images/modules/footer/rackspace_logo.png?520fe5a77ed8091544f23c25288b84c4a5891160" />
+            <img alt="Dedicated Server" src="http://assets1.github.com/images/modules/footer/rackspace_logo.png?a82d4fd2603f3bf18ec470842fc190430030b0e3" />
           </a>
           Powered by the <a href="http://www.rackspace.com ">Dedicated
           Servers</a> and<br/> <a href="http://www.rackspacecloud.com">Cloud
@@ -332,7 +339,7 @@
           <li><a href="http://status.github.com">Status</a></li>
         </ul>
         <ul class="sosueme">
-          <li class="main">&copy; 2010 <span id="_rrt" title="0.09228s from fe1.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
+          <li class="main">&copy; 2010 <span id="_rrt" title="0.21714s from fe1.rs.github.com">GitHub</span> Inc. All rights reserved.</li>
           <li><a href="/site/terms">Terms of Service</a></li>
           <li><a href="/site/privacy">Privacy</a></li>
           <li><a href="http://github.com/security">Security</a></li>
@@ -351,23 +358,27 @@
               <li><span class="current">English</span></li>
               
                 
-                  <li><a rel="nofollow" href="http://de.wiki.github.com/flash/soundmanager2.swf/">Deutsch</a></li>
+                  <li><a rel="nofollow" href="?locale=de">Deutsch</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://fr.wiki.github.com/flash/soundmanager2.swf/">Français</a></li>
+                  <li><a rel="nofollow" href="?locale=fr">Français</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://ja.wiki.github.com/flash/soundmanager2.swf/">日本語</a></li>
+                  <li><a rel="nofollow" href="?locale=ja">日本語</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/flash/soundmanager2.swf/">Português (BR)</a></li>
+                  <li><a rel="nofollow" href="?locale=pt-BR">Português (BR)</a></li>
                 
               
                 
-                  <li><a rel="nofollow" href="http://zh.wiki.github.com/flash/soundmanager2.swf/">中文</a></li>
+                  <li><a rel="nofollow" href="?locale=ru">Русский</a></li>
+                
+              
+                
+                  <li><a rel="nofollow" href="?locale=zh">中文</a></li>
                 
               
               <li class="all"><a href="#" class="minibutton btn-forward js-all-locales"><span><span class="icon"></span>See all available languages</span></a></li>
@@ -380,39 +391,19 @@
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://wiki.github.com/flash/soundmanager2.swf/">English</a></li>
+                      <li><a rel="nofollow" href="?locale=en">English</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://af.wiki.github.com/flash/soundmanager2.swf/">Afrikaans</a></li>
+                      <li><a rel="nofollow" href="?locale=af">Afrikaans</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://ca.wiki.github.com/flash/soundmanager2.swf/">Català</a></li>
+                      <li><a rel="nofollow" href="?locale=ca">Català</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://cs.wiki.github.com/flash/soundmanager2.swf/">Čeština</a></li>
-                    
-                  
-                </ul>
-              
-                <ul class="choices">
-                  
-                    
-                      <li><a rel="nofollow" href="http://de.wiki.github.com/flash/soundmanager2.swf/">Deutsch</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://es.wiki.github.com/flash/soundmanager2.swf/">Español</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://fr.wiki.github.com/flash/soundmanager2.swf/">Français</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://hr.wiki.github.com/flash/soundmanager2.swf/">Hrvatski</a></li>
+                      <li><a rel="nofollow" href="?locale=cs">Čeština</a></li>
                     
                   
                 </ul>
@@ -420,39 +411,19 @@
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://id.wiki.github.com/flash/soundmanager2.swf/">Indonesia</a></li>
+                      <li><a rel="nofollow" href="?locale=de">Deutsch</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://it.wiki.github.com/flash/soundmanager2.swf/">Italiano</a></li>
+                      <li><a rel="nofollow" href="?locale=es">Español</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://ja.wiki.github.com/flash/soundmanager2.swf/">日本語</a></li>
+                      <li><a rel="nofollow" href="?locale=fr">Français</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://nl.wiki.github.com/flash/soundmanager2.swf/">Nederlands</a></li>
-                    
-                  
-                </ul>
-              
-                <ul class="choices">
-                  
-                    
-                      <li><a rel="nofollow" href="http://no.wiki.github.com/flash/soundmanager2.swf/">Norsk</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://pl.wiki.github.com/flash/soundmanager2.swf/">Polski</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://pt-BR.wiki.github.com/flash/soundmanager2.swf/">Português (BR)</a></li>
-                    
-                  
-                    
-                      <li><a rel="nofollow" href="http://sr.wiki.github.com/flash/soundmanager2.swf/">Српски</a></li>
+                      <li><a rel="nofollow" href="?locale=hr">Hrvatski</a></li>
                     
                   
                 </ul>
@@ -460,11 +431,55 @@
                 <ul class="choices">
                   
                     
-                      <li><a rel="nofollow" href="http://sv.wiki.github.com/flash/soundmanager2.swf/">Svenska</a></li>
+                      <li><a rel="nofollow" href="?locale=id">Indonesia</a></li>
                     
                   
                     
-                      <li><a rel="nofollow" href="http://zh.wiki.github.com/flash/soundmanager2.swf/">中文</a></li>
+                      <li><a rel="nofollow" href="?locale=it">Italiano</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=ja">日本語</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=nl">Nederlands</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=no">Norsk</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=pl">Polski</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=pt-BR">Português (BR)</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=ru">Русский</a></li>
+                    
+                  
+                </ul>
+              
+                <ul class="choices">
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=sr">Српски</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=sv">Svenska</a></li>
+                    
+                  
+                    
+                      <li><a rel="nofollow" href="?locale=zh">中文</a></li>
                     
                   
                 </ul>
@@ -477,7 +492,7 @@
       
     
 
-    
+    <script>window._auth_token = "3c0d826a3c49deb04a5cdc6d110e693f1c16764c"</script>
     
 
     <!--[if IE 8]>
