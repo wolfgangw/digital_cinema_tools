@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.09.12"
+CinemaSlidesVersion = "v0.2010.09.21"
 Author = "Wolfgang Woehl"
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
@@ -18,7 +18,7 @@ Author = "Wolfgang Woehl"
 #   highline (gem install highline)
 #   nokogiri (gem install nokogiri, requires ruby-dev, libxml2-dev)
 #
-requirements = [ 'convert', 'identify', 'montage', 'display', 'mplayer', 'sox', 'soxi', 'image_to_j2k', 'kdu_compress', 'asdcp-test', 'kmuuidgen', 'mkcpl', 'mkpkl', 'mkmap' ]
+requirements = [ 'convert', 'identify', 'montage', 'display', 'mplayer', 'sox', 'soxi', 'image_to_j2k', 'kdu_compress', 'asdcp-test', 'kmuuidgen' ]
 #
 ###
 #   Kakadu (http://www.kakadusoftware.com/index.php) is a proprietary JPEG 2000 implementation, written by Dr. Taubman
@@ -37,6 +37,7 @@ require 'ftools' # File.copy. not needed (and not working) in ruby 1.9
 require 'optparse'
 require 'ostruct'
 require 'digest/md5'
+require 'base64'
 require 'pp'
 begin
   require 'rubygems'
@@ -75,7 +76,7 @@ class Optparser
     options.audio_bps_choices = [ '16', '24' ]
     options.dcp_title = 'Cinemaslides test'
     options.dcp_issuer = ENV[ 'USER' ] + '@' + `hostname`.chomp
-    options.dcp_annotation = 'Cinemaslides test'
+    options.dcp_annotation = 'Cinemaslides test ' + DateTime.now.to_s
     options.dcp_kind = 'test'
     options.dcp_kind_choices = [ 'feature', 'trailer', 'test', 'teaser', 'rating', 'advertisement', 'short', 'transitional', 'psa', 'policy' ]
     options.montage = FALSE
@@ -374,8 +375,9 @@ end
 
 
 def get_timestamp
-  t = Time.now
-  [t.year, '%02d' % t.month, '%02d' % t.day, '%02d' % t.hour, '%02d' % t.min, '%02d' % t.sec].join('_')
+  #t = Time.now
+  #[t.year, '%02d' % t.month, '%02d' % t.day, '%02d' % t.hour, '%02d' % t.min, '%02d' % t.sec].join('_')
+  DateTime.now.to_s
 end
 timestamp = get_timestamp
 
@@ -728,6 +730,188 @@ def confirm_or_create( location )
     rescue Exception => result
       return FALSE
     end
+  end
+end
+
+class MXF_Metadata < Hash
+    def initialize( mxf )
+      asdcp_info = `asdcp-test -v -i #{ mxf }`.chomp
+      if asdcp_info =~ /File essence type is JPEG 2000 pictures/
+        asdcp_info = asdcp_info.split( /\n-- JPEG 2000 image_metadata --/ ).first
+      end
+      asdcp_info = asdcp_info.split( /\n\s*/ )
+      @meta = Hash.new
+      asdcp_info.each do |line|
+        key, value = line.split( ': ' )
+        @meta[ key ] = value
+      end
+    end
+    def hash
+      @meta
+    end
+end # MXF_Metadata
+
+class CPL_SMPTE_429_7_2006
+  def initialize( cpl_uuid, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
+    @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
+      xml.CompositionPlaylist_( :xmlns => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' ) {
+        xml.Id_ "urn:uuid:#{ cpl_uuid }"
+        xml.AnnotationText_ annotation
+        xml.IssueDate_ issue_date
+        xml.Issuer_ issuer
+        xml.Creator_ creator
+        xml.ContentTitleText_ content_title
+        xml.ContentKind_ content_kind
+        xml.ContentVersion_ {
+          xml.Id_ "urn:uuid:#{ content_version_id }"
+          xml.LabelText_ content_version_label
+        }
+        xml.RatingList_ "#{ rating_list.nil? ? '' : rating_list }"
+        xml.ReelList_ {
+          image_mxfs.each_with_index do |image_mxf, index| # assume image_mxfs.size == audio_mxfs.size
+            puts "CPL_SMPTE_429_7_2006 Asset: #{ File.basename( image_mxf ) }"
+            puts "CPL_SMPTE_429_7_2006 Asset: #{ File.basename( audio_mxfs[ index ] ) }" unless audio_mxfs.nil?
+            image_meta = MXF_Metadata.new( image_mxf ).hash
+            audio_meta = MXF_Metadata.new( audio_mxfs[ index ] ).hash unless audio_mxfs.nil?
+            xml.Reel_ {
+              xml.Id_ "urn:uuid:#{ `kmuuidgen -n` }" # FIXME
+              xml.AssetList_ {
+                xml.MainPicture_ {
+                  xml.Id_ "urn:uuid:#{ image_meta[ 'AssetUUID' ] }"
+                  xml.EditRate_ image_meta[ 'EditRate' ].to_s.gsub( '/', ' ' )
+                  xml.IntrinsicDuration_ image_meta[ 'ContainerDuration' ]
+                  xml.EntryPoint_ 0 # FIXME
+                  xml.Duration_ image_meta[ 'ContainerDuration' ] # FIXME
+                  xml.FrameRate_ image_meta[ 'SampleRate' ].to_s.gsub( '/', ' ' ) # FIXME SampleRate?
+                  xml.ScreenAspectRatio_ image_meta[ 'AspectRatio' ].to_s.gsub( '/', ' ' )
+                } # MainPicture
+                unless audio_mxfs.nil?
+                xml.MainSound {
+                  xml.Id_ "urn:uuid:#{ audio_meta[ 'AssetUUID' ] }"
+                  xml.EditRate_ audio_meta[ 'EditRate' ].to_s.gsub( '/', ' ' )
+                  xml.IntrinsicDuration_ audio_meta[ 'ContainerDuration' ]
+                  xml.EntryPoint_ 0 # FIXME
+                  xml.Duration_ audio_meta[ 'ContainerDuration' ].to_s.gsub( '/', ' ' ) # FIXME
+                } # MainSound
+                end
+              } # AssetList
+            } # Reel
+          end # image_mxfs.each
+        } # ReelList
+      } # CompositionPlaylist
+    end # Builder
+  end # initialize
+    
+  def xml
+    return @builder.to_xml( :indent => 2 )
+  end
+  
+  def check_reels
+    nodes = Nokogiri::XML::Document.parse( @builder.to_xml )
+    reels = nodes.xpath( '//xmlns:CompositionPlaylist/xmlns:ReelList/xmlns:Reel' )
+    puts "Number of reels: #{ reels.size }"
+    reels.each_with_index do |reel, index|
+      puts "Reel # #{ index + 1 }:"
+      puts "Image MXF Id => #{ reel.search( 'AssetList/MainPicture/Id' ).text }"
+      puts "Sound MXF Id => #{ reel.search( 'AssetList/MainSound/Id' ).text }"
+    end
+  end # check_reels
+end # CPL_SMPTE_429_7_2006
+
+class PKL_SMPTE_429_8_2007
+  def initialize( pkl_uuid, annotation, issue_date, issuer, creator, assets )
+    @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
+      xml.PackingList_( :xmlns => 'http://www.smpte-ra.org/schemas/429-8/2007/PKL' ) {
+        xml.Id_ "urn:uuid:#{ pkl_uuid }"
+        xml.AnnotationText_ annotation
+        xml.IssueDate_ issue_date
+        xml.Issuer_ issuer
+        xml.Creator_ creator
+        xml.AssetList_ {
+          assets.each do |asset|
+            puts "PKL_SMPTE_429_8_2007 Asset: #{ File.basename( asset ) }"
+            fh = File.open( asset, 'r' )
+            fh_line = fh.read( 19 )
+            fh.close
+            if fh_line =~ /^<\?xml version="1.0"/
+              mimetype = 'text/xml'
+              asset_uuid = Nokogiri::XML( File.open( asset ) ).xpath( "//xmlns:CompositionPlaylist/xmlns:Id" ).text.split( 'urn:uuid:' ).last
+            else
+              mimetype = 'application/mxf'
+              metadata = MXF_Metadata.new( asset ).hash
+              asset_uuid = metadata[ 'AssetUUID' ]
+            end
+            sha1_digest_base64 = `asdcp-test -t #{ asset }`.split( ' ' ).first
+            xml.Asset_ {
+              xml.Id_ "urn:uuid:#{ asset_uuid }" # metadata
+              xml.AnnotationText_ 'TEST ANNOTATION' # optional, per asset
+              xml.Hash_ sha1_digest_base64 # FIXME Base64.encode64( Digest::SHA1.digest( File.read( asset ) ) ).chomp
+              xml.Size_ File.size( asset )
+              xml.Type_ mimetype
+              xml.OriginalFileName_ File.basename( asset )
+            } # Asset
+          end # assets.each
+        } # AssetList
+      } # PackingList
+    end # @builder
+  end # initialize
+  
+  def xml
+    return @builder.to_xml( :indent => 2 )
+  end
+end # PKL_SMPTE_429_8_2007
+
+class AM_SMPTE_429_9_2007
+  def initialize( am_uuid, issue_date, issuer, creator, assets )
+    @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
+      xml.AssetMap_( :xmlns => 'http://www.smpte-ra.org/schemas/429-9/2007/AM' ) {
+        xml.Id_ "urn:uuid:#{ am_uuid }"
+        xml.VolumeCount_ '1' # FIXME
+        xml.IssueDate_ issue_date
+        xml.Issuer_ issuer
+        xml.Creator_ creator
+        xml.AssetList_ {
+          assets.each do |asset|
+            puts "AM_SMPTE_429_9_2007 Asset: #{ File.basename( asset ) }"
+            fh = File.open( asset, 'r' )
+            fh_line = fh.read( 19 )
+            fh.close
+            if fh_line =~ /^<\?xml version="1.0"/
+              doc = Nokogiri::XML::Document.parse( File.read( asset ) )
+              if doc.search( "//xmlns:PackingList" ).empty? # FIXME assume CPL
+                packing_list = FALSE
+                asset_uuid = Nokogiri::XML( File.open( asset ) ).xpath( "//xmlns:CompositionPlaylist/xmlns:Id" ).text.split( 'urn:uuid:' ).last
+              else
+                packing_list = TRUE
+                asset_uuid = Nokogiri::XML( File.open( asset ) ).xpath( "//xmlns:PackingList/xmlns:Id" ).text.split( 'urn:uuid:' ).last
+              end # PackingList?
+            else # MXF
+              metadata = MXF_Metadata.new( asset ).hash
+              asset_uuid = metadata[ 'AssetUUID' ]
+            end
+            
+            xml.Asset_ {
+              xml.Id_ "urn:uuid:#{ asset_uuid }"
+              if packing_list == TRUE
+                xml.PackingList_ 'true'
+              end
+              xml.ChunkList_ {
+                xml.Chunk_ {
+                  xml.Path_ File.basename( asset )
+                  # optional: VolumeIndex
+                  # optional: Offset
+                  # optional: Length
+                } #Chunk
+              } # ChunkList
+            } # Asset
+          end # assets.each
+        } # AssetList
+      } # AssetMap
+    end # @builder
+  end # initialize
+  
+  def xml
+    return @builder.to_xml( :indent => 2 )
   end
 end
 ###
@@ -1314,12 +1498,12 @@ when "dcp"
   
   files.each do |file|
     counter += 1
-    asset_link = file + ".j2c"
+    asset_link = file + '.j2c'
     if File.dirname( File.readlink( file ) ) == @conformdir # 1st file is always a link to the asset depot
       File.link( previous_asset, asset_link )
       @logger.cr( "Skip (Full level): #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
     else
-      asset, todo = check_for_asset( file, "j2c", fps ) # possible "Skip" message only with debug verbosity
+      asset, todo = check_for_asset( file, 'j2c', fps ) # possible "Skip" message only with debug verbosity
       previous_asset = asset
       if todo == TRUE
         @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
@@ -1345,13 +1529,13 @@ when "dcp"
   end
 
   # Make image trackfile
-  @logger.info( "Write image trackfile" )
+  @logger.info( 'Write image trackfile ...' )
   `asdcp-test -L -E -p #{ fps } -a #{ image_mxf_uuid } -c #{ image_mxf } #{ @j2cdir } > /dev/null 2>&1`
   @logger.debug( "Image trackfile UUID: #{ image_mxf_uuid }" )
   
   # Make audio trackfile
   unless @source_audio.empty?
-    @logger.info( "Write audio trackfile" )
+    @logger.info( 'Write audio trackfile ...' )
     `asdcp-test -L -E -p #{ fps } -a #{ audio_mxf_uuid } -c #{ audio_mxf } #{ @final_audio } > /dev/null 2>&1`
     @logger.debug( "Audio trackfile UUID: #{ audio_mxf_uuid }" )
   end
@@ -1360,30 +1544,93 @@ when "dcp"
   tmp_pkl = File.join( @dcpdir, 'tmp_pkl.xml' )
 
   # Write CompositionPlaylist
-  @logger.info( "Write CPL" )
-  `mkcpl --kind #{ options.dcp_kind } --norating --title '#{ options.dcp_title }' --annotation '#{ options.dcp_annotation } #{ timestamp }' --issuer '#{ options.dcp_issuer }' #{ image_mxf } #{ @source_audio.empty? ? '' : audio_mxf } > #{ tmp_cpl }`
-  cpl_uuid = Nokogiri::XML( File.open( tmp_cpl ) ).xpath( "//xmlns:CompositionPlaylist/xmlns:Id" ).text.split( 'urn:uuid:' ).last
+  @logger.info( 'Write CPL' )
+  #
+  # via opencinematools:
+  # `mkcpl --kind #{ options.dcp_kind } --norating --title '#{ options.dcp_title }' --annotation '#{ options.dcp_annotation } #{ timestamp }' --issuer '#{ options.dcp_issuer }' #{ image_mxf } #{ @source_audio.empty? ? '' : audio_mxf } > #{ tmp_cpl }`
+  #
+  # via inline class:
+  # class CPL_SMPTE_429_7_2006
+  #   initialize( cpl_uuid, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
+  cpl_uuid = `kmuuidgen -n` # FIXME
+  cpl = CPL_SMPTE_429_7_2006.new( 
+    cpl_uuid,
+    image_mxf.to_a, # reels
+    @source_audio.empty? ? nil : audio_mxf.to_a, # reels
+    annotation = options.dcp_annotation,
+    issue_date = DateTime.now.to_s,
+    issuer = options.dcp_issuer,
+    creator = 'cinemaslides cpl',
+    content_title = options.dcp_title,
+    content_kind = options.dcp_kind,
+    content_version_id = `kmuuidgen -n`, # FIXME
+    content_version_label = content_version_id,
+    rating_list = nil
+  )
+  # write cpl.xml to tmp_cpl, pick up UUID and move to final location
+  File.open( tmp_cpl, 'w' ) { |f| f.write( cpl.xml ) }
+  #cpl_uuid = Nokogiri::XML( File.open( tmp_cpl ) ).xpath( '//xmlns:CompositionPlaylist/xmlns:Id' ).text.split( 'urn:uuid:' ).last
   @logger.debug( "CPL UUID:       #{ cpl_uuid }" )
-  cpl = File.join( File.dirname( tmp_cpl ), "cpl_" + cpl_uuid + "_.xml" )
-  File.rename( tmp_cpl, cpl )
+  final_cpl = File.join( File.dirname( tmp_cpl ), 'cpl_' + cpl_uuid + '_.xml' )
+  File.rename( tmp_cpl, final_cpl )
 
   # Write PackingList
-  @logger.info( "Write PKL" )
+  @logger.info( 'Write PKL ...' )
   # might be cumulative DCP, end up with 1 pkl to cover all
   obsolete_pkls = Dir.glob( File.join( @dcpdir, 'pkl_*_.xml' ) ) # FIXME check xml for packing list
   obsolete_pkls.each do |obsolete_pkl|
     @logger.debug( "Obsolete:   #{ File.basename( obsolete_pkl ) }" )
     File.delete( obsolete_pkl )
   end
-  `cd #{ @dcpdir }; mkpkl --issuer '#{ options.dcp_issuer }' --annotation '#{ options.dcp_annotation }' cpl_*_.xml *_.mxf > #{ File.basename( tmp_pkl ) }`
-  pkl_uuid = Nokogiri::XML( File.open( tmp_pkl ) ).xpath( "//xmlns:PackingList/xmlns:Id" ).text.split( 'urn:uuid:' ).last
+  #
+  # via opencinematools:
+  # `cd #{ @dcpdir }; mkpkl --issuer '#{ options.dcp_issuer }' --annotation '#{ options.dcp_annotation }' cpl_*_.xml *_.mxf > #{ File.basename( tmp_pkl ) }`
+  #
+  # via inline class:
+  # class PKL_SMPTE_429_8_2007
+  #   initialize( pkl_uuid, annotation, issue_date, issuer, creator, assets )
+  pkl_assets = Array.new
+  pkl_assets << Dir.glob( File.join( @dcpdir, 'cpl_*_.xml' ) )
+  pkl_assets << Dir.glob( File.join( @dcpdir, '*_.mxf' ) )
+  pkl_uuid = `kmuuidgen -n`
+  pkl = PKL_SMPTE_429_8_2007.new(
+    pkl_uuid,
+    options.dcp_annotation, # FIXME
+    issue_date = DateTime.now.to_s,
+    options.dcp_issuer,
+    creator = 'cinemaslides pkl',
+    pkl_assets.flatten
+  )
+  # write pkl.xml to tmp_pkl, pick up UUID and move to final location
+  File.open( tmp_pkl, 'w' ) { |f| f.write( pkl.xml ) }
+  pkl_uuid = Nokogiri::XML( File.open( tmp_pkl ) ).xpath( '//xmlns:PackingList/xmlns:Id' ).text.split( 'urn:uuid:' ).last
   @logger.debug( "PKL UUID:       #{ pkl_uuid }" )
-  pkl = File.join( File.dirname( tmp_pkl ), "pkl_" + pkl_uuid + "_.xml" )
-  File.rename( tmp_pkl, pkl)
+  final_pkl = File.join( File.dirname( tmp_pkl ), "pkl_" + pkl_uuid + "_.xml" )
+  File.rename( tmp_pkl, final_pkl)
   
   # Write Assetmap
-  @logger.info( "Write ASSETMAP and VOLINDEX" )
-  `cd #{ @dcpdir }; mkmap --issuer '#{ options.dcp_issuer }' cpl_* pkl_* *_.mxf` # pick up all DCP files, might be cumulative DCP
+  @logger.info( 'Write ASSETMAP and VOLINDEX' )
+  #
+  # via opencinematools:
+  # `cd #{ @dcpdir }; mkmap --issuer '#{ options.dcp_issuer }' cpl_* pkl_* *_.mxf` # pick up all DCP files, might be cumulative DCP
+  #
+  # via inline class:
+  # class AM_SMPTE_429_9_2007
+  #   initialize( am_uuid, issue_date, issuer, creator, assets )
+  # skip VOLINDEX.xml for now
+  am_assets = Array.new
+  am_assets << pkl_assets
+  am_assets << final_pkl
+  am_uuid = `kmuuidgen -n`
+  am = AM_SMPTE_429_9_2007.new(
+    am_uuid,
+    issue_date = DateTime.now.to_s,
+    options.dcp_issuer,
+    creator = 'cinemaslides am',
+    am_assets.flatten
+  )
+  final_am = File.join( @dcpdir, 'ASSETMAP.xml' )
+  File.open( final_am, 'w' ) { |f| f.write( am.xml ) }
 
   # report
   final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
@@ -1394,6 +1641,7 @@ end # End Create DCP
 
 
 TODO = <<TODO
+FIXME cleanup dcpdir after montage summary exit (with -o ...)
 FIXME sox, what's taking you so long? conform_audio()
 FIXME projected length <- frames cast
 FIXME estimate required/check available disk space
