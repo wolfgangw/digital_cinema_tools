@@ -786,7 +786,7 @@ class CPL_SMPTE_429_7_2006
                   xml.ScreenAspectRatio_ image_meta[ 'AspectRatio' ].to_s.gsub( '/', ' ' )
                 } # MainPicture
                 unless audio_mxfs.nil?
-                xml.MainSound {
+                xml.MainSound_ {
                   xml.Id_ "urn:uuid:#{ audio_meta[ 'AssetUUID' ] }"
                   xml.EditRate_ audio_meta[ 'EditRate' ].to_s.gsub( '/', ' ' )
                   xml.IntrinsicDuration_ audio_meta[ 'ContainerDuration' ]
@@ -829,7 +829,7 @@ class PKL_SMPTE_429_8_2007
         xml.Creator_ creator
         xml.AssetList_ {
           assets.each do |asset|
-            puts "PKL_SMPTE_429_8_2007 Asset: #{ File.basename( asset ) }"
+            #puts "PKL_SMPTE_429_8_2007 Asset: #{ File.basename( asset ) }"
             fh = File.open( asset, 'r' )
             fh_line = fh.read( 19 )
             fh.close
@@ -844,7 +844,7 @@ class PKL_SMPTE_429_8_2007
             sha1_digest_base64 = `asdcp-test -t #{ asset }`.split( ' ' ).first
             xml.Asset_ {
               xml.Id_ "urn:uuid:#{ asset_uuid }" # metadata
-              xml.AnnotationText_ 'TEST ANNOTATION' # optional, per asset
+              # optional: AnnotationText per asset
               xml.Hash_ sha1_digest_base64 # FIXME Base64.encode64( Digest::SHA1.digest( File.read( asset ) ) ).chomp
               xml.Size_ File.size( asset )
               xml.Type_ mimetype
@@ -872,7 +872,7 @@ class AM_SMPTE_429_9_2007
         xml.Creator_ creator
         xml.AssetList_ {
           assets.each do |asset|
-            puts "AM_SMPTE_429_9_2007 Asset: #{ File.basename( asset ) }"
+            #puts "AM_SMPTE_429_9_2007 Asset: #{ File.basename( asset ) }"
             fh = File.open( asset, 'r' )
             fh_line = fh.read( 19 )
             fh.close
@@ -901,7 +901,7 @@ class AM_SMPTE_429_9_2007
                   # optional: VolumeIndex
                   # optional: Offset
                   # optional: Length
-                } #Chunk
+                } # Chunk
               } # ChunkList
             } # Asset
           end # assets.each
@@ -913,7 +913,7 @@ class AM_SMPTE_429_9_2007
   def xml
     return @builder.to_xml( :indent => 2 )
   end
-end
+end # AM_SMPTE_429_9_2007
 ###
 
 
@@ -1540,19 +1540,11 @@ when "dcp"
     @logger.debug( "Audio trackfile UUID: #{ audio_mxf_uuid }" )
   end
 
-  tmp_cpl = File.join( @dcpdir, 'tmp_cpl.xml' )
-  tmp_pkl = File.join( @dcpdir, 'tmp_pkl.xml' )
-
   # Write CompositionPlaylist
   @logger.info( 'Write CPL' )
-  #
-  # via opencinematools:
-  # `mkcpl --kind #{ options.dcp_kind } --norating --title '#{ options.dcp_title }' --annotation '#{ options.dcp_annotation } #{ timestamp }' --issuer '#{ options.dcp_issuer }' #{ image_mxf } #{ @source_audio.empty? ? '' : audio_mxf } > #{ tmp_cpl }`
-  #
-  # via inline class:
-  # class CPL_SMPTE_429_7_2006
-  #   initialize( cpl_uuid, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
   cpl_uuid = `kmuuidgen -n` # FIXME
+  @logger.debug( "CPL UUID:       #{ cpl_uuid }" )
+  cpl_file = File.join( @dcpdir, 'cpl_' + cpl_uuid + '_.xml' )
   cpl = CPL_SMPTE_429_7_2006.new( 
     cpl_uuid,
     image_mxf.to_a, # reels
@@ -1567,12 +1559,7 @@ when "dcp"
     content_version_label = content_version_id,
     rating_list = nil
   )
-  # write cpl.xml to tmp_cpl, pick up UUID and move to final location
-  File.open( tmp_cpl, 'w' ) { |f| f.write( cpl.xml ) }
-  #cpl_uuid = Nokogiri::XML( File.open( tmp_cpl ) ).xpath( '//xmlns:CompositionPlaylist/xmlns:Id' ).text.split( 'urn:uuid:' ).last
-  @logger.debug( "CPL UUID:       #{ cpl_uuid }" )
-  final_cpl = File.join( File.dirname( tmp_cpl ), 'cpl_' + cpl_uuid + '_.xml' )
-  File.rename( tmp_cpl, final_cpl )
+  File.open( cpl_file, 'w' ) { |f| f.write( cpl.xml ) }
 
   # Write PackingList
   @logger.info( 'Write PKL ...' )
@@ -1582,17 +1569,12 @@ when "dcp"
     @logger.debug( "Obsolete:   #{ File.basename( obsolete_pkl ) }" )
     File.delete( obsolete_pkl )
   end
-  #
-  # via opencinematools:
-  # `cd #{ @dcpdir }; mkpkl --issuer '#{ options.dcp_issuer }' --annotation '#{ options.dcp_annotation }' cpl_*_.xml *_.mxf > #{ File.basename( tmp_pkl ) }`
-  #
-  # via inline class:
-  # class PKL_SMPTE_429_8_2007
-  #   initialize( pkl_uuid, annotation, issue_date, issuer, creator, assets )
   pkl_assets = Array.new
   pkl_assets << Dir.glob( File.join( @dcpdir, 'cpl_*_.xml' ) )
   pkl_assets << Dir.glob( File.join( @dcpdir, '*_.mxf' ) )
   pkl_uuid = `kmuuidgen -n`
+  @logger.debug( "PKL UUID:       #{ pkl_uuid }" )
+  pkl_file = File.join( @dcpdir, 'pkl_' + pkl_uuid + '_.xml' )
   pkl = PKL_SMPTE_429_8_2007.new(
     pkl_uuid,
     options.dcp_annotation, # FIXME
@@ -1601,27 +1583,16 @@ when "dcp"
     creator = 'cinemaslides pkl',
     pkl_assets.flatten
   )
-  # write pkl.xml to tmp_pkl, pick up UUID and move to final location
-  File.open( tmp_pkl, 'w' ) { |f| f.write( pkl.xml ) }
-  pkl_uuid = Nokogiri::XML( File.open( tmp_pkl ) ).xpath( '//xmlns:PackingList/xmlns:Id' ).text.split( 'urn:uuid:' ).last
-  @logger.debug( "PKL UUID:       #{ pkl_uuid }" )
-  final_pkl = File.join( File.dirname( tmp_pkl ), "pkl_" + pkl_uuid + "_.xml" )
-  File.rename( tmp_pkl, final_pkl)
+  File.open( pkl_file, 'w' ) { |f| f.write( pkl.xml ) }
   
   # Write Assetmap
-  @logger.info( 'Write ASSETMAP and VOLINDEX' )
-  #
-  # via opencinematools:
-  # `cd #{ @dcpdir }; mkmap --issuer '#{ options.dcp_issuer }' cpl_* pkl_* *_.mxf` # pick up all DCP files, might be cumulative DCP
-  #
-  # via inline class:
-  # class AM_SMPTE_429_9_2007
-  #   initialize( am_uuid, issue_date, issuer, creator, assets )
-  # skip VOLINDEX.xml for now
+  @logger.info( 'Write ASSETMAP' )
   am_assets = Array.new
   am_assets << pkl_assets
-  am_assets << final_pkl
+  am_assets << pkl_file
   am_uuid = `kmuuidgen -n`
+  @logger.debug( "AM UUID:        #{ am_uuid }" )
+  am_file = File.join( @dcpdir, 'ASSETMAP.xml' )
   am = AM_SMPTE_429_9_2007.new(
     am_uuid,
     issue_date = DateTime.now.to_s,
@@ -1629,8 +1600,7 @@ when "dcp"
     creator = 'cinemaslides am',
     am_assets.flatten
   )
-  final_am = File.join( @dcpdir, 'ASSETMAP.xml' )
-  File.open( final_am, 'w' ) { |f| f.write( am.xml ) }
+  File.open( am_file, 'w' ) { |f| f.write( am.xml ) }
 
   # report
   final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
