@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.09.21"
+CinemaSlidesVersion = "v0.2010.09.24"
 Author = "Wolfgang Woehl"
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
@@ -14,7 +14,7 @@ Author = "Wolfgang Woehl"
 #   ruby, gem, bash
 #   ImageMagick, MPlayer, SoX
 #   OpenJPEG (http://code.google.com/p/openjpeg/downloads/list) or Kakadu (see the note on Kakadu's terms of use below)
-#   asdcplib (http://www.cinecert.com/asdcplib/) and opencinematools (http://code.google.com/p/opencinematools/)
+#   asdcplib (http://www.cinecert.com/asdcplib/)
 #   highline (gem install highline)
 #   nokogiri (gem install nokogiri, requires ruby-dev, libxml2-dev)
 #
