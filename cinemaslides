@@ -204,19 +204,29 @@ BANNER
         examples = <<EXAMPLES
 cinemaslides #{ CinemaSlidesVersion }
 
-Specify options in any order. Order of images matters. 
+Specify options in any order. Order of image/audio files matters. Audio is optional.
+Audio timing is handled in a first-come, first-served manner -- independently from image timings
 
-  Preview slideshow (Half sized preview. Cut transition. Default duration: 5 seconds each):
-$ #{ app } image1.jpg image2.tiff
+  Preview slideshow with audio (Half sized preview. Cut transition. Default duration: 5 seconds each):
+$ #{ app } image1.jpg audio.wav image2.tiff
 
-  Preview slideshow (Full sized preview. Transition: crossfades for 1 second, 3 seconds at full level each):
-$ #{ app } -t fullpreview -x crossfade,1,3 image1.tif image2.ppm
+  Preview slideshow with audio (Full sized preview. Transition: crossfades for 1 second, 20 seconds at full level each):
+$ #{ app } --type fullpreview -x crossfade,1,20 image1.tiff image2.ppm audio1.wav audio2.wav
 
-  Create slideshow DCP, use all image files in directory 'slides' (Resolution: 2K. 5 seconds black leader and tail):
-$ #{ app } -t dcp --size 2k --black 5 slides/
+  Create slideshow DCP, use all image files in directory 'slides' (Resolution: 2K. 5 seconds black leader):
+$ #{ app } --type dcp --size 2k --black-leader 5 slides/*
 
   Create slideshow DCP (Preview thumbnails. Aspect ratio: scope):
-$ #{ app } *.raw -m -a scope -t dcp --title 'Slideshow Test' --issuer 'Facility'
+$ #{ app } audio.wav *.tiff --montagepreview --aspect scope -t dcp --title 'Slideshow Test' --issuer 'Facility'
+
+  Carousel goes berserk
+$ #{ app } -t dcp --title "Motion sequence" --fps 24 -x fade,0,0.0416666666666667,0 motion_sequence/*
+
+  Write DCP to custom location
+$ #{ app } --dcp-out /media/usb-disk/slideshow --type dcp image.tiff audio.wav --title "First composition"
+
+  Write another composition to the same custom location (PKL and ASSETMAP will be extended)
+$ #{ app } -o /media/usb-disk/slideshow -t dcp image2.tiff image3.tiff song.wav --title "Another composition"
 
   Some kind of finer-grained timing control:
 $ #{ app } -x fade,0,3,0    title title title 1st_slide 2nd_slide disclaimer disclaimer
