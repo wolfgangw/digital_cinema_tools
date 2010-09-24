@@ -769,8 +769,8 @@ class CPL_SMPTE_429_7_2006
         xml.RatingList_ "#{ rating_list.nil? ? '' : rating_list }"
         xml.ReelList_ {
           image_mxfs.each_with_index do |image_mxf, index| # assume image_mxfs.size == audio_mxfs.size
-            puts "CPL_SMPTE_429_7_2006 Asset: #{ File.basename( image_mxf ) }"
-            puts "CPL_SMPTE_429_7_2006 Asset: #{ File.basename( audio_mxfs[ index ] ) }" unless audio_mxfs.nil?
+            #puts "CPL_SMPTE_429_7_2006 Asset: #{ File.basename( image_mxf ) }"
+            #puts "CPL_SMPTE_429_7_2006 Asset: #{ File.basename( audio_mxfs[ index ] ) }" unless audio_mxfs.nil?
             image_meta = MXF_Metadata.new( image_mxf ).hash
             audio_meta = MXF_Metadata.new( audio_mxfs[ index ] ).hash unless audio_mxfs.nil?
             xml.Reel_ {
@@ -866,10 +866,10 @@ class AM_SMPTE_429_9_2007
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
       xml.AssetMap_( :xmlns => 'http://www.smpte-ra.org/schemas/429-9/2007/AM' ) {
         xml.Id_ "urn:uuid:#{ am_uuid }"
+        xml.Creator_ creator
         xml.VolumeCount_ '1' # FIXME
         xml.IssueDate_ issue_date
         xml.Issuer_ issuer
-        xml.Creator_ creator
         xml.AssetList_ {
           assets.each do |asset|
             #puts "AM_SMPTE_429_9_2007 Asset: #{ File.basename( asset ) }"
@@ -1611,6 +1611,8 @@ end # End Create DCP
 
 
 TODO = <<TODO
+FIXME annotation timestamp (2)
+FIXME check write completion on slow media (with -o | --dcp-out)
 FIXME cleanup dcpdir after montage summary exit (with -o ...)
 FIXME sox, what's taking you so long? conform_audio()
 FIXME projected length <- frames cast
