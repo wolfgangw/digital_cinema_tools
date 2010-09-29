@@ -746,8 +746,8 @@ end
 class MXF_Metadata < Hash
     def initialize( mxf )
       asdcp_info = `asdcp-test -v -i #{ mxf }`.chomp
-      if asdcp_info =~ /File essence type is JPEG 2000 pictures/
-        asdcp_info = asdcp_info.split( /\n-- JPEG 2000 image_metadata --/ ).first
+      if asdcp_info =~ /File essence type is JPEG 2000/ # ... (stereoscopic)? pictures
+        asdcp_info = asdcp_info.split( /\n-- JPEG 2000 Metadata --/ ).first
       end
       asdcp_info = asdcp_info.split( /\n\s*/ )
       @meta = Hash.new
@@ -1209,7 +1209,7 @@ else
 end
 case @output_type
 when 'dcp' # silently ignore option.dcp_user_output_path when previewing
-  # ask for confirmation to add files if if -o | --dcp_out is set and the location already exists and is not empty
+  # ask for confirmation to add files if -o | --dcp_out is set and the location already exists and is not empty
   if options.dcp_user_output_path != nil and File.exists?( @dcpdir ) and Dir.entries( @dcpdir ).size > 2 # platform-agnostic Dir.empty? anyone?
     if File.writable?( @dcpdir )
       if ENV[ 'HOME' ] == File.join( File.dirname( @dcpdir ), File.basename( @dcpdir ) ) # confirm direct write into HOME
@@ -1256,7 +1256,7 @@ end
 # user can specify -- alongside with any number of images -- any number of audio files
 # a) cinemaslides makes a list which will be equally long as or longer than the calculated image sequence
 #    when the total length of the specified audio files is not long enough the list-making process will start over until length is sufficient
-#    (e.g. user specifies [a.wav b.wav c.wav] with 1 min total length, image sequence is 1:30 min, audio list will be [a.wav b.wav c.wav a.wav b.wav]
+#    (e.g. user specifies [a.wav b.wav c.wav] with 1 min total length, image sequence is 1:30 min, audio list will be [a.wav b.wav c.wav a.wav ...]
 #     and will be trimmed to 1:30 min)
 # b) every element of the list is then checked into the asset depot
 # c) the elements are spliced together (result is checked into asset depot)
