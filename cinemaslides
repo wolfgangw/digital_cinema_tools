@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.09.24"
+CinemaSlidesVersion = "v0.2010.09.30"
 Author = "Wolfgang Woehl"
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
@@ -79,6 +79,8 @@ class Optparser
     options.dcp_annotation = 'Cinemaslides test ' + DateTime.now.to_s
     options.dcp_kind = 'test'
     options.dcp_kind_choices = [ 'feature', 'trailer', 'test', 'teaser', 'rating', 'advertisement', 'short', 'transitional', 'psa', 'policy' ]
+    options.dcp_wrap_stereoscopic = FALSE
+    options.dcp_user_output_path = nil
     options.montage = FALSE
     options.keep = FALSE
     options.dont_check = FALSE
@@ -90,13 +92,13 @@ class Optparser
     options.transition_and_timing << 0 # fade_in_time
     options.transition_and_timing << 5 # duration
     options.transition_and_timing << 0 # fade_out_time
-    options.dcp_user_output_path = nil
+
 
     opts = OptionParser.new do |opts|
       opts.banner = <<BANNER
 cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
 
-Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [ --dont-resize ] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [-o, --dcp_out <path>] [-m, --montagepreview] [--keep] [ --dont-check ] [--dont-drop] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
+Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [ --dont-resize ] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--kind <kind>] [--wrap-stereoscopic] [-o, --dcp_out <path>] [-m, --montagepreview] [--keep] [ --dont-check ] [--dont-drop] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
 
 BANNER
 
@@ -176,6 +178,9 @@ BANNER
           options.dcp_kind = p.downcase
         end
       end
+      opts.on( '--wrap-stereoscopic', 'Wrap images as stereoscopic essence (Useful when a monoscopic slideshow needs to run on a 3D projector preset)' ) do
+        options.dcp_wrap_stereoscopic = TRUE
+      end
       opts.on( '-o', '--dcp-out path', String, 'DCP location and folder name (Full path. Default: Write to working directory)' ) do |p|
         options.dcp_user_output_path = p
       end
@@ -251,6 +256,19 @@ EXAMPLES
     options
   end # parse
 end # class
+
+
+# reconstruct original commandline for readme file
+commandline = File.basename( $0 )
+ARGV.each do |arg|
+  if arg =~ /.+\s.+/
+    commandline += ' ' + '"' + arg + '"'
+  else
+    commandline += ' ' + arg
+  end
+end
+
+
 options = Optparser.parse(ARGV)
 
 
@@ -609,7 +627,7 @@ def check_for_asset( filename_s, suffix, fps, level = nil )
     end
     origin = File.basename( filename_s )
   end
-  assetname = File.join( @assetsdir, id + "_#{ @dimensions }_#{ @resize == TRUE ? 'r' : 'nr' }#{ level.nil? ? '' : '_' + level.to_s }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' + fps.floor.to_s : '' : '_pre' }_.#{ suffix }" )
+  assetname = File.join( @assetsdir, id + "_#{ @dimensions }_#{ @resize == TRUE ? 'r' : 'nr' }#{ level.nil? ? '' : '_' + level.to_s }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' + ( @dcp_wrap_stereoscopic == TRUE ? '48' : fps.floor.to_s ) : '' : '_pre' }_.#{ suffix }" )
   if File.exists?( assetname )
     @logger.debug( "Skip: Asset exists (#{ origin } -> #{ File.basename( assetname ) })" )
     todo = FALSE
@@ -762,9 +780,9 @@ class MXF_Metadata < Hash
 end # MXF_Metadata
 
 class CPL_SMPTE_429_7_2006
-  def initialize( cpl_uuid, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
+  def initialize( wrap_stereoscopic, cpl_uuid, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
-      xml.CompositionPlaylist_( :xmlns => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' ) {
+      xml.CompositionPlaylist_( :xmlns => wrap_stereoscopic == TRUE ? 'http://www.smpte-ra.org/schemas/429-10/2008/Main-Stereo-Picture-CPL' : 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' ) {
         xml.Id_ "urn:uuid:#{ cpl_uuid }"
         xml.AnnotationText_ annotation
         xml.IssueDate_ issue_date
@@ -775,7 +793,7 @@ class CPL_SMPTE_429_7_2006
         xml.ContentVersion_ {
           xml.Id_ "urn:uuid:#{ content_version_id }"
           xml.LabelText_ content_version_label
-        }
+        } # ContentVersion
         xml.RatingList_ "#{ rating_list.nil? ? '' : rating_list }"
         xml.ReelList_ {
           image_mxfs.each_with_index do |image_mxf, index| # assume image_mxfs.size == audio_mxfs.size
@@ -786,23 +804,35 @@ class CPL_SMPTE_429_7_2006
             xml.Reel_ {
               xml.Id_ "urn:uuid:#{ `kmuuidgen -n` }" # FIXME
               xml.AssetList_ {
-                xml.MainPicture_ {
-                  xml.Id_ "urn:uuid:#{ image_meta[ 'AssetUUID' ] }"
-                  xml.EditRate_ image_meta[ 'EditRate' ].to_s.gsub( '/', ' ' )
-                  xml.IntrinsicDuration_ image_meta[ 'ContainerDuration' ]
-                  xml.EntryPoint_ 0 # FIXME
-                  xml.Duration_ image_meta[ 'ContainerDuration' ] # FIXME
-                  xml.FrameRate_ image_meta[ 'SampleRate' ].to_s.gsub( '/', ' ' ) # FIXME SampleRate?
-                  xml.ScreenAspectRatio_ image_meta[ 'AspectRatio' ].to_s.gsub( '/', ' ' )
-                } # MainPicture
+                if image_meta.has_key?( 'File essence type is JPEG 2000 stereoscopic pictures.' )
+                  xml.MainStereoscopicPicture_ {
+                    xml.Id_ "urn:uuid:#{ image_meta[ 'AssetUUID' ] }"
+                    xml.EditRate_ image_meta[ 'EditRate' ].to_s.gsub( '/', ' ' )
+                    xml.IntrinsicDuration_ image_meta[ 'ContainerDuration' ]
+                    xml.EntryPoint_ 0 # FIXME
+                    xml.Duration_ image_meta[ 'ContainerDuration' ] # FIXME
+                    xml.FrameRate_ image_meta[ 'SampleRate' ].to_s.gsub( '/', ' ' ) # FIXME SampleRate?
+                    xml.ScreenAspectRatio_ image_meta[ 'AspectRatio' ].to_s.gsub( '/', ' ' )
+                  } # MainStereoscopicPicture
+                else
+                  xml.MainPicture_ {
+                    xml.Id_ "urn:uuid:#{ image_meta[ 'AssetUUID' ] }"
+                    xml.EditRate_ image_meta[ 'EditRate' ].to_s.gsub( '/', ' ' )
+                    xml.IntrinsicDuration_ image_meta[ 'ContainerDuration' ]
+                    xml.EntryPoint_ 0 # FIXME
+                    xml.Duration_ image_meta[ 'ContainerDuration' ] # FIXME
+                    xml.FrameRate_ image_meta[ 'SampleRate' ].to_s.gsub( '/', ' ' ) # FIXME SampleRate?
+                    xml.ScreenAspectRatio_ image_meta[ 'AspectRatio' ].to_s.gsub( '/', ' ' )
+                  } # MainPicture
+                end
                 unless audio_mxfs.nil?
-                xml.MainSound_ {
-                  xml.Id_ "urn:uuid:#{ audio_meta[ 'AssetUUID' ] }"
-                  xml.EditRate_ audio_meta[ 'EditRate' ].to_s.gsub( '/', ' ' )
-                  xml.IntrinsicDuration_ audio_meta[ 'ContainerDuration' ]
-                  xml.EntryPoint_ 0 # FIXME
-                  xml.Duration_ audio_meta[ 'ContainerDuration' ].to_s.gsub( '/', ' ' ) # FIXME
-                } # MainSound
+                  xml.MainSound_ {
+                    xml.Id_ "urn:uuid:#{ audio_meta[ 'AssetUUID' ] }"
+                    xml.EditRate_ audio_meta[ 'EditRate' ].to_s.gsub( '/', ' ' )
+                    xml.IntrinsicDuration_ audio_meta[ 'ContainerDuration' ]
+                    xml.EntryPoint_ 0 # FIXME
+                    xml.Duration_ audio_meta[ 'ContainerDuration' ].to_s.gsub( '/', ' ' ) # FIXME
+                  } # MainSound
                 end
               } # AssetList
             } # Reel
@@ -927,6 +957,9 @@ end # AM_SMPTE_429_9_2007
 ###
 
 
+@logger.debug( commandline )
+
+
 available_tools, missing_tools = check_requirements( requirements )
 if options.output_type == "dcp"
   if missing_tools.include?( "kdu_compress" )
@@ -979,9 +1012,9 @@ end
 m = options.size.match( /catch:(.*)/ )
 unless m.nil?
   if [ 'eep', 'ind' ].include?( m[1] )
-    @logger.info( "Did you mean to say '--k#{ m[1] }'?" )
+    @logger.info( "Did you mean to say '--k#{ m[ 1 ] }'?" )
   else
-    @logger.info( "Can't understand -k's argument: '#{ m[1] }'. Use #{ options.size_choices.join( ' or ' ) }" )
+    @logger.info( "Can't understand -k's argument: '#{ m[ 1 ] }'. Use #{ options.size_choices.join( ' or ' ) }" )
   end
   exit
 end
@@ -1002,6 +1035,7 @@ end
 
 
 # check dcp related options
+@dcp_wrap_stereoscopic = options.dcp_wrap_stereoscopic
 if @output_type == "dcp"
   unless options.encoder_choices.include?( options.encoder )
     @logger.critical( "Not a usable encoder: '#{ options.encoder }'" )
@@ -1024,6 +1058,10 @@ if @output_type == "dcp"
       @logger.critical( "Not a DCI compliant framerate: #{ options.fps } fps" )
       exit
     end
+  end
+  if options.output_type == 'dcp' and options.dcp_wrap_stereoscopic == TRUE and options.fps != 24
+    @logger.info( "Option '--wrap-stereoscopic' is set -> Setting fps to 24" )
+    options.fps = 24.0
   end
   @logger.debug( "DCP related options ok" )
 end
@@ -1241,8 +1279,8 @@ case @output_type
 when "dcp"
   @logger.info( "Creating #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
   @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
-  @logger.info( "Title:      #{ options.dcp_title } #{timestamp}" )
-  @logger.info( "Annotation: #{ options.dcp_annotation } #{timestamp}" )
+  @logger.info( "Title:      #{ options.dcp_title }" )
+  @logger.info( "Annotation: #{ options.dcp_annotation }" )
   @logger.info( "Issuer:     #{ options.dcp_issuer }" )
   @logger.info( "Kind:       #{ options.dcp_kind }" )
 when "preview", "fullpreview"
@@ -1484,7 +1522,7 @@ when "preview", "fullpreview"
 ###
 
 
-### Create DCP (Encoding, asdcplib, oct)
+### Create DCP (Encoding, asdcplib, XML)
 when "dcp"
   Dir.mkdir( @j2cdir )
 
@@ -1494,10 +1532,10 @@ when "dcp"
   files = Dir.glob( filemask ).sort
   
   # openjpeg's cinema profiles imply rate constraints, kakadu's don't
-  max_bytes_per_image, max_bytes_per_component = jpeg2000_dcp_rate_constraints( fps )
+  max_bytes_per_image, max_bytes_per_component = jpeg2000_dcp_rate_constraints( options.dcp_wrap_stereoscopic == TRUE ? 48.0 : fps )
   if @size == "2k"
     kakadu_cinema_profile = "CINEMA2K"
-    openjpeg_cinema_profile = "cinema2K #{ fps }"
+    openjpeg_cinema_profile = "cinema2K #{ options.dcp_wrap_stereoscopic == TRUE ? 48 : fps }"
   elsif @size == "4k"
     kakadu_cinema_profile = "CINEMA4K"
     openjpeg_cinema_profile = "cinema4K"
@@ -1540,7 +1578,12 @@ when "dcp"
 
   # Make image trackfile
   @logger.info( 'Write image trackfile ...' )
-  `asdcp-test -L -E -p #{ fps } -a #{ image_mxf_uuid } -c #{ image_mxf } #{ @j2cdir } > /dev/null 2>&1`
+  if options.dcp_wrap_stereoscopic == TRUE
+    @logger.info( 'Wrap as stereoscopic essence' )
+    `asdcp-test -L -E -a #{ image_mxf_uuid } -c #{ image_mxf } -3 #{ @j2cdir } #{ @j2cdir } > /dev/null 2>&1`
+  else
+    `asdcp-test -L -E -p #{ fps } -a #{ image_mxf_uuid } -c #{ image_mxf } #{ @j2cdir } > /dev/null 2>&1`
+  end
   @logger.debug( "Image trackfile UUID: #{ image_mxf_uuid }" )
   
   # Make audio trackfile
@@ -1556,6 +1599,7 @@ when "dcp"
   @logger.debug( "CPL UUID:       #{ cpl_uuid }" )
   cpl_file = File.join( @dcpdir, 'cpl_' + cpl_uuid + '_.xml' )
   cpl = CPL_SMPTE_429_7_2006.new( 
+    @dcp_wrap_stereoscopic,
     cpl_uuid,
     image_mxf.to_a, # reels
     @source_audio.empty? ? nil : audio_mxf.to_a, # reels
@@ -1612,7 +1656,9 @@ when "dcp"
   )
   File.open( am_file, 'w' ) { |f| f.write( am.xml ) }
 
-  # report
+  # readme and report
+  readme_file = File.join( @dcpdir, 'readme_' + options.dcp_annotation.gsub( ' ', '_' ) )
+  File.open( readme_file, 'w' ) { |f| f.write( commandline + "\n" ) }
   final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
   cleanup_workdir( options.keep )
   @logger.info( "DCP done" )
@@ -1621,7 +1667,8 @@ end # End Create DCP
 
 
 TODO = <<TODO
-FIXME annotation timestamp (2)
+FIXME fps and --wrap-stereoscopic not in total harmony yet
+FIXME generic readme/report output
 FIXME check write completion on slow media (with -o | --dcp-out)
 FIXME cleanup dcpdir after montage summary exit (with -o ...)
 FIXME sox, what's taking you so long? conform_audio()
