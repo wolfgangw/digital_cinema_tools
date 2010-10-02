@@ -784,8 +784,9 @@ class MXF_Metadata < Hash
     end
 end # MXF_Metadata
 
+
 class CPL_SMPTE_429_7_2006
-  def initialize( wrap_stereoscopic, cpl_uuid, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
+  def initialize( cpl_uuid, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
       xml.CompositionPlaylist_( :xmlns => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' ) {
         xml.Id_ "urn:uuid:#{ cpl_uuid }"
@@ -802,8 +803,6 @@ class CPL_SMPTE_429_7_2006
         xml.RatingList_ "#{ rating_list.nil? ? '' : rating_list }"
         xml.ReelList_ {
           image_mxfs.each_with_index do |image_mxf, index| # assume image_mxfs.size == audio_mxfs.size
-            #puts "CPL_SMPTE_429_7_2006 Asset: #{ File.basename( image_mxf ) }"
-            #puts "CPL_SMPTE_429_7_2006 Asset: #{ File.basename( audio_mxfs[ index ] ) }" unless audio_mxfs.nil?
             image_meta = MXF_Metadata.new( image_mxf ).hash
             audio_meta = MXF_Metadata.new( audio_mxfs[ index ] ).hash unless audio_mxfs.nil?
             xml.Reel_ {
@@ -863,6 +862,7 @@ class CPL_SMPTE_429_7_2006
   end # check_reels
 end # CPL_SMPTE_429_7_2006
 
+
 class PKL_SMPTE_429_8_2007
   def initialize( pkl_uuid, annotation, issue_date, issuer, creator, assets )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
@@ -874,7 +874,6 @@ class PKL_SMPTE_429_8_2007
         xml.Creator_ creator
         xml.AssetList_ {
           assets.each do |asset|
-            #puts "PKL_SMPTE_429_8_2007 Asset: #{ File.basename( asset ) }"
             fh = File.open( asset, 'r' )
             fh_line = fh.read( 19 )
             fh.close
@@ -888,7 +887,7 @@ class PKL_SMPTE_429_8_2007
             end
             sha1_digest_base64 = `asdcp-test -t #{ asset }`.split( ' ' ).first
             xml.Asset_ {
-              xml.Id_ "urn:uuid:#{ asset_uuid }" # metadata
+              xml.Id_ "urn:uuid:#{ asset_uuid }"
               # optional: AnnotationText per asset
               xml.Hash_ sha1_digest_base64 # FIXME Base64.encode64( Digest::SHA1.digest( File.read( asset ) ) ).chomp
               xml.Size_ File.size( asset )
@@ -906,6 +905,7 @@ class PKL_SMPTE_429_8_2007
   end
 end # PKL_SMPTE_429_8_2007
 
+
 class AM_SMPTE_429_9_2007
   def initialize( am_uuid, issue_date, issuer, creator, assets )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
@@ -917,7 +917,6 @@ class AM_SMPTE_429_9_2007
         xml.Issuer_ issuer
         xml.AssetList_ {
           assets.each do |asset|
-            #puts "AM_SMPTE_429_9_2007 Asset: #{ File.basename( asset ) }"
             fh = File.open( asset, 'r' )
             fh_line = fh.read( 19 )
             fh.close
@@ -1064,7 +1063,7 @@ if @output_type == "dcp"
       exit
     end
   end
-  if options.output_type == 'dcp' and options.dcp_wrap_stereoscopic == TRUE and options.fps != 24
+  if options.output_type == 'dcp' and @dcp_wrap_stereoscopic == TRUE and options.fps != 24
     @logger.info( "Option '--wrap-stereoscopic' is set -> Setting fps to 24" )
     options.fps = 24.0
   end
@@ -1182,7 +1181,6 @@ if options.transition_and_timing.first == 'fade' and options.transition_and_timi
 elsif options.transition_and_timing.first == 'cut' and options.transition_and_timing.length == 2
   fade_in_time = 0
   duration = options.transition_and_timing[1].to_f
-  @logger.critical( "duration: #{ duration }" )
   fade_out_time = 0
 elsif options.transition_and_timing.first == 'crossfade' and options.transition_and_timing.length == 3
   crossfade_time = options.transition_and_timing[1].to_f
@@ -1287,7 +1285,7 @@ y = y.to_i / 6 # ...
 
 case @output_type
 when "dcp"
-  @logger.info( "Creating #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
+  @logger.info( "Creating #{ @dcp_wrap_stereoscopic == TRUE ? '3D' : '2D' } #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
   @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
   @logger.info( "Title:      #{ options.dcp_title }" )
   @logger.info( "Annotation: #{ options.dcp_annotation }" )
@@ -1542,10 +1540,10 @@ when "dcp"
   files = Dir.glob( filemask ).sort
   
   # openjpeg's cinema profiles imply rate constraints, kakadu's don't
-  max_bytes_per_image, max_bytes_per_component = jpeg2000_dcp_rate_constraints( options.dcp_wrap_stereoscopic == TRUE ? 48.0 : fps )
+  max_bytes_per_image, max_bytes_per_component = jpeg2000_dcp_rate_constraints( @dcp_wrap_stereoscopic == TRUE ? 48.0 : fps )
   if @size == "2k"
     kakadu_cinema_profile = "CINEMA2K"
-    openjpeg_cinema_profile = "cinema2K #{ options.dcp_wrap_stereoscopic == TRUE ? 48 : fps }"
+    openjpeg_cinema_profile = "cinema2K #{ @dcp_wrap_stereoscopic == TRUE ? 48 : fps }"
   elsif @size == "4k"
     kakadu_cinema_profile = "CINEMA4K"
     openjpeg_cinema_profile = "cinema4K"
@@ -1588,7 +1586,7 @@ when "dcp"
 
   # Make image trackfile
   @logger.info( 'Write image trackfile ...' )
-  if options.dcp_wrap_stereoscopic == TRUE
+  if @dcp_wrap_stereoscopic == TRUE
     @logger.info( 'Wrap as stereoscopic essence' )
     `asdcp-test -L -E -a #{ image_mxf_uuid } -c #{ image_mxf } -3 #{ @j2cdir } #{ @j2cdir } > /dev/null 2>&1`
   else
@@ -1609,7 +1607,6 @@ when "dcp"
   @logger.debug( "CPL UUID:       #{ cpl_uuid }" )
   cpl_file = File.join( @dcpdir, 'cpl_' + cpl_uuid + '_.xml' )
   cpl = CPL_SMPTE_429_7_2006.new( 
-    @dcp_wrap_stereoscopic,
     cpl_uuid,
     image_mxf.to_a, # reels
     @source_audio.empty? ? nil : audio_mxf.to_a, # reels
