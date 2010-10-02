@@ -782,7 +782,7 @@ end # MXF_Metadata
 class CPL_SMPTE_429_7_2006
   def initialize( wrap_stereoscopic, cpl_uuid, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
-      xml.CompositionPlaylist_( :xmlns => wrap_stereoscopic == TRUE ? 'http://www.smpte-ra.org/schemas/429-10/2008/Main-Stereo-Picture-CPL' : 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' ) {
+      xml.CompositionPlaylist_( :xmlns => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' ) {
         xml.Id_ "urn:uuid:#{ cpl_uuid }"
         xml.AnnotationText_ annotation
         xml.IssueDate_ issue_date
@@ -805,7 +805,7 @@ class CPL_SMPTE_429_7_2006
               xml.Id_ "urn:uuid:#{ `kmuuidgen -n` }" # FIXME
               xml.AssetList_ {
                 if image_meta.has_key?( 'File essence type is JPEG 2000 stereoscopic pictures.' )
-                  xml.MainStereoscopicPicture_ {
+                  xml.MainStereoscopicPicture_( 'xmlns:msp-cpl' => 'http://www.smpte-ra.org/schemas/429-10/2008/Main-Stereo-Picture-CPL' ) {
                     xml.Id_ "urn:uuid:#{ image_meta[ 'AssetUUID' ] }"
                     xml.EditRate_ image_meta[ 'EditRate' ].to_s.gsub( '/', ' ' )
                     xml.IntrinsicDuration_ image_meta[ 'ContainerDuration' ]
@@ -1657,7 +1657,7 @@ when "dcp"
   File.open( am_file, 'w' ) { |f| f.write( am.xml ) }
 
   # readme and report
-  readme_file = File.join( @dcpdir, 'readme_' + options.dcp_annotation.gsub( ' ', '_' ) )
+  readme_file = File.join( @dcpdir, options.dcp_annotation.gsub( ' ', '_' ) + '.readme' )
   File.open( readme_file, 'w' ) { |f| f.write( commandline + "\n" ) }
   final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
   cleanup_workdir( options.keep )
