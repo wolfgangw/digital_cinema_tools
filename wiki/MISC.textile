@@ -1,0 +1,43 @@
+* "The Eye and Night Vision":http://www.aoa.org/x5352.xml, an excellent article about human vision (Scotopic, mesopic, photopic vision) and night-vision-related phenomena.
+* Leonard Levy, over on "CML":http://www.cinematography.net/, mentions how to fade-out your own vision: Close one eye and don't move your head. Stare at a single point. Avoid _looking_.
+* "The problems with wavelets":http://x264dev.multimedia.cx/?p=317
+* @-recolor@ and @-color-matrix@ related: "-recolor missing from options page":http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=16312. Turns out the -recolor functionality actually moved to @magick/deprecate.c@ in ImageMagick 6.6.1 (which means it is still working).
+* Color-profiles-related post at "|magick-developers| about color-space management":http://studio.imagemagick.org/pipermail/magick-developers/2006-October/002666.html
+* "tiff:alpha=associated":http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=16530
+* "ImageMagick file magic for truetype fonts":http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=16319
+Example ~/.magick/magic.xml to solve the issue:
+@<?xml version="1.0" encoding="UTF-8"?>@
+@<!DOCTYPE magicmap [@
+@<!ELEMENT magicmap (magic)+>@
+@<!ELEMENT magic (#PCDATA)>@
+@<!ATTLIST magic name CDATA #REQUIRED>@
+@<!ATTLIST magic offset CDATA "0">@
+@<!ATTLIST magic target CDATA #REQUIRED>@
+@]>@
+@<magicmap>@
+@<magic name="TTF" offset="0" target="\000\001\000\000"/>@
+@</magicmap>@
+* How to build asdcplib's S429-5-cgi.cpp:
+@$ cd $ASDCPLIB_CURRENT/src@
+@make S429-5-cgi@ (Terrence, thanks for insisting :)
+* "asdcplib":http://www.cinecert.com/asdcplib/ 2010.05.13 - bug fixes, enhancements, v1.6.34 "Changed AudioDescriptor 'SampleRate' element name to 'EditRate' to make it consistent with the other types."
+
+This will break building opencinematools-1.1.2. Change opencinematools-1.1.2/src/mkcpl:592
+
+592c592
+<                 sprintf(buff, "%u %u", ADesc.SampleRate.Numerator, ADesc.SampleRate.Denominator);
+---
+>                 sprintf(buff, "%u %u", ADesc.EditRate.Numerator, ADesc.EditRate.Denominator);
+
+to fix it.
+
+* "TIFF tools":http://www.libtiff.org/tools.html (tiffinfo among those)
+* openjpeg v2: @svn checkout http://openjpeg.googlecode.com/svn/branches/v2/ openjpeg-read-only@
+* Sony SRX-R320 Xenon color primaries (x, y): R 0.68, 0.32 | G 0.265, 0.69 | B 0.15, 0.06
+* Sony Professional’s SRX-R320 Digital Cinema Projector, LMT-300 Media Block and LSM-100 Screen Management System Software
+* "DNxHD related post on ffmpeg-user:":http://archives.free.net.ph/message/20091126.015123.b2b38636.en.html
+** DPX to DNxHD 36: @for f in *.dpx; do convert $f -depth 16 -sampling-factor 4:2:2 -interlace plane -resize 1920x1080! -size 1920x1080 yuv:-; done | ffmpeg -threads 8 -s 1920x1080 -pix_fmt yuv422p -f rawvideo -i - -vcodec dnxhd -b 36Mb -r 23.9760 -y -an out.mov@
+** DPX to MJPEG: @for f in *.dpx; do convert $f ppm:-; done | ffmpeg -an -y -f image2pipe -vcodec ppm -i - -pix_fmt yuvj422p -vcodec mjpeg -qscale 1 out_mjpeg.mov@
+
+* "Using ImageMagick's -clut":http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=15903#p57217
+* "Fred Weinhaus' Summed Area Tables or Integral Images":http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=14092

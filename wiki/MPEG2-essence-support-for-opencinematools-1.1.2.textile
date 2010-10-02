@@ -1,0 +1,14 @@
+This "patch":http://github.com/wolfgangw/digital_cinema_tools/blob/master/opencinematools-mpeg2_support.diff lets you use opencinematools (1.1.2, latest release as of April 2010) to wrap up MPEG2 (elementary stream) essence in a DCP. Useful for a number of purposes. The patch is quite trivial in that it simply fills a bailout stub in oct with the according descriptors provided by "asdcplib":http://www.cinecert.com/asdcplib/ (CineCert's/John Hurst's standard AS-DCP library)
+
+Read @[asdcplib]/src/KM_fileio.h@ (part @#ifndef KM_SMALL_FILES_OK@) for an explanation for the CFLAGS addition.
+
+# Get "opencinematools 1.1.2":http://opencinematools.googlecode.com/files/opencinematools-1.1.2-src.zip and unzip.
+# Get "digital cinema tools scriptball":http://github.com/wolfgangw/digital_cinema_tools/archives/master (bunch of other stuff in there) and unzip/untar or copy from "raw view":http://github.com/wolfgangw/digital_cinema_tools/raw/master/opencinematools-mpeg2_support.diff
+# Put @opencinematools-mpeg2_support.diff@ next to the opencinematools-1.1.2 dir
+
+@$ cat opencinematools-mpeg2_support.diff | patch -p0@
+@$ cd opencinematools-1.1.2/build/unix@
+@$ make all@
+@$ cp ../../bin/mk* [to ~/bin or wherever]@
+
+Tested on linux.

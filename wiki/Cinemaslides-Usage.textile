@@ -1,0 +1,44 @@
+h2. Basic usage
+
+p. [[Cinemaslides]] lets you create digital slideshows real fast. Pick up your digital camera, shoot some people in the lobby and have them up on the big screen just before the main feature:
+
+@$ cinemaslides --type dcp Madeleine.jpg Happy_Birthday.wav@
+
+[[Cinemaslides]] has some defaults so the above will be 5 seconds long, a bit short. Throw some more pictures into the mix and let it play a bit longer:
+
+@$ cinemaslides -t dcp Happy_Birthday.wav Toddler_Madeleine.jpg First_Schoolday.jpg By_the_Sea.jpg Madeleine.jpg -x fade,1,10,1@
+
+where @-x@ (or its long form @--transition_and_timing@) lets you specify how long each image will hold and how the transition between images will be made: Fade in for 1 second, hold for 10 seconds, fade out for another second.
+
+[[Cinemaslides]] (as of @v0.2010.10.02@) offers 3 basic transition types: Cut, fade in/out and crossfade.
+
+@[...] -x cut,5@ will splice images (each with 5 seconds at full level) together.
+
+@[...] -x fade,1,10,1@ will fade in for 1 second, hold for 10, fade out for 1.
+
+@[...] -x crossfade,2,10@ will take 2 seconds to blend from one image to the next which will then be held for 10 seconds.
+
+While any 4K DCI projector can play 2K material out of the box, you can also say
+
+@$ cinemaslides -t dcp --size 4k --aspect scope [...]@. If your source material has the resolution 4K stills will look glorious indeed.
+
+h2. Not so basic usage
+
+* You know how motion pictures are actually __rapid slideshows__, right? Which means you can use [[Cinemaslides]] to wrap up a feature film for digital cinema:
+
+@$ cinemaslides --type dcp --dcp-out /path/to/big/disk/my_short_film --title "My short film" --kind short --aspect flat --size 2k --fps 24 --dont-check /store/dcdm/image/* /store/dcdm/audio/audio.wav -x cut,0.0416666666666667@
+
+where @0.0416666666666667@ (1 second/24 frames) specifies the duration of each frame in a 24-fps motion picture (You can round to @0.042@). The @--dont-check@ option skips the informative file checks (you already know everything about the frames of your motion sequence).
+
+* Another not so obvious option is @--wrap-stereoscopic@. Use it to create a (monoscopic) slideshow that will play on 3D projector presets. [[Cinemaslides]] will adjust encoding parameters and MXF creation in order to create a fully compliant __3D__ DCP. This can be useful if you have monoscopic source material that needs to be shown as part of a 3D presentation, avoiding lengthy projector preset switches.
+Keep in mind that this option is used exclusively for wrapping monoscopic essence. @cinemaslides left_eye.tiff right_eye.tiff@ is not a feature. Yet :)
+
+* When you specify an existing output location for your DCP (with @--dcp-out <path>@ or @-o <path>@) [[Cinemaslides]] checks whether the location already carries some DCP content and asks you what to do. You can choose to extend the existing DCP and [[Cinemaslides]] will update the packing list and the asset map. Not exactly uber-useful but it can be a neat way to pack up a number of compositions.
+
+h2. The asset depot
+
+Coming up.
+
+h2. And then what? GUI?
+
+Coming up.

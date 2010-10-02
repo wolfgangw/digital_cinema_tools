@@ -1,0 +1,19 @@
+In March 2009 SMPTE published a report on white gamut practices for digital cinema (see SMPTE Motion Imaging Journal October 2009 for a condensed version). In the report the authors (Pixar's Rod Bogart and Rick Sayre) identify a potential mismatch between DCDM mastering and exhibition practices:
+
+bq. By using the XYZ color space, the SMPTE Standards and Recommended Practices effectively allow for an infinite range of reproducible whites. The numerical color encoding chosen in the standard constrains the available colors at peak luminance (48 cd/m²) to a still-large set. However, SMPTE does not specify which of these encode-able colors are reproducible in exhibition. This means that colors can be mastered (encoded) that may not be seen by audiences in exhibition. Likewise, colors displayed in exhibition may never have been seen in mastering.
+For example, if your DI mastering suite were set up in RGB for a D55 white point at 48 cd/m², projectors in current digital cinema exhibition practice, using the projector configuration file DCDM_XYZ_239, would not accurately reproduce the encoded master at peak white.
+Further, there is significant confusion between White Point, the color with maximum possible luminance, and Calibration White, a specific color chosen for calibration or verification purposes.
+
+One of the study group's tasks was to survey projector measured color gamuts in the field. The authors collected projector setup data from 245 projectors and conclude:
+
+bq. There is a common perception that current Digital Cinema projectors have a native white point close to __Calibration White__. It can be clearly seen from Fig. 1 that this is not true because the projector native white points cluster away from __Calibration White__.
+
+Btw, see the "Wikipedia stub":http://en.wikipedia.org/wiki/Chromatic_adaptation for some background on chromatic adaptation.
+
+Well, what to make of that?
+
+Human vision is an immensely capable and fascinating system. Capable in terms of dynamic range, spatial resolution, "luminance awareness" etc. Fascinating in that it is the current __state of the art__ with a background of millions of years of merciless selection -- not seeing good, among other things, made you prey, end of story. None of our ancestors could have had bad vision. Granted, at least one prominent exception comes to mind ...
+
+One of the many fascinating aspects of human vision is its ability to perceive an object illuminated by midday light or by dusk light to be quite similar in color -- although the spectral energy of the 2 illuminants is quite different. You can take pictures of stuff in varying light conditions (auto white-balance off) and crop out color patches. Put them next to each other and compare what you see with your subjective perception at the time.
+
+(to be continued: What Glenn Kennel says about white points in digital cinema. What the specs say.)

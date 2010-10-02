@@ -1,0 +1,19 @@
+@2010 Sep 21@ Look at "Cinemaslides":http://github.com/wolfgangw/digital_cinema_tools/blob/master/cinemaslides (classes CPL_SMPTE_429_7_2006, PKL_SMPTE_429_8_2007 and AM_SMPTE_429_9_2007) for an example replacement of "opencinematools":http://code.google.com/p/opencinematools/' mkcpl, mkpkl and mkmap.
+
+@2010 Aug 07@ "SMPTE-430-3-2008-ETM.xsd":http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-430-3-2008-ETM.xsd and "SMPTE-430-1-2006-Amd-1-2009-KDM.xsd":http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-430-1-2006-Amd-1-2009-KDM.xsd (including a correction from SMPTE-Amendment-1-2009) are the normative XML Schema documents to test key delivery messages (KDM) for well-formedness and SMPTE compliance.  Use @schema-check@ from DCI's "Compliance Test Plan v1.1":http://www.dcimovies.com/DCI_CTP_v1_1.pdf to perform those tests.
+
+@2010 Jul 30@ "SMPTE-429-7-2006-CPL.xsd":http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-429-7-2006-CPL.xsd, "SMPTE-429-8-2006-PKL.xsd":http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-429-8-2006-PKL.xsd and "SMPTE-429-9-2007-AM.xsd":http://github.com/wolfgangw/digital_cinema_tools/blob/master/xsd/SMPTE-429-9-2007-AM.xsd are the normative XML Schema documents to test composition playlists (CPL), packing lists (PKL) and asset mapping (ASSETMAP, VOLINDEX) files for well-formedness and SMPTE compliance. Use @schema-check@ from DCI's "Compliance Test Plan v1.1":http://www.dcimovies.com/DCI_CTP_v1_1.pdf to perform those tests.
+
+@2010 Jul 8@ One of the problems when handling image sequences is making sure a given set of files actually is a continuous sequence. See "sequential.py":http://github.com/wolfgangw/digital_cinema_tools/blob/master/sequential.py for a demo script.
+
+@2010 Jun 6@ "Tiny DCP to test SMPTE 429-5 compliance (Subtitle trackfiles) on servers":http://github.com/wolfgangw/digital_cinema_tools/raw/master/dcp_s429-5_test.tar
+
+@2010 May 26@ See [[Cinemaslides]] for notes on a pet project of mine: A commandline tool to build cinema slideshows. Initial alpha v0 to test and play. It'd be cool to hear how this works for you and the random material you throw at it.
+
+@2010 Mar 14@ See "patch":http://github.com/wolfgangw/digital_cinema_tools/blob/master/opencinematools-mpeg2_support.diff (and "how to apply it":http://wiki.github.com/wolfgangw/digital_cinema_tools/mpeg2-essence-support-for-opencinematools-112) for MPEG2 essence support for "opencinematools 1.1.2":http://code.google.com/p/opencinematools/
+
+@2010 Feb 26@ See "rec709-xyz_matrix.rb":http://github.com/wolfgangw/digital_cinema_tools/blob/master/rec709-xyz_matrix.rb for a script to calculate the 3x3 matrix needed to transform ITU REC. 709 to XYZ.
+
+@2010 Feb 21@ See [[Open source tools for a digital cinema pipeline]] for a sort-of step-by-step DCP pipeline.
+
+@2010 Jan 17@ You're looking at an initial commit to the repository. Right now there is "chromatic_adaptation.rb":http://github.com/wolfgangw/digital_cinema_tools/blob/master/chromatic_adaptation.rb to play with chromatic adaptation numbers. This might be useful when targeting a specific white gamut of digital cinema projectors. See [[White Gamut]] for some notes on the problem.

@@ -1,0 +1,25 @@
+"asdcplib":http://www.cinecert.com/asdcplib/ is a reference implementation of SMPTE and MXF Interop "Sound & Picture Track File" formats. You can use it on the command line to stuff digital cinema assets into MXF "containers", calculate message digests of these containers (needed in CPL and PKL), generate UUIDs, extract track essence etc.
+
+* *How to map discrete audio files*: DCI allows for 5.1, 7.1 and up to 14 tracks + HI (hearing impaired listeners track) + VI (visually impaired listeners track). asdcplib's main tool *asdcp-test* maps given audio files in the order they appear on the command line.
+
+In order to map discrete 5.1 files you would tell asdcp-test to
+
+@asdcp-test -c audio.mxf audio_left.wav audio_right.wav audio_center.wav audio_low_frequency_effect.wav audio_left_surround.wav audio_right_surround.wav@
+
+because @L - R - C - LFE - LS - LR@ is the 6-channel mapping order specified in the "DCI specs":http://www.dcimovies.com/specification/index.tt2 (See section __3.3.3 Channel Mapping__ for 6-channel and 8-channel mappings).
+
+Also see asdcplib's @src/AS_DCP.h@:
+@CF_CFG_1, // 5.1 with optional HI/VI@
+@CF_CFG_2, // 6.1 (5.1 + center surround) with optional HI/VI@
+@CF_CFG_3, // 7.1 with optional HI/VI@
+
+* *Notes for a ffmpeg/sox audio pipeline*:
+** relevant ffmpeg options:
+*** -acodec (see available formats with "ffmpeg -formats", among those see pcm_s24daud/PCM D-Cinema audio signed 24-bit)
+*** -map (set stream mapping from input streams to output streams)
+*** -ar (set the audio sampling frequency)
+*** -ac (set the number of audio channels)
+*** -vn (disable video)
+*** -sn (disable subtitle)
+** relevant sox options:
+*** -t wavpcm (see Peter Forret's "initial report":http://code.google.com/p/opencinematools/issues/detail?id=29#c0 and "his findings":http://code.google.com/p/opencinematools/issues/detail?id=29#c2. Also see Peter's "dcptoolkit project pages":http://code.google.com/p/dcptoolkit/)

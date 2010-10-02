@@ -1,0 +1,46 @@
+p. Hi and welcome.
+
+p. Here you'll find a growing collection of useful documents, [[scripts]] and [[notes]] which deal, in the broadest sense, with [[Digital Cinema]] mastering and authoring. Read [[Mystery Meat]] to learn where the beef is.
+
+p. I work at the Munich Filmmuseum, Munich's municipal cinematheque, which houses an extensive film collection. In addition we restore and publish forgotten, so-called __lost__ gems of film history and provide daily screenings -- spanning film history in all of its fascinating diversity.
+
+p. What we take away from tracking down and screening thousands of film prints throughout the years, are, from a technical point of view, two major trends:
+
+* Significant deterioration of most prints (not only old prints, mind you)
+* Serious and, in many cases, scientific effort and investment to restore and secure select historic works and produce new negatives and screening prints
+
+p. In other words: While some select works enjoy proper attention and care, large parts of our film heritage are literally doomed, mostly due to the lack of incentive and the significant costs of re-releases to screening prints (which begin to deteriorate the moment they leave the lab). It became clear that digital tools would offer a chance, at least, to improve that situation. So we were thrilled when, in the summer of 2009, we could muster the budget to take our first steps into this promising terrain.
+
+p. To establish an open platform for digital cinema production and distribution was the general idea of the "Digital Cinema Initiative":http://www.dcimovies.com/ and their "specification":http://www.dcimovies.com/specification/index.tt2. Much like the __35mm__ platform (specified in 1916) which has had a lot of breath.
+
+p. The DCI[1] had realized that in order to create a platform good for decades to come they needed to adhere to tried and tested standards. As a result you can satisfy the requirements for DCDM[2]/DCP[3] mastering and authoring with a set of freely available (open source) tools. Which is the laudable kind of __Good Thing__ geeks feel irresistibly attracted to, like bears to the honey pot.
+
+p. Film production, on the technical side of the imaging part, is all about workflows. Parties involved include cinematography, editorial, color mastering, archiving, delivery (film prints, digital cinema packages, BluRay/DVD, TV deliverables). They need to get on the same track in order to deliver photons to the silver screen. When film production was a film-only process (up until the early 1990s) the steps and techniques involved were, for the most part, clearly defined[4].
+
+p. This changed dramatically with the advent of digital tools and processes. Connecting the dots (which is what intra- and inter-facility workflows must accomplish) in the age of digital became more flexible and less defined at the same time.
+
+p. Because DCI was aiming for a well-defined digital cinema standard the engineers came up with a gatekeeper mechanism (my words) that would precede the authoring of digital cinema packages (digital equivalent of screening prints): It is called __Digital Cinema Distribution Master__ (DCDM) and consists of image, sound and subtitle/caption files with, for the most part, clearly defined properties:
+
+* Black and white levels, bits per color channel, transfer function, colorspace and aspect ratio for images
+* Bit depth, sample rate, channel count and reference level for sound
+
+p. A DCDM is transformed -- via a meticulously defined process -- into a DCP.
+
+p. See [[Open source tools for a digital cinema pipeline]] for commandline examples (keeping in mind that, due to the nature of these ad-hoc examples, the border between DCDM and DCP can be rather blurry).
+
+p. See [[Cinemaslides]] for a DIY glue tool to create slideshow (or motion picture, for that matter) DCPs.
+
+p. The required information and knowledge is, while public, somewhat buried in man-pages, specs and SMPTE standards. However, there is no reason DCDM/DCP production should remain more complicated and opaque than, say, the creation of DVDs or BluRay media.
+
+Feedback, corrections, insights, code etc. very welcomed and much appreciated.
+Wolfgang Woehl
+
+h2. 
+
+fn1. Founding DCI members (2002): Disney, Fox, MGM, Paramount, Sony, Universal, Warner
+
+fn2. DCDM: __Digital Cinema Distribution Master__, collection of image, sound and subtitle/caption files ready (in compliance with SMPTE standards 428-1, 428-2, 428-3, 428-7, 428-9 and 428-10) for packaging.
+
+fn3. DCP: __Digital Cinema Package__, collection of, at least, one packing list and all its referenced assets. Possible assets are MXF containers with compressed (JPEG 2000, MPEG2 elementary stream) and optionally encrypted image and sound essence, subtitle resources and composition playlists.
+
+fn4. A voice, coming from an unidentified lab, says __Define defined__. Right. Color timers were actually considered wizard magicians. It is outright stunning what they could achieve with the limited tools (in comparison to today's digital color kits) they had. Also, alas, I'm not aware of extensive collections of the work of color timers. Which means that although we'd have the technical means to reproduce and create any kind of color work in restoration, in many cases we simply don't know how the original releases were graded. Therefore color restoration projects have to -- in the best case -- rely on the memories of production members, or come up with -- in most cases -- a lot of guesswork decisions.

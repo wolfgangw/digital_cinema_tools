@@ -1,0 +1,53 @@
+p. The following are basic building blocks for an ad-hoc digital cinema pipeline based on open source tools. Keep in mind that none of this is overly practical for production, though.
+
+p. Key problem being the massive amount of cycles the JPEG2000 encoding consumes. There is no way around dedicated hardware to solve this, really. Any general-purpose-CPU-based implementation will eventually fall behind the parallel computing power of specialized hardware, I reckon: There are FPGA/ASIC solutions (not easily affordable) and there is CUDA (on off-the-shelf GPUs, quite affordable) and the likes. See "CUJ2K":http://cuj2k.sourceforge.net/index.html for an example -- alas, as of February 2010, CUJ2K v1.1 does not produce DCI compliant "Profile-3":http://www.digitalpreservation.gov/formats/fdd/fdd000212.shtml and "Profile-4":http://www.digitalpreservation.gov/formats/fdd/fdd000213.shtml codestreams. Maybe that can change.
+
+p. Efficiency: Setting up a shell script to walk all those steps is as easy as it is inefficient. Every image file would be touched a number of times. Every step would involve disk access to and fro. Some of the tools are not multi-threaded. Etc.pp.
+
+p. Still, it's a perfectly viable process for tests and short features. And, most of all, it's a transparent process.
+
+p. Required steps:
+# Prepare the source material (Create an image sequence, wrap audio in Broadcast WAV container)
+# Linearize (s)RGB
+# Transform color from source color to XYZ (see this "nice visual CIE XYZ primer":http://www.youtube.com/watch?v=x0-qoXOCOow)
+# Chromatic adaptation to the targeted white point (need to understand the problem better, see [[White Gamut]])
+# Encode with SMPTE spec'd gamma (2.6)
+# Compress to JPEG2000 codestream files (The JPEG 2000 Profiles 3 and 4, used here, are lossy, btw)
+# Collect assets (images, audio) in MXF containers/streams
+# Create the basic infrastructure of a DCP (composition playlist, packing list, assetmap, volindex)
+
+
+* *How to create an image sequence from a video file*: "FFmpeg":http://ffmpeg.org/ and "MPlayer/Mencoder":http://www.mplayerhq.hu/design7/news.html are swiss army knives for pretty much anything you want to do with video and image sequences. In this context FFmpeg is used to create an image sequence from a given video file.
+
+Like 
+
+@ffmpeg -i video.m2v -f image2 -vcodec tiff %06d.tiff@
+
+where @%06d@ tells ffmpeg to create 6-digit zero-padded filenames.
+
+* *How to convert sRGB (Gamma ~2.2) to X'Y'Z' (Gamma 2.6)*: "ImageMagick's":http://www.imagemagick.org/script/index.php *convert* lets you perform color transforms, handle embedded color profiles, adjust bit-depth, scale, gamma de/encode etc.
+
+Check out Bruce Lindbloom's "great math and color pages":http://www.brucelindbloom.com/. See "RGB/XYZ Matrices":http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for RGB <> XYZ color transform equations and important notes.
+
+For example (assuming sRGB source)
+
+@for f in *tiff; do echo $f; convert $f -alpha off -depth 12 -gamma 0.454545 -resize 1998x1080 -recolor "0.4124564 0.3575761 0.1804375 0.2126729 0.7151522 0.0721750 0.0193339 0.1191920 0.9503041" -gamma 2.6 xyz-2.6-$f; done@
+
+takes all tiffs in the current directory, drops the alpha channel, scales bit-depth to the SMPTE spec'd 12 bits per component, decodes gamma (from sRGB's standard and _approximated_ 2.2), scales to 2K (keeping the original aspect ratio), applies an sRGB to XYZ color transform and finally encodes to the SMPTE spec'd gamma of 2.6. (You want to transform color with linear values, hence the gamma decode, then the color transform and then the concluding gamma encode.)
+
+The convert above merely demonstrates a number of operations. It would have to be tweaked to meet any real-world requirements:
+
+# With ImageMagick the order of operators and settings matters. If your source material has 16-bit color channels you wouldn't want to scale to 12 bits _before_ gamma decoding or scaling or the color transform but _afterwards_.
+# sRGB's gamma is not exactly 2.2. A correct linearization of sRGB would be
+@convert srgb-gradient.tiff -fx "p <= 0.04045 ? p/12.92 : ((p + 0.055) / 1.055) ^ 2.4" linear.tiff@
+There's a linear part for values below 0.04045 and a power function for higher values. The difference is subtle but real (Easy to see with gradients and a posterize action to, like, 16 levels). Because color transforms have to be performed on linear values any errors from linearization will propagate into color errors on the silver screen. Big sign, right up there: "Color wrong! Terminate!", you know the drill. Seriously: this will matter if your grading choices were made in a calibrated mastering environment. And if your material has the bits to show the difference. Or if you're somewhat fussy about numbers. Or if your vision is trained and specialized in detecting subtle differences. So, there's clearly a million of reasons to do sRGB linearization right, right? Alas, ImageMagick's @-fx@ operator, while powerful, is quite cpu-expensive. And, unfortunately, ImageMagick's LUT's are even slower. Any CUDA geeks out there writing FastLUT?
+See "Wikipedia":http://en.wikipedia.org/wiki/SRGB#Specification_of_the_transformation for the math and an explanation for why 0.04045 is used instead of "0.03928":http://www.w3.org/Graphics/Color/sRGB.
+# Jussi Siponen "mentions":http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=13936#p55703 an issue with DCI-compliant image dimensions. He suggests padding (within a convert statement) for non-compliant dimensions, like @-background black -gravity center -extent 1998x1080@ for flat 2K and @-background black -gravity center -extent 2048x858@ for scope 2K. It'd be interesting to learn whether some cinema servers actually choke on non-compliant image dimensions. The XDC G3 doesn't.
+
+* *How to encode to DCI compliant JPEG2000 (Profiles 3 and 4)*: "OpenJPEG's":http://www.openjpeg.org/index.php?menu=main image_to_j2k implements JPEG Profiles 3 and 4 (for 2K and 4K material, respectively) and creates JPEG2000 codestream files.
+
+@image_to_j2k -cinema2K 24  -ImgDir XYZ -OutFor j2c@
+
+encodes all tiffs in XYZ/ to DCI compliant JPEG2000 codestream files (Suffix "j2c"). This is a lossy process as Profiles 3 and 4 specify maximum file sizes and bit rates of streams. Encoding time for a 2K tiff on a recent Intel core is around 2-4 seconds. That's around 5 days for a 100-minute feature. So there :)
+
+* *Coming up*: Wrapping image and audio essence into MXF containers and building a DCP infrastructure with "asdcplib":http://www.cinecert.com/asdcplib/ and "Open Cinema Tools":http://code.google.com/p/opencinematools/wiki/GettingStarted
