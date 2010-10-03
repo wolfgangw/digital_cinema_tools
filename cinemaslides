@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.10.02"
+CinemaSlidesVersion = "v0.2010.10.03"
 Author = "Wolfgang Woehl"
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
@@ -97,7 +97,7 @@ class Optparser
       opts.banner = <<BANNER
 cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
 
-Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [ --dont-resize ] [--fps <fps>] [-x --transition_and_timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output_format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--kind <kind>] [--wrap-stereoscopic] [-o, --dcp_out <path>] [-m, --montagepreview] [--keep] [ --dont-check ] [--dont-drop] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
+Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [ --dont-resize ] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--kind <kind>] [--wrap-stereoscopic] [-o, --dcp_out <path>] [-m, --montagepreview] [--keep] [ --dont-check ] [--dont-drop] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
 
 BANNER
 
@@ -130,7 +130,7 @@ BANNER
       opts.on( '--fps fps', 'Framerate (Default: 24)', Float ) do |p| # 23.976
         options.fps = p.to_f
       end
-      opts.on( '-x', '--transition_and_timing transition,seconds[,seconds[,seconds]]', Array, "Use this option to specify the transition type ('cut', 'fade' or 'crossfade') and timing parameters (Default: '-x cut,5'). Separate parameters with commas (no spaces)" ) do |p|
+      opts.on( '-x', '--transition-and-timing transition,seconds[,seconds[,seconds]]', Array, "Use this option to specify the transition type ('cut', 'fade' or 'crossfade') and timing parameters (Default: '-x cut,5'). Separate parameters with commas (no spaces)" ) do |p|
         if options.transition_and_timing_choices.include?( p.first.downcase )
           options.transition_and_timing = p
         else
@@ -140,7 +140,7 @@ BANNER
       opts.on( '-j', '--encoder codec', String, "Use 'openjpeg' or 'kakadu' for JPEG 2000 encoding (Default: openjpeg)" ) do |p|
         options.encoder = p.downcase
       end
-      opts.on( '-f', '--output_format suffix', String, "Use 'jpg' or any other image related suffix (Default: jpg for previews, tiff for DCPs)" ) do |p|
+      opts.on( '-f', '--output-format suffix', String, "Use 'jpg' or any other image related suffix (Default: jpg for previews, tiff for DCPs)" ) do |p|
         options.output_format = p
       end
       opts.on( '-b', '--black seconds', Float, 'Length of black leader and tail (Default: 0)' ) do |p|
