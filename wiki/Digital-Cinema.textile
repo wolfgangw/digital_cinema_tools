@@ -16,13 +16,13 @@ h2. What's the benefit?
 
 * Pristine image quality from opening night until the end of time. No more mutilated prints. What some projectionists do to film prints goes well beyond a motion picture engineer's worst nightmares: Prints with perfect changeover cues get the _big X scratch_ treatment -- not once, but many times. Up to entire scenes go missing at reel boundaries. Show up again in random places -- if you're lucky. Headers and tails get mixed up. Tail 3 ends up as header 4. Emulsion gets licked to see whether it's, well, the emulsion side (sic). Prints are dragged through projectors that haven't been taken proper care of, ever. All in all: It's nothing short of a miracle we have _any_  film history artefacts left.[1] Digital cinema ends this.
 
-* Digital cinema offers strong content protection which in turn allows for easy distribution. As opposed to film prints that are being accompanied by security personnel.
+* Digital cinema offers strong content protection which in turn allows for easy distribution. As opposed to film prints which are being accompanied by armed security personnel (to press screenings and opening nights).
 
 * With digital cinema it's inherently easy and cheap to reach the big screen with no/low/modest budget productions. Current quotes from post facilities and labs offering digital cinema services might suggest the opposite. But this will change, you can bet on that.
 
 h2. How does it work?
 
-Basically an image sequence (the film) is encoded to a well-defined, cinema-specific JPEG 2000 codestream. Packed up (alongside with sound and subtitles) in MXF containers and composed through the means of descriptive XML to what will be shown on the screen. These _compositions_ are what make DCP such a powerful and flexible format. Final package gets copied onto harddrive, memory stick, optical medium, and ingested on a digital cinema server. Finally, someone hits _Play_.
+Basically an image sequence (the motion picture) is compressed and encoded to a well-defined, cinema-specific JPEG 2000 codestream. Packed up (alongside with sound and subtitles) in MXF containers and composed through the means of descriptive XML to what will be shown on the screen. These _compositions_ are what make DCP such a powerful and flexible format. Final package gets copied onto a harddrive (or flash disk, optical medium etc.) and ingested on a digital cinema server. Finally, someone hits _Play_.
 
 h2. Can I do it?
 

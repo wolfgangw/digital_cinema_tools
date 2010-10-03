@@ -6,7 +6,7 @@ p. I work at the Munich Filmmuseum, Munich's municipal cinematheque, which house
 
 p. What we take away from tracking down and screening thousands of film prints throughout the years, are, from a technical point of view, two major trends:
 
-* Significant deterioration of most prints (not only old prints, mind you)
+* Significant deterioration of most prints (not only old prints)
 * Serious and, in many cases, scientific effort and investment to restore and secure select historic works and produce new negatives and screening prints
 
 p. In other words: While some select works enjoy proper attention and care, large parts of our film heritage are literally doomed, mostly due to the lack of incentive and the significant costs of re-releases to screening prints (which begin to deteriorate the moment they leave the lab). It became clear that digital tools would offer a chance, at least, to improve that situation. So we were thrilled when, in the summer of 2009, we could muster the budget to take our first steps into this promising terrain.

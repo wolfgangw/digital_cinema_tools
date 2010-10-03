@@ -1,4 +1,4 @@
-p. "Cinemaslides":http://github.com/wolfgangw/digital_cinema_tools/blob/master/cinemaslides is a commandline-tool to build slideshows and pack them up as "digital cinema packages (DCPs)":http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema. It has preview modes to check how transitions (fades, crossfades, cuts) and timings play out. If you must you can also tell Cinemaslides to go 24fps-carousel-berserk and pack up your motion picture[1].
+p. "Cinemaslides":http://github.com/wolfgangw/digital_cinema_tools/blob/master/cinemaslides is a commandline-tool to build slideshows and pack them up as "digital cinema packages (DCPs)":http://wiki.github.com/wolfgangw/digital_cinema_tools/digital-cinema. It has preview modes to check how transitions (fades, crossfades, cuts) and timings play out. If you must you can tell Cinemaslides to go 24fps-carousel-berserk and pack up your motion picture[1].
 
 p. Look at [[cinemaslides usage]] for examples and tips.
 
