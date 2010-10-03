@@ -130,7 +130,7 @@ BANNER
       opts.on( '--fps fps', 'Framerate (Default: 24)', Float ) do |p| # 23.976
         options.fps = p.to_f
       end
-      opts.on( '-x', '--transition-and-timing transition,seconds[,seconds[,seconds]]', Array, "Use this option to specify the transition type ('cut', 'fade' or 'crossfade') and timing parameters (Default: '-x cut,5'). Separate parameters with commas (no spaces)" ) do |p|
+      opts.on( '-x', '--transition-and-timing transition,seconds[,seconds[,seconds]]', Array, "Use this option to specify the transition type ('cut', 'fade' or 'crossfade') and timing parameters (Default: '-x cut,5'). Separate parameters with comma (no spaces)" ) do |p|
         if options.transition_and_timing_choices.include?( p.first.downcase )
           options.transition_and_timing = p
         else
