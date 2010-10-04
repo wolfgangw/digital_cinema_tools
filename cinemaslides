@@ -797,7 +797,7 @@ class CPL_SMPTE_429_7_2006
         xml.ContentTitleText_ content_title
         xml.ContentKind_ content_kind
         xml.ContentVersion_ {
-          xml.Id_ "urn:uuid:#{ content_version_id }"
+          xml.Id_ "urn:uri:#{ content_version_id }"
           xml.LabelText_ content_version_label
         } # ContentVersion
         xml.RatingList_ "#{ rating_list.nil? ? '' : rating_list }"
@@ -1075,7 +1075,12 @@ end
 # come up with 3 lists: image files, audio files, unusable files
 @source = ARGV
 @source_audio = Array.new
-unless options.dont_check == TRUE ####
+if options.dont_check == TRUE ####
+  if @source.empty?
+    @logger.info( 'No files specified' )
+    exit
+  end
+else # check files
   # remove un-readable elements
   not_readable = Array.new
   @source_tmp = Array.new
@@ -1616,7 +1621,7 @@ when "dcp"
     creator = 'cinemaslides cpl',
     content_title = options.dcp_title,
     content_kind = options.dcp_kind,
-    content_version_id = `kmuuidgen -n`, # FIXME
+    content_version_id = cpl_uuid + '_' + issue_date,
     content_version_label = content_version_id,
     rating_list = nil
   )
@@ -1681,7 +1686,6 @@ FIXME cleanup dcpdir after montage summary exit (with -o ...)
 FIXME sox, what's taking you so long? conform_audio()
 FIXME projected length <- frames cast
 FIXME estimate required/check available disk space
-FIXME -o|--dcp-out example
 FIXME max number of commandline args? (32768 here)
 FIXME See $ cinemaslides 01.jpg 02.jpg -x crossfade,1,0 (temporary @framecount fix in full_level())
 FIXME verbosity level "info" -> jpeg 2000 encoder talk
