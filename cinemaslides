@@ -91,13 +91,14 @@ class Optparser
     options.transition_and_timing_choices = [ 'cut', 'fade', 'crossfade' ]
     options.transition_and_timing << 'cut'
     options.transition_and_timing << 5 # duration
+    options.mplayer_gamma = 1.2
 
 
     opts = OptionParser.new do |opts|
       opts.banner = <<BANNER
 cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
 
-Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize ] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--kind <kind>] [--wrap-stereoscopic] [-o, --dcp_out <path>] [-m, --montagepreview] [--keep] [--dont-check ] [--dont-drop] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
+Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize ] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--kind <kind>] [--wrap-stereoscopic] [-o, --dcp_out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma] [--keep] [--dont-check ] [--dont-drop] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
 
 BANNER
 
@@ -189,6 +190,9 @@ BANNER
       end
       opts.on( '-m', '--montagepreview', 'Display a montage of the images before processing' ) do
         options.montage = TRUE
+      end
+      opts.on( '--mg', '--mplayer-gamma gamma', Float, "Tweak mplayer gamma (Used in previews. Range: 0.1 - 10. Default: 1.2)" ) do |p|
+        options.mplayer_gamma = p if ( 0.1 <= p and p <= 10 )
       end
       opts.on( '--keep', 'Do not remove preview/temporary files' ) do
         options.keep = TRUE
@@ -1526,7 +1530,7 @@ when "preview", "fullpreview"
   else
     @logger.warn( "Loop #{ @output_type }. Exit with ESC or 'q'" )
     mplayer_vo = ""
-    `mplayer -really-quiet mf://#{ sequence } #{ audio } -mf fps=#{ fps }:type=#{ @output_format } -loop 0 #{ mplayer_vo } > /dev/null 2>&1`
+    `/home/wolfgang/opencinema/viewer/mplayer/mplayer -really-quiet mf://#{ sequence } #{ audio } -mf fps=#{ fps }:type=#{ @output_format } -loop 0 -vf eq2=#{ options.mplayer_gamma }> /dev/null 2>&1`
   end
   final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
   cleanup_workdir( options.keep )
