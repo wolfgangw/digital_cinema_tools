@@ -1329,7 +1329,7 @@ end
 
 def check_for_audio_asset( filename, samplerate, bps, channelcount )
   hexdigest = Digest::SHA1.hexdigest( File.read( filename ) )
-  assetname = File.join( @assetsdir_audio, "#{ samplerate }_#{ bps }_#{ channelcount }_#{ hexdigest }_.wav" )
+  assetname = File.join( @assetsdir_audio, "#{ hexdigest }_#{ samplerate }_#{ bps }_#{ channelcount }_.wav" )
   if File.exists?( assetname )
     @logger.debug( "Skip: Audio asset exists (#{ filename } -> #{ File.basename( assetname ) })" )
     todo = FALSE
@@ -1390,7 +1390,7 @@ unless @source_audio.empty?
   conformed_audio_list.each do |e|
     set << File.basename( e )
   end
-  sequence_audio_asset = File.join( @assetsdir_audio, "sequence_#{ image_sequence_length_seconds }_#{ Digest::SHA1.hexdigest( set.join ) }_.wav" )
+  sequence_audio_asset = File.join( @assetsdir_audio, "#{ Digest::SHA1.hexdigest( set.join ) }_sequence_#{ image_sequence_length_seconds }_.wav" )
   
   # c) splice
   sequence_audio_asset_tmp = File.join( @assetsdir_audio, 'tmp-' + File.basename( sequence_audio_asset ) )
