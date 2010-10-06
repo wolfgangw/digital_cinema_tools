@@ -1673,8 +1673,9 @@ when "dcp"
   File.open( am_file, 'w' ) { |f| f.write( am.xml ) }
 
   # readme and report
-  readme_file = File.join( @dcpdir, options.dcp_annotation.gsub( ' ', '_' ) + '.readme' )
-  File.open( readme_file, 'w' ) { |f| f.write( commandline + "\n" ) }
+  readme_file_name = options.dcp_annotation.gsub( /[\\\/\& ]/, '_' ) + '.readme'
+  readme_file_path = File.join( @dcpdir, readme_file_name )
+  File.open( readme_file_path, 'w' ) { |f| f.write( commandline + "\n" ) }
   final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
   cleanup_workdir( options.keep )
   @logger.info( "DCP done" )
