@@ -1,0 +1,238 @@
+wine redline.exe > options-redline.txt
+REDline Build 326
+
+File Settings:
+--i <filename>        - input file (required)
+--o <filename>        - output basename
+--pad <int>           - filename padding [default = 6]
+--outDir <path>       - output directory path
+--makeSubDir          - Make a subdirectory for each output
+--exportPreset <name> - Load settings from an export preset: [default = none]
+				"redline_export"
+--presetFile <filename> - The file to load export presets from: [default = C:/users/wolfgang/Local Settings/Application Data/Red/RedCineX/Presets/UserExportPresets.xml]
+--advLutRender <int>  - Write out lut information to a file in the output directory. Then procede to render the Clip with the pass through gammaCurve
+			The file will have the same name as the output file with a .lut extension.
+			1 = Assimilate 16bit LUT
+			2 = Shake 12bit LUT
+			3 = CSP 1D (0.0-1.0) [default: Assimilate 16bit LUT]
+
+3D Settings:
+--i3d <leftEyeFilename> <rightEyeFilename> - Left eye and right eye input files (required instead of --i for 3D export)
+--3dmode <int>        - 3d Export Mode: [default = PixelInterleave]						   
+				 1=PixelInterleave						   
+				 2=Side By Side						   
+				 3=Right Top, Left Bottom						   
+				 4=Left Top, Right Bottom						   
+				 5=Row Interleave                           
+--3doffset <int>      - Offset in frames of the left eye from the right (or right eye from the left if negative) [default = 0]
+
+Format Settings:
+--format <int>        - output formats, DPX=0, Tiff=1, OpenEXR=2, QT wrappers=10, QT transcode=11, R3D Trim=102, [default = DPX]
+-w <int>              - See format
+--res <int>           - Render resolution: full=1, half high=2, half normal=3, qtr/fast=4, eighth=8 [default = 1]
+-R <int>              - See res
+--colorSciVersion <int> - Color science version: current version=0, version 1=1, version 2=2 [default = 0]
+			Note: the current version will always be used if the clip was created with a Mysterium-X sensor or later
+
+Frame Settings:
+--start <int>         - start frame
+-s <int>              - See start
+--end <int>           - end frame
+-e <int>              - See end
+--frameCount <int>    - Number of frames to output, takes precendence over --end
+--startTC <timecode>  - start TC as "00:01:00:00"
+-S <timecode>         - See startTC
+--endTC <timecode>    - end TC "00:01:00:00"
+-E <timecode>         - See endTC
+--useEC               - use EdgeCode instead of TimeOfDay/EXT TC
+--renum <int>         - new start frame number or -1 for timecode as frame count from 00:00:00:00
+				i.e. 00:00:02:00 = frame 48 @ 24fps
+-V <int>              - See renum
+
+Crop and Scale Settings:
+--resizeX <int>       - resize to X dimension [default = none]
+--resizeY <int>       - resize to Y dimension [default = none]
+--fit <int>           - fit src to dest: 1=fitX, 2=fitY, 3=StretchXY, 4=fitX 2x desqueeze, 5=fitX .9, 6=fitY .9 7=fitX 1.46 8=fitX 1.09 [default = fitX]
+--cropX <int>         - crop demosaiced source before resize using origin X  [default = no crop]
+--cropY <int>         - crop demosaiced source before resize using origin Y  [default = no crop]
+--cropW <int>         - crop demosaiced source before resize using Width [default = no crop]
+--cropH <int>         - crop demosaiced source before resize using Height [default = no crop]
+--filter <int>        - filter using: [default = 5 (CatmulRom)]						   
+				 1=Bell (smoother)						   
+				 2=Lanczos3 (sharper)						   
+				 3=Quadratic (smoother)						   
+				 4=Cubic-bspline (smoother)						   
+				 5=CatmulRom (sharper)						   
+				 6=Mitchell (smoother)						   
+				 7=Gauss (smoother)						   
+				 8=WideGuass (smoothest)
+--forceFlipHorizontal <int> - 0 = Disables any horizontal flip setting in metadata.
+	1 = Forces the image to be flipped horizontally
+--forceFlipVertical <int> - 0 = Disables any vertical flip setting in metadata.
+	1 = Forces the image to be flipped vertically
+--rotate <float>      - Rotates the image only 0, -90 and 90 degrees are currently accepted.
+
+Metadata Settings:
+--useMeta             - Use look metadata in R3D as defaults (overridden for each value explicitly set)
+--loadRSX <filename>  - Use look metadata in RedAlert RSX file.
+--useRSX <int>        - Use RMD for defaults (falls back to RSX if no RMD exists):
+				1=color+in/out,
+				2=color only (overridden for each
+						value explicitly set. If both useMeta and useRSX are selected,
+						RMD/RSX takes priority. In/out doesn't impact QT wrappers)
+--useRMD <int>        - See useRSX
+--printMeta <int>     - Print out metadata settings, 0=header, 1=normal, 2=csv, 3=header+csv
+--ALE <filename>      - Saves an ale file with given filename.
+--reelID <int>        - 0=full name, 1=FCP 8 Character
+
+Quicktime Settings:
+--noClobber           - Do not clobber an existing QT file. Add an _Sxxx for each new file.[default = clobber]
+
+Quicktime Transcode Settings:
+--QTcodec <int>       - QT codec to output [default = ProRes HQ]						   
+				 0=Apple ProRes 422 HQ						   
+				 1=Apple ProRes SQ						   
+				 2=H264						   
+				 3=MJpegA						   
+				 4=MJpegB						   
+				 5=ComponentVideo						   
+				 6=H263						   
+				 7=RawCodec						   
+				 8=Pixlet						   
+				 9=DVCPROHD720P						   
+				 10=JPEG						   
+				 11=Animation/RLE						   
+				 12=Uncompressed 8-bit 4:2:2						   
+				 13=Uncompressed 10-bit 4:2:2						   
+				 15=Black Magic RGB 10bit						   
+				 17=AJA Kona 10bit Log RGB						   
+				 18=AJA Kona 10-bit RGB						   
+				 20=AVID 1080P DNxHD 36 8-bit      (23.98, 24, 25)						   
+				 21=AVID 1080P DNxHD 115/120 8-bit (23.98, 24, 25)						   
+				 22=AVID 1080P DNxHD 175/185 8-bit (23.98, 24, 25)						   
+				 23=AVID 1080P DNxHD 175/185 10-bit(23.98, 24, 25)						   
+				 24=AVID  720P DNxHD 60/75 8-bit   (23.98, 25, 29.97)						   
+				 25=AVID  720P DNxHD 90/110 8-bit  (23.98, 29.97)						   
+				 26=AVID  720P DNxHD 90/110 10-bit (23.98, 29.97)						   
+				 27=AVID  720P DNxHD 120/145 8-bit (50, 59.94)						   
+				 28=AVID  720P DNxHD 185/220 8-bit (50, 59.94)						   
+				 29=AVID  720P DNxHD 185/220 10-bit(50, 59.94)						   
+				 30=Apple ProRes 4444						   
+				 31=Apple ProRes 422 LT						   
+				 32=Apple ProRes 422 Proxy
+
+Text Burn-In Settings:
+--burnIn              - Turn on burn in.
+--burnFrames <int>    - Do burn in on: 0=all frames, 1=first, 2=first+last, 3=last [default = all]
+--burnFont <int>      - LetterGothic=1, Monaco=2, Courier=3, LucidaType=4, AndaleMono=5, OCRA=6, OratorStd=7 [default = 6]
+--burnSz <float>      - Height of text in percent of output height [default = 5]
+--burnBase <float>    - Burn in Y location in percent of height [default = 20]
+--burnLL <int>        - 1=Reel/Filename, 2=Frames, 3=Frames in Edit, 4=Frames in Src, 5=EdgeCode, 6=EXT/TOD TC [default = none]
+--burnLR <int>        - 1=Reel/Filename, 2=Frames, 3=Frames in Edit, 4=Frames in Src, 5=EdgeCode, 6=EXT/TOD TC [default = none]
+--burnUL <int>        - 1=Reel/Filename, 2=Frames, 3=Frames in Edit, 4=Frames in Src, 5=EdgeCode, 6=EXT/TOD TC [default = none]
+--burnUR <int>        - 1=Reel/Filename, 2=Frames, 3=Frames in Edit, 4=Frames in Src, 5=EdgeCode, 6=EXT/TOD TC [default = none]
+--burnTxtR <float>    - Text red channel (0-1.0) [default = 1.0]
+--burnTxtG <float>    - Text green channel (0-1.0) [default = 1.0]
+--burnTxtB <float>    - Text blue channel (0-1.0) [default = 1.0]
+--burnTxtA <float>    - Text alpha channel (0-1.0) [default = 0.8]
+--burnBgR <float>     - Background red channel (0-1.0) [default = 0.5]
+--burnBgG <float>     - Background green channel (0-1.0) [default = 0.5]
+--burnBgB <float>     - Background blue channel (0-1.0) [default = 0.5]
+--burnBgA <float>     - Background alpha channel (0-1.0) [default = 0.5]
+
+Watermark Settings:
+--watermark           - Turn on watermarking.
+--watermarkFont <string> - Watermark font
+--watermarkText <string> - Watermark text
+--watermarkSz <float> - Height of text in percent of output height [default = 5]
+--watermarkBase <float> - Watermark Y location in percent of height [default = 20]
+--watermarkTxtR <float> - Text red channel (0-1.0) [default = 1.0]
+--watermarkTxtG <float> - Text green channel (0-1.0) [default = 1.0]
+--watermarkTxtB <float> - Text blue channel (0-1.0) [default = 1.0]
+--watermarkTxtA <float> - Text alpha channel (0-1.0) [default = 0.8]
+
+Color/Gamma Space Settings:
+--gammaCurve <int>    - gamma curve: lin=-1, rec709=1, sRGB=2, REDlog=3, 
+			PDLog985=4, PDLog685=5, PDLogCustom=6, REDspace=14, REDgamma=15, REDLogFilm=27  [default = 14]
+-G <int>              - See gammaCurve
+--gammaCustom <float> - custom gamma value [default off]
+-v <float>            - See gammaCustom
+--colorSpace <int>    - color space: REDspace= 2 or 11, CameraRGB= 0 or 12, rec709= 1 or 13, REDcolor=14, sRGB=15, Adobe1998=5  [default = 2]
+-c <int>              - See colorSpace
+--detail <int>        - detail: leadingLady = 1, medium = 4, high = 8 [default = 8]
+-d <int>              - See detail
+--OLPF <int>          - OLPF Compensation: post sharpen low = 1, med = 50, high = 100 [default OFF]
+-D <int>              - See OLPF
+--NR <int>            - Noise reduction off=0, very mild = 1000, milder = 500, mild = 250 medium = 100, strong = 50, max = 10 [default mild]
+
+Color Settings:
+--iso <int>           - ISO  [default = 320, range = 100 to 2000]
+-I <int>              - See iso
+--flut <float>        - FLUT [default = 0.0, range = -8.0 to 8.0]
+-F <float>            - See flut
+--shadow <float>      - shadow [default = 0.0, range = -2.0 to 2.0]
+-W <float>            - See shadow
+--kelvin <int>        - kelvin  [default = 5600, range = 1700 to 50000]
+-k <int>              - See kelvin
+--tint <float>        - tint  [default = 0.0, range = -100 to 100]
+-t <float>            - See tint
+--exposure <float>    - exposure  [default = 0.0, range = -12 to 12]
+-x <float>            - See exposure
+--saturation <float>  - saturation <float> 	: saturation [default = 1.0, range = 0.0 to 2.0]
+-T <float>            - See saturation
+--contrast <float>    - contrast [default = 0.0, range = -1.0 to 1.0]
+-C <float>            - See contrast
+--brightness <float>  - brightness [default = 0.0, range = -10 to 50]
+-B <float>            - See brightness
+--redGain <float>     - red gain [default = 1.0, range = 0.0 to 4.0]
+-r <float>            - See redGain
+--blueGain <float>    - blue gain [default = 1.0, range = 0.0 to 4.0]
+-b <float>            - See blueGain
+--greenGain <float>   - green gain [default = 1.0, range = 0.0 to 4.0]
+-g <float>            - See greenGain
+--drx <float>         - DRX: Dynamic Range Extender [default = .5, range = 0.0 to 1.0]
+-X <float>            - See drx
+
+Print Density Settings:
+--pdBlack <int>       - Black point [default = 95, range = 0-511]
+--pdWhite <int>       - 90% White point [default = 685, range = 512-1023]
+--pdGamma <float>     - Gamma [default = .6, range = 0.0 to 2.2]
+
+Curve Settings:
+--black <float>       - black level [default = 0, range = 0 - 100]
+--white <float>       - white level [default = 100, range = 0 - 100]
+--blackX <float>      - (deprecated. see lumaCurve) curve black point X value [default = 0, range = 0 - 100]
+--blackY <float>      - (deprecated. see lumaCurve) curve black point Y value [default = 0, range = 0 - 100]
+--toeX <float>        - (deprecated. see lumaCurve) curve toe point X value   [default = 25, range = 0 - 100]
+--toeY <float>        - (deprecated. see lumaCurve) curve toe point Y value   [default = 25, range = 0 - 100]
+--midX <float>        - (deprecated. see lumaCurve) curve mid point X value   [default = 50, range = 0 - 100]
+--midY <float>        - (deprecated. see lumaCurve) curve mid point Y value   [default = 50, range = 0 - 100]
+--kneeX <float>       - (deprecated. see lumaCurve) curve knee point X value  [default = 75, range = 0 - 100]
+--kneeY <float>       - (deprecated. see lumaCurve) curve knee point Y value  [default = 75, range = 0 - 100]
+--whiteX <float>      - (deprecated. see lumaCurve) curve white point X value [default = 100, range = 0 - 100]
+--whiteY <float>      - (deprecated. see lumaCurve) curve white point Y value [default = 100, range = 0 - 100]
+--lumaCurve <int list> - luma curve point values. [default = 0:0:25:25:50:50:75:75:100:100]
+--redCurve <int list> - red curve point values. [default = 0:0:25:25:50:50:75:75:100:100]
+--greenCurve <int list> - green curve point values. [default = 0:0:25:25:50:50:75:75:100:100]
+--blueCurve <int list> - blue curve point values. [default = 0:0:25:25:50:50:75:75:100:100]
+
+DPX Settings:
+--byteOrder <int>     - DPX Byte Order: LSB=0, MSB=1 [default = 0]
+--bitDepth <int>      - DPX Bit Depth: 10, 16 [default = 10]
+--maxWriters <int>    - DPX Max Simultaneous Writers [default = 10, range = 1 - 16]
+
+OpenEXR Settings:
+--exrCompression <int> - OpenEXR Compression: PIZ=1, NONE=0 [default = 0]
+--exrMultiView <int>  - OpenEXR MultiView: Dual Channel=1, Single Channel=0 [default=0]
+--exrMaxWriters <int> - OpenEXR Max Simultaneous Writers [default = 10, range = 1 - 16]
+
+Misc Settings:
+--help [ <command> ]  - Retrieve information about commands.
+-? [ <command> ]      - See help
+--verbose [ <arg0> ]  - Enables verbose output.
+--errorsOnly [ <arg0> ]- Only displays errors.
+--silent [ <arg0> ]   - Disables all output except the most vital.
+--logFile <filename>  - File to log output into.
+--noRocket            - Turn rocket support off even if it's available.
+--noRender            - Forces redline to abort before any rendering occurs
+
