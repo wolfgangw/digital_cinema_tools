@@ -1,4 +1,0 @@
-* Check a list of strings (e.g. filenames) for numeric sequential streams and produce a composite from skeleton and streams (multiple streams possible) -- like @Reel_01_Final_[000121-010119]_former_[000001-009999].tiff@. It also returns stream directions and markers for UUIDs. See demo script "sequential.py":http://github.com/wolfgangw/digital_cinema_tools/blob/master/sequential.py
-* [[Cinemaslides]], feeble attempt to recreate the magic of aunt Mimi's hilarious summer-night-shut-all-the-lights slideshow hell.
-* "Calculate chromatic adaptation transformation matrices":http://github.com/wolfgangw/digital_cinema_tools/blob/master/chromatic_adaptation.rb. See [[White Gamut]] for more.
-* A script to calculate the 3x3 matrix needed to transform ITU REC. 709 to XYZ: "rec709-xyz_matrix.rb":http://github.com/wolfgangw/digital_cinema_tools/blob/master/rec709-xyz_matrix.rb

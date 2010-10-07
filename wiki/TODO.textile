@@ -1,4 +1,0 @@
-* Check FFmpeg's handling of video bit-depths
-* Robust audio conform (frame boundary alignment, resampling, bit-depth, channel mapping)
-* Subtitles (SMPTE-429-5-2009)
-* MPEG2 MXF Interop. XDC G3 offers up to 160Mbps (4:2:0, 8 bits/channel, YCbCr), what about other platforms?
