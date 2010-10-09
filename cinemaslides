@@ -18,7 +18,7 @@ Author = "Wolfgang Woehl"
 #   highline (gem install highline)
 #   nokogiri (gem install nokogiri, requires ruby-dev, libxml2-dev)
 #
-requirements = [ 'convert', 'identify', 'montage', 'display', 'mplayer', 'sox', 'soxi', 'image_to_j2k', 'kdu_compress', 'asdcp-test', 'kmuuidgen' ]
+requirements = [ 'convert', 'identify', 'montage', 'display', 'mplayer', 'sox', 'soxi', 'opendcp_j2k', 'image_to_j2k', 'kdu_compress', 'asdcp-test', 'kmuuidgen' ]
 #
 ###
 #   Kakadu (http://www.kakadusoftware.com/index.php) is a proprietary JPEG 2000 implementation, written by Dr. Taubman
@@ -62,10 +62,10 @@ class Optparser
     options.aspect_malformed = FALSE
     options.resize = TRUE # option to _not_ resize images (useful for images which are close to target dimensions and would suffer from scaling/-resize)
     options.fps = 24.0
-    options.fps_dcp_choices = [ 24.0, 48.0 ]
+    options.fps_dcp_choices = [ 24.0, 25.0, 30.0, 48.0, 50.0, 60.0 ]
     options.fps_asdcp_choices = [ 23.976, 24.0, 25.0, 30.0, 48.0, 50.0, 60.0 ] # 24000/1001 not DCI compliant but shows up in asdcplib. Why?
     options.encoder = 'openjpeg'
-    options.encoder_choices = [ 'openjpeg', 'kakadu' ]
+    options.encoder_choices = [ 'openjpeg-tm', 'openjpeg', 'kakadu' ]
     options.output_format = 'jpg'
     options.black = 0.0
     options.black_leader = NIL
@@ -1051,6 +1051,8 @@ if @output_type == "dcp"
   end
   # mark assets with encoder ids
   case options.encoder
+  when 'openjpeg-tm'
+    @encoder_id = 'opjtm'
   when 'openjpeg'
     @encoder_id = 'opj'
   when 'kakadu'
@@ -1573,6 +1575,8 @@ when "dcp"
       if todo == TRUE
         @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
         case options.encoder
+        when 'openjpeg-tm'
+          `opendcp_j2k -i #{ file } -o #{ asset } -r #{ fps }`
         when 'openjpeg'
           `image_to_j2k -#{ openjpeg_cinema_profile } -i #{ file } -o #{ asset } > /dev/null 2>&1`
         when 'kakadu'
@@ -1673,7 +1677,7 @@ when "dcp"
   File.open( am_file, 'w' ) { |f| f.write( am.xml ) }
 
   # readme and report
-  readme_file_name = options.dcp_annotation.gsub( /[\\\/\& ]/, '_' ) + '.readme'
+  readme_file_name = options.dcp_annotation.gsub( /[\\\/\&: ]/, '_' ) + '.readme'
   readme_file_path = File.join( @dcpdir, readme_file_name )
   File.open( readme_file_path, 'w' ) { |f| f.write( commandline + "\n" ) }
   final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
