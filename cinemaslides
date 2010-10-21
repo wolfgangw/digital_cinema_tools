@@ -1496,13 +1496,13 @@ keeper = nil # keep a conform for the next crossfade (2nd will be 1st then, don'
       image1 = conform( @source[ index ], fps )
       image2 = conform( @source[ index + 1 ], fps )
       keeper = image2
-      fade_in( image1, fps, crossfade_time )
+      #fade_in( image1, fps, crossfade_time )
       full_level( image1, fps, duration )
       crossfade( image1, image2, fps, crossfade_time )
     when @source.length - 1 # last image
       image = keeper
       full_level( image, fps, duration )
-      fade_out( image, fps, crossfade_time )
+      #fade_out( image, fps, crossfade_time )
     else
       image1 = keeper
       image2 = conform( @source[ index + 1 ], fps )
