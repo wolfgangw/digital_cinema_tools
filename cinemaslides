@@ -58,7 +58,7 @@ class Optparser
     options.size = '2k'
     options.size_choices = [ '2k', '4k' ]
     options.aspect = 'flat'
-    options.aspect_choices = [ 'flat', 'scope', 'hd', Regexp.new('\d+(\.\d+)?x\d+(\.\d+)?') ] # custom aspect ratios: match '<numeric>x<numeric>'
+    options.aspect_choices = [ 'flat', 'scope', 'hd', Regexp.new( '\d+(\.\d+)?x\d+(\.\d+)?' ) ] # custom aspect ratios: match '<numeric>x<numeric>'
     options.aspect_malformed = FALSE
     options.resize = TRUE # option to _not_ resize images (useful for images which are close to target dimensions and would suffer from scaling/-resize)
     options.fps = 24.0
@@ -81,6 +81,8 @@ class Optparser
     options.dcp_kind_choices = [ 'feature', 'trailer', 'test', 'teaser', 'rating', 'advertisement', 'short', 'transitional', 'psa', 'policy' ]
     options.dcp_wrap_stereoscopic = FALSE
     options.dcp_user_output_path = nil
+    options.dcp_color_transform_matrix = 'srgb_to_xyz'
+    options.dcp_color_transform_matrix_choices = [ 'iturec709_to_xyz', 'srgb_to_xyz', '709', 'srgb', Regexp.new( '(\d+(\.\d+)?\s*){9,9}' ) ]
     options.montage = FALSE
     options.keep = FALSE
     options.dont_check = FALSE
@@ -1212,6 +1214,7 @@ fps = options.fps
 if @output_type == "dcp"
   @output_format = "tiff"
   original_suffix = @output_format
+  ITUREC709_TO_XYZ = "0.412390799265959  0.357584339383878  0.180480788401834 0.21263900587151 0.715168678767756 0.0721923153607337 0.0193308187155918 0.119194779794626 0.950532152249661"
   SRGB_TO_XYZ = "0.4124564 0.3575761 0.1804375 0.2126729 0.7151522 0.0721750 0.0193339 0.1191920 0.9503041"
 else
   @output_format = options.output_format
