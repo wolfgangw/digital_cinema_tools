@@ -28,18 +28,22 @@ class Optparser
     options.source = "d65"
     options.destination = "dci_calibration_white"
     options.crd_definition = "bradford"
+    options.output = 'line'
 
     opts = OptionParser.new do |opts|
       opts.banner = "Usage: chromatic_adaptation.rb [ -s, --source | --d, --destination | -m, --method ]"
 
-      opts.on( "-s", "--source k5900 | d50 | d55 | d65 (Default) | rec709 | d75 | dci_calibration_white", "White point reference of source" ) do |ws|
-        options.source = ws
+      opts.on( "-s", "--source k5900 | d50 | d55 | d65 (Default) | rec709 | d75 | dci_calibration_white", "White point reference of source" ) do |p|
+        options.source = p
       end
-      opts.on( "-d", "--destination k5900 | d50 | d55 | d65 | rec709 | d75 | dci_calibration_white (Default)", "White point reference of destination" ) do |wd|
-        options.destination = wd
+      opts.on( "-d", "--destination k5900 | d50 | d55 | d65 | rec709 | d75 | dci_calibration_white (Default)", "White point reference of destination" ) do |p|
+        options.destination = p
       end
-      opts.on( "-m", "--method xyzscaling | bradford | vonkries", "Cone response domain definition" ) do |m|
-        options.crd_definition = m
+      opts.on( "-m", "--method xyzscaling | bradford | vonkries", "Cone response domain definition" ) do |p|
+        options.crd_definition = p
+      end
+      opts.on( "-o", "--output block | line (Default)", "Format output as a 3x3 block or as a line" ) do |p|
+	options.output = p
       end
       
       opts.on_tail( '-h', '--help', 'Display this screen' ) do
@@ -143,5 +147,11 @@ CAT = M_A ** -1 * Matrix[
                           [0, gamma_D / gamma_S, 0],
                           [0, 0, beta_D / beta_S] ]   * M_A
 
-puts "Chromatic adaptation transformation for #{options.source} -> #{options.destination} (CRD definition: #{options.crd_definition}): \n#{CAT.row(0).to_a.join('  ')}\n#{CAT.row(1).to_a.join('  ')}\n#{CAT.row(2).to_a.join('  ')}"
+if options.output == 'block'
+  puts "Chromatic adaptation transformation for #{options.source} -> #{options.destination} (CRD definition: #{options.crd_definition}): \n#{CAT.row(0).to_a.join('  ')}\n#{CAT.row(1).to_a.join('  ')}\n#{CAT.row(2).to_a.join('  ')}"
+elsif options.output == 'line'
+  puts "Chromatic adaptation transformation for #{options.source} -> #{options.destination} (CRD definition: #{options.crd_definition}): \n#{CAT.row(0).to_a.join(' ')} #{CAT.row(1).to_a.join(' ')} #{CAT.row(2).to_a.join(' ')}"
+else
+  puts "Use -o block or -o line (Default)"
+end
 
