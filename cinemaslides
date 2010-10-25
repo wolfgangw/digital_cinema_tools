@@ -1692,7 +1692,6 @@ FIXME cleanup dcpdir after montage summary exit (with -o ...)
 FIXME sox, what's taking you so long? conform_audio()
 FIXME projected length <- frames cast
 FIXME estimate required/check available disk space
-FIXME max number of commandline args? (32768 here)
 FIXME See $ cinemaslides 01.jpg 02.jpg -x crossfade,1,0 (temporary @framecount fix in full_level())
 FIXME verbosity level "info" -> jpeg 2000 encoder talk
 FIXME crossfades border case: 0.0416666666666667 (1/24) crossfade time -> level shoots off the roof
