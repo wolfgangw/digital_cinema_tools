@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.10.22"
+CinemaSlidesVersion = "v0.2010.10.25"
 Author = "Wolfgang Woehl"
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
@@ -1566,9 +1566,9 @@ when "dcp"
   
   files.each do |file|
     counter += 1
-    asset_link = file + '.j2c'
+    asset_link = File.join( @j2cdir, File.basename( file ).gsub( '.tiff', '' ) + '.j2c' )
     if File.dirname( File.readlink( file ) ) == @conformdir # 1st file is always a link to the asset depot
-      File.link( previous_asset, asset_link )
+      File.link( previous_asset, asset_link ) 
       @logger.cr( "Skip (Full level): #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
     else
       asset, todo = check_for_asset( file, 'j2c', fps ) # possible "Skip" message only with debug verbosity
@@ -1585,8 +1585,6 @@ when "dcp"
       File.link( asset, asset_link )
     end
   end
-
-  `mv #{ File.join( @conformdir, '*.j2c' ) } #{ @j2cdir }`
   
   # Setup MXF container names
   image_mxf_uuid = `kmuuidgen -n`
