@@ -9,6 +9,7 @@ Author = "Wolfgang Woehl"
 #
 # Export CINEMASLIDESDIR to point to the desired location for temporary files, asset depot etc.
 #   (or use the default location HOME/cinemaslidesdir)
+# Export CINEMACERTSTORE to point at a directory that holds your signing certificate and validating certificate chain
 #
 # Requires:
 #   ruby, gem, bash
@@ -36,6 +37,7 @@ require 'fileutils'
 require 'ftools' # File.copy. not needed (and not working) in ruby 1.9
 require 'optparse'
 require 'ostruct'
+require 'openssl'
 require 'digest/md5'
 require 'base64'
 require 'pp'
@@ -94,13 +96,14 @@ class Optparser
     options.transition_and_timing << 'cut'
     options.transition_and_timing << 5 # duration
     options.mplayer_gamma = 1.2
+    options.sign = FALSE
 
 
     opts = OptionParser.new do |opts|
       opts.banner = <<BANNER
 cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
 
-Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
+Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
 
 BANNER
 
@@ -204,6 +207,9 @@ BANNER
       end
       opts.on( '--dont-drop', 'Do not drop and ignore unreadable files or files ImageMagick cannot decode but nag and exit instead' ) do
         options.dont_drop = TRUE
+      end
+      opts.on( '--sign', 'Sign CPL and PKL (export ENV variable CINEMACERTSTORE to point at a directory that holds your signing certificate and validating certificate chain)' ) do
+        options.sign = TRUE
       end
       opts.on( '-v', '--verbosity level', String, "Use 'quiet', 'info' or 'debug' (Default: info)" ) do |p|
         if options.verbosity_choices.include?( p )
@@ -791,6 +797,105 @@ class MXF_Metadata < Hash
 end # MXF_Metadata
 
 
+# FIXME expects an ordered (pem format) certificate chain for now:
+# leaf cert signed by -> intermediate certificate signed by -> ... signed by -> self-signed root certificate
+# an ordered certificate chain is created by iterating through your certificates,
+# starting with a self-signed root certificate -> verify -> append to (empty) certificate chain
+# verify root-signed intermediate certificate -> append ... repeat until leaf certificate
+class X509CertificateChain
+  def initialize( certchain_text )
+    @certs = Array.new
+    c = Array.new
+
+    certchain_text.split( /\n/ ).each do |line|
+      if line =~ /-----BEGIN CERTIFICATE-----/
+        c = Array.new
+        c << line
+      elsif line =~ /-----END CERTIFICATE-----/
+        c << line
+        @certs << OpenSSL::X509::Certificate.new( c.join( "\n" ) + "\n" )
+      else
+        c << line
+      end
+    end
+    
+    @certs.reverse!
+    
+  end # initialize
+  def to_a
+    @certs
+  end
+  def []( index )
+    @certs[ index ]
+  end
+  def size
+    @certs.size
+  end
+end # X509Certificate_Metadata
+
+
+
+class DCSignerSignature # see ETM_SMPTE_430_3_2008
+  def initialize( xml_to_sign, certificate_chain )
+    signing_cert = certificate_chain.first
+    doc = Nokogiri::XML( xml_to_sign ) { |x| x.noblanks } # Thanks, Aaron Patterson
+    @builder = Nokogiri::XML::Builder.with( doc.at( doc.root.node_name ) ) do |xml|
+      xml.Signer_( 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
+        xml[ 'ds' ].X509Data_ {
+          xml.X509IssuerSerial_ {
+            xml.X509IssuerName_ parse_dc_certname( signing_cert.issuer.to_s )
+            xml.X509SerialNumber_ signing_cert.serial.to_s
+          } # X509IssuerSerial
+          xml.X509SubjectName_ parse_dc_certname( signing_cert.subject.to_s ) # informational
+        } # X509Data
+      } # Signer
+      xml.Signature_( 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
+        xml[ 'ds' ].SignedInfo_ {
+          xml.CanonicalizationMethod_( 'Algorithm' => 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315' )
+          xml.SignatureMethod_( 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#rsa-sha1' )
+          xml.Reference_( 'URI' => "" ) {
+            xml.Transforms_ {
+              xml.Transform_( 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#enveloped-signature' )
+            } # Transforms
+            xml.DigestMethod_( 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#sha1' )
+            xml.DigestValue_ # digest FIXME
+          } # Reference
+        } # SignedInfo
+        xml.SignatureValue_ # signature_value FIXME
+        xml.KeyInfo_ {
+            certificate_chain.each do |cert|
+              xml.X509Data_ {
+                xml.X509IssuerSerial_ {
+                  xml.X509IssuerName_ parse_dc_certname( cert.issuer.to_s )
+                  xml.X509SerialNumber_ cert.serial.to_s
+                } # X509IssuerSerial
+                xml.X509Certificate stripped( cert.to_pem )
+              } # X509Data
+            end
+        } # KeyInfo
+      } # Signature
+    end # @builder
+  end # initialize
+  def stripped( pem )
+    #"\n" + pem.split( "\n" )[ 1..(-2) ].join( "\n" ) + "\n" # uberugh
+    "\n" + pem.gsub( /-----(BEGIN|END) CERTIFICATE-----\n/, '' ) # anche ugh, let's call it a night
+  end
+  def parse_dc_certname( name )
+    # as an alternative to the regexp match used here we could use OpenSSL::X509::Name methods like
+    # #Name.to_a -> [["O", "example.com", 19], ["OU", "csc.example.com", 19], ["CN", "CS dcstore.CONTENT", 19], ["dnQualifier", "/I8bDQt32ucQDc+53O1pZn2jTw8=", 19]]
+    # /O=example.com/OU=csc.example.com/CN=CS dcstore.CONTENT/dnQualifier=/I8bDQt32ucQDc+53O1pZn2jTw8=
+    o = name.match( /(O=.+)\/OU=/ )[1] # Can O names have slashes? safeguard
+    ou = name.match( /(OU=.+)\/CN=/ )[1] # ditto
+    cn = name.match( /(CN=.+)\/dnQualifier=/ )[1] # ditto
+    dnq = name.match( /dnQualifier=.+/ )[0]
+    return [ dnq, cn, ou, o ].join( ',' )
+  end
+  def xml
+    return @builder.to_xml( :indent => 2 )
+  end
+end
+
+
 class CPL_SMPTE_429_7_2006
   def initialize( cpl_uuid, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
@@ -849,7 +954,7 @@ class CPL_SMPTE_429_7_2006
           end # image_mxfs.each
         } # ReelList
       } # CompositionPlaylist
-    end # Builder
+    end # @builder
   end # initialize
     
   def xml
@@ -1050,6 +1155,12 @@ if @output_type == "dcp"
   unless options.encoder_choices.include?( options.encoder )
     @logger.critical( "Not a usable encoder: '#{ options.encoder }'" )
     exit
+  end
+  if options.sign == TRUE
+    if ENV[ 'CINEMACERTSTORE' ].nil?
+      @logger.critical( 'CINEMACERTSTORE not set. Cannot locate signing certificate and validating cerificate chain' )
+      exit
+    end
   end
   # mark assets with encoder ids
   case options.encoder
@@ -1630,7 +1741,16 @@ when "dcp"
     content_version_label = content_version_id,
     rating_list = nil
   )
-  File.open( cpl_file, 'w' ) { |f| f.write( cpl.xml ) }
+  if options.sign == TRUE
+    certchain_text = File.read( File.join( ENV[ 'CINEMACERTSTORE' ], 'dc-certificate-chain' ) )
+    certchain = X509CertificateChain.new( certchain_text ).to_a
+    cpl_xml = DCSignerSignature.new( cpl.xml, certchain ).xml
+    puts cpl_xml
+    exit
+  else
+    cpl_xml = cpl.xml
+  end
+  File.open( cpl_file, 'w' ) { |f| f.write( cpl_xml ) }
 
   # Write PackingList
   @logger.info( 'Write PKL ...' )
