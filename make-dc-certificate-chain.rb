@@ -58,6 +58,7 @@ File.open( 'ca.cnf', 'w' ) { |f| f.write( ca_cnf ) }
 # Subject dnQualifier:
 ca_dnq = `openssl rsa -outform PEM -pubout -in ca.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 ca_dnq = ca_dnq.gsub( '/', '\/' ) # can have values like '0Za8/aABE05Aroz7le1FOpEdFhk=', note the '/'. protect for name parser
+# The following simply concatenates the dnq. Somehow I have a feeling that that's not quite right. Someone knows?
 ca_subject = '/O=example.com/OU=csc.example.com/CN=dcstore.ROOT/dnQualifier=' + ca_dnq
 `openssl req -new -x509 -sha256 -config ca.cnf -days 365 -set_serial 5 -subj "#{ ca_subject }" -key ca.key -outform PEM -out ca.self-signed.pem`
 
