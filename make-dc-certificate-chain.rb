@@ -40,7 +40,7 @@ end
 
 ca_cnf = <<EOF
 [ req ]
-distinguished_name	= req_distinguished_name
+distinguished_name = req_distinguished_name
 x509_extensions	= v3_ca
 [ v3_ca ]
 basicConstraints = critical,CA:true,pathlen:3
