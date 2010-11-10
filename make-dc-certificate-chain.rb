@@ -113,8 +113,8 @@ EOF
 File.open( 'leaf.cnf', 'w' ) { |f| f.write( leaf_cnf ) }
 leaf_dnq = `openssl rsa -outform PEM -pubout -in leaf.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 leaf_dnq = leaf_dnq.gsub( '/', '\/' )
-# Note the CN role signifier CS (Content signer/creator)
-leaf_subject = "/O=example.com/OU=csc.example.com/CN=CS dcstore.LEAF/dnQualifier=" + leaf_dnq
+# Note the CN role signifier 'CS' (Content signer/creator), separated by leftmost period character from the unique entity label
+leaf_subject = "/O=example.com/OU=csc.example.com/CN=CS.dcstore.LEAF/dnQualifier=" + leaf_dnq
 # Request signing for leaf certificate
 `openssl req -new -config leaf.cnf -days 365 -subj "#{ leaf_subject }" -key leaf.key -outform PEM -out leaf.csr`
 # Sign with intermediate certificate
