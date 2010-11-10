@@ -836,10 +836,10 @@ end # X509Certificate_Metadata
 
 
 class DCSignerSignature # see ETM_SMPTE_430_3_2008
-  def initialize( xml_to_sign, certificate_chain )
+  def initialize( xml_to_sign, signerkey_file, certificate_chain )
     signing_cert = certificate_chain.first
     doc = Nokogiri::XML( xml_to_sign ) { |x| x.noblanks } # Thanks, Aaron Patterson
-    @builder = Nokogiri::XML::Builder.with( doc.at( doc.root.node_name ) ) do |xml|
+    @builder_signature_template = Nokogiri::XML::Builder.with( doc.at( doc.root.node_name ) ) do |xml|
       xml.Signer_( 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
         xml[ 'ds' ].X509Data_ {
           xml.X509IssuerSerial_ {
@@ -849,6 +849,7 @@ class DCSignerSignature # see ETM_SMPTE_430_3_2008
           xml.X509SubjectName_ parse_dc_certname( signing_cert.subject.to_s ) # informational
         } # X509Data
       } # Signer
+      # signature template:
       xml.Signature_( 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
         xml[ 'ds' ].SignedInfo_ {
           xml.CanonicalizationMethod_( 'Algorithm' => 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315' )
@@ -858,28 +859,45 @@ class DCSignerSignature # see ETM_SMPTE_430_3_2008
               xml.Transform_( 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#enveloped-signature' )
             } # Transforms
             xml.DigestMethod_( 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#sha1' )
-            xml.DigestValue_ # digest FIXME
+            xml.DigestValue_
           } # Reference
         } # SignedInfo
-        xml.SignatureValue_ # signature_value FIXME
-        xml.KeyInfo_ {
-            certificate_chain.each do |cert|
-              xml.X509Data_ {
-                xml.X509IssuerSerial_ {
-                  xml.X509IssuerName_ parse_dc_certname( cert.issuer.to_s )
-                  xml.X509SerialNumber_ cert.serial.to_s
-                } # X509IssuerSerial
-                xml.X509Certificate stripped( cert.to_pem )
-              } # X509Data
-            end
-        } # KeyInfo
+        xml[ 'ds' ].SignatureValue_
       } # Signature
+    end # @builder_signature_template
+    
+    # workaround for xmlsec which won't find signature node without the ns prefix (which is wrong, i think, because at that point the prefix is not defined)
+    pre_signed_xml = @builder_signature_template.to_xml( :indent => 2 )
+    pre_signed_xml.gsub!( /<Signature/, '<ds:Signature' )
+    pre_signed_xml.gsub!( /<\/Signature/, '</ds:Signature' )
+    
+    File.open( 'presigned.xml', 'w' ) { |f| f.write( pre_signed_xml ); f.close }
+
+    signed_xml = `sign1 #{ 'presigned.xml' } #{ signerkey_file }`
+
+    doc = Nokogiri::XML::Document.parse( signed_xml ) { |x| x.noblanks }
+
+    @builder = Nokogiri::XML::Builder.with( doc.at( doc.root.node_name ) ) do |xml| # FIXME
+      xml.KeyInfo_ {
+        certificate_chain.each do |cert|
+          xml.X509Data_ {
+            xml.X509IssuerSerial_ {
+              xml.X509IssuerName_ parse_dc_certname( cert.issuer.to_s )
+              xml.X509SerialNumber_ cert.serial.to_s
+            } # X509IssuerSerial
+            xml.X509Certificate stripped( cert.to_pem )
+          } # X509Data
+        end # certs
+      } # KeyInfo
     end # @builder
+    
   end # initialize
+  
   def stripped( pem )
     #"\n" + pem.split( "\n" )[ 1..(-2) ].join( "\n" ) + "\n" # uberugh
     "\n" + pem.gsub( /-----(BEGIN|END) CERTIFICATE-----\n/, '' ) # anche ugh, let's call it a night
   end
+  
   def parse_dc_certname( name )
     # as an alternative to the regexp match used here we could use OpenSSL::X509::Name methods like
     # #Name.to_a -> [["O", "example.com", 19], ["OU", "csc.example.com", 19], ["CN", "CS dcstore.CONTENT", 19], ["dnQualifier", "/I8bDQt32ucQDc+53O1pZn2jTw8=", 19]]
@@ -1742,11 +1760,10 @@ when "dcp"
     rating_list = nil
   )
   if options.sign == TRUE
+    signerkey_file = File.join( ENV[ 'CINEMACERTSTORE' ], 'signer.key' )
     certchain_text = File.read( File.join( ENV[ 'CINEMACERTSTORE' ], 'dc-certificate-chain' ) )
     certchain = X509CertificateChain.new( certchain_text ).to_a
-    cpl_xml = DCSignerSignature.new( cpl.xml, certchain ).xml
-    puts cpl_xml
-    exit
+    cpl_xml = DCSignerSignature.new( cpl.xml, signerkey_file, certchain ).xml
   else
     cpl_xml = cpl.xml
   end
@@ -1774,7 +1791,12 @@ when "dcp"
     creator = 'cinemaslides pkl',
     pkl_assets.flatten
   )
-  File.open( pkl_file, 'w' ) { |f| f.write( pkl.xml ) }
+  if options.sign == TRUE
+    pkl_xml = DCSignerSignature.new( pkl.xml, signerkey_file, certchain ).xml
+  else
+    pkl_xml = pkl.xml
+  end
+  File.open( pkl_file, 'w' ) { |f| f.write( pkl_xml ) }
   
   # Write Assetmap
   @logger.info( 'Write ASSETMAP' )
