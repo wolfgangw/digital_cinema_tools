@@ -24,7 +24,15 @@ e()
   #
   # define the processing you want to execute for each shell argument here
   # with these examples output ends up in the current directory
-  image_to_j2k -cinema2K 24 -i ${file} -o $(basename ${file}).j2c > /dev/null 2>&1
+  #
+  # examples:
+  #
+  # file format conversion gains significantly
+  # for example 600 12bpc 1920x1080 tiffs with single job sequence ~220 secs, with threads-test.bash ~120 secs
+  convert ${file} -quality 100 $(basename ${file}).jpg
+  #
+  #image_to_j2k -cinema2K 24 -i ${file} -o $(basename ${file}).j2c > /dev/null 2>&1
+  #
   #kdu_compress -i ${file} -o $(basename ${file}).j2c Sprofile=CINEMA2K Creslengths=1302083 Creslengths:C0=1302083,1041666 Creslengths:C1=1302083,1041666 Creslengths:C2=1302083,1041666 > /dev/null 2>&1
   #
 }
