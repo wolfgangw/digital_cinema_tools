@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.10.25"
+CinemaSlidesVersion = "v0.2010.11.12"
 Author = "Wolfgang Woehl"
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
@@ -41,6 +41,7 @@ require 'openssl'
 require 'digest/md5'
 require 'base64'
 require 'pp'
+require 'tempfile'
 begin
   require 'rubygems'
 rescue LoadError
@@ -834,13 +835,13 @@ class X509CertificateChain
 end # X509Certificate_Metadata
 
 
-
-class DCSignerSignature # see ETM_SMPTE_430_3_2008
+# 
+class DCSignature # see ETM_SMPTE_430_3_2008
   def initialize( xml_to_sign, signerkey_file, certificate_chain )
     signing_cert = certificate_chain.first
     doc = Nokogiri::XML( xml_to_sign ) { |x| x.noblanks } # Thanks, Aaron Patterson
     @builder_signature_template = Nokogiri::XML::Builder.with( doc.at( doc.root.node_name ) ) do |xml|
-      xml.Signer_( 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
+      xml.Signer_ {
         xml[ 'ds' ].X509Data_ {
           xml.X509IssuerSerial_ {
             xml.X509IssuerName_ parse_dc_certname( signing_cert.issuer.to_s )
@@ -850,8 +851,8 @@ class DCSignerSignature # see ETM_SMPTE_430_3_2008
         } # X509Data
       } # Signer
       # signature template:
-      xml.Signature_( 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
-        xml[ 'ds' ].SignedInfo_ {
+      xml[ 'ds' ].Signature_ {
+        xml.SignedInfo_ {
           xml.CanonicalizationMethod_( 'Algorithm' => 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315' )
           xml.SignatureMethod_( 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#rsa-sha1' )
           xml.Reference_( 'URI' => "" ) {
@@ -862,23 +863,19 @@ class DCSignerSignature # see ETM_SMPTE_430_3_2008
             xml.DigestValue_
           } # Reference
         } # SignedInfo
-        xml[ 'ds' ].SignatureValue_
+        xml.SignatureValue_
       } # Signature
     end # @builder_signature_template
     
-    # workaround for xmlsec which won't find signature node without the ns prefix (which is wrong, i think, because at that point the prefix is not defined)
     pre_signed_xml = @builder_signature_template.to_xml( :indent => 2 )
-    pre_signed_xml.gsub!( /<Signature/, '<ds:Signature' )
-    pre_signed_xml.gsub!( /<\/Signature/, '</ds:Signature' )
-    
-    File.open( 'presigned.xml', 'w' ) { |f| f.write( pre_signed_xml ); f.close }
-
-    signed_xml = `sign1 #{ 'presigned.xml' } #{ signerkey_file }`
-
+    tmp = Tempfile.new( 'cinemaslides-' )
+    tmpfile = File.open( tmp.path, 'w' ) { |f| f.write pre_signed_xml; f.close }
+    signed_xml = `xmlsec1 --sign --privkey-pem #{ signerkey_file } #{ tmp.path }`
     doc = Nokogiri::XML::Document.parse( signed_xml ) { |x| x.noblanks }
 
-    @builder = Nokogiri::XML::Builder.with( doc.at( doc.root.node_name ) ) do |xml| # FIXME
-      xml.KeyInfo_ {
+    # FIXME doc pickup is wrong here, thus the ...
+    @builder = Nokogiri::XML::Builder.with( doc.at( doc.root.node_name ) ) do |xml|
+      xml[ 'ds' ].KeyInfo_ {
         certificate_chain.each do |cert|
           xml.X509Data_ {
             xml.X509IssuerSerial_ {
@@ -891,25 +888,32 @@ class DCSignerSignature # see ETM_SMPTE_430_3_2008
       } # KeyInfo
     end # @builder
     
+    @signed_with_cert_chain_xml = @builder.to_xml( :indent => 2 )
+    # ... evil hack: remove Signature from where it sits ...
+    @signed_with_cert_chain_xml.gsub!( /<\/ds:Signature>/, '' )
+    # ... and put it back in at the end, before root closes down. vital newline, too
+    @signed_with_cert_chain_xml.gsub!( /<\/(CompositionPlaylist|PackingList)>/, '</ds:Signature>' + "\n" + '</\1>' )
+    
   end # initialize
   
   def stripped( pem )
-    #"\n" + pem.split( "\n" )[ 1..(-2) ].join( "\n" ) + "\n" # uberugh
-    "\n" + pem.gsub( /-----(BEGIN|END) CERTIFICATE-----\n/, '' ) # anche ugh, let's call it a night
+    #"\n" + pem.split( "\n" )[ 1..(-2) ].join( "\n" ) + "\n"
+    "\n" + pem.gsub( /-----(BEGIN|END) CERTIFICATE-----\n/, '' )
   end
   
   def parse_dc_certname( name )
     # as an alternative to the regexp match used here we could use OpenSSL::X509::Name methods like
-    # #Name.to_a -> [["O", "example.com", 19], ["OU", "csc.example.com", 19], ["CN", "CS dcstore.CONTENT", 19], ["dnQualifier", "/I8bDQt32ucQDc+53O1pZn2jTw8=", 19]]
-    # /O=example.com/OU=csc.example.com/CN=CS dcstore.CONTENT/dnQualifier=/I8bDQt32ucQDc+53O1pZn2jTw8=
-    o = name.match( /(O=.+)\/OU=/ )[1] # Can O names have slashes? safeguard
+    # #Name.to_a -> to get an array of RDNs:
+    # [["O", "example.com", 19], ["OU", "csc.example.com", 19], ["CN", "CS.dcstore.CONTENT", 19], ["dnQualifier", "/I8bDQt32ucQDc+53O1pZn2jTw8=", 19]]
+    # for '/O=example.com/OU=csc.example.com/CN=CS.dcstore.CONTENT/dnQualifier=/I8bDQt32ucQDc+53O1pZn2jTw8='
+    o = name.match( /(O=.+)\/OU=/ )[1] # Can O RDNs have slashes? safeguard
     ou = name.match( /(OU=.+)\/CN=/ )[1] # ditto
     cn = name.match( /(CN=.+)\/dnQualifier=/ )[1] # ditto
     dnq = name.match( /dnQualifier=.+/ )[0]
     return [ dnq, cn, ou, o ].join( ',' )
   end
   def xml
-    return @builder.to_xml( :indent => 2 )
+    return @signed_with_cert_chain_xml
   end
 end
 
@@ -917,7 +921,7 @@ end
 class CPL_SMPTE_429_7_2006
   def initialize( cpl_uuid, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
-      xml.CompositionPlaylist_( :xmlns => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' ) {
+      xml.CompositionPlaylist_( :xmlns => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL', 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
         xml.Id_ "urn:uuid:#{ cpl_uuid }"
         xml.AnnotationText_ annotation
         xml.IssueDate_ issue_date
@@ -995,7 +999,7 @@ end # CPL_SMPTE_429_7_2006
 class PKL_SMPTE_429_8_2007
   def initialize( pkl_uuid, annotation, issue_date, issuer, creator, assets )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
-      xml.PackingList_( :xmlns => 'http://www.smpte-ra.org/schemas/429-8/2007/PKL' ) {
+      xml.PackingList_( :xmlns => 'http://www.smpte-ra.org/schemas/429-8/2007/PKL', 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
         xml.Id_ "urn:uuid:#{ pkl_uuid }"
         xml.AnnotationText_ annotation
         xml.IssueDate_ issue_date
@@ -1763,7 +1767,7 @@ when "dcp"
     signerkey_file = File.join( ENV[ 'CINEMACERTSTORE' ], 'signer.key' )
     certchain_text = File.read( File.join( ENV[ 'CINEMACERTSTORE' ], 'dc-certificate-chain' ) )
     certchain = X509CertificateChain.new( certchain_text ).to_a
-    cpl_xml = DCSignerSignature.new( cpl.xml, signerkey_file, certchain ).xml
+    cpl_xml = DCSignature.new( cpl.xml, signerkey_file, certchain ).xml
   else
     cpl_xml = cpl.xml
   end
@@ -1792,7 +1796,7 @@ when "dcp"
     pkl_assets.flatten
   )
   if options.sign == TRUE
-    pkl_xml = DCSignerSignature.new( pkl.xml, signerkey_file, certchain ).xml
+    pkl_xml = DCSignature.new( pkl.xml, signerkey_file, certchain ).xml
   else
     pkl_xml = pkl.xml
   end
