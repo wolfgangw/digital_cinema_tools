@@ -799,10 +799,16 @@ end # MXF_Metadata
 
 
 # FIXME expects an ordered (pem format) certificate chain for now:
-# leaf cert signed by -> intermediate certificate signed by -> ... signed by -> self-signed root certificate
+#
+# 1. self-signed root certificate
+# 2. intermediate certificate signed by root certificate
+# 3. ...
+# n. leaf cert signed by previous intermediate 
+#
 # an ordered certificate chain is created by iterating through your certificates,
 # starting with a self-signed root certificate -> verify -> append to (empty) certificate chain
-# verify root-signed intermediate certificate -> append ... repeat until leaf certificate
+# verify root-signed intermediate certificate -> append ... repeat until leaf certificate.
+# returns reversed list of OpenSSL::X509::Certificates (leaf, inter, ..., root)
 class X509CertificateChain
   def initialize( certchain_text )
     @certs = Array.new
@@ -898,7 +904,7 @@ class DCSignature # see ETM_SMPTE_430_3_2008
   
   def stripped( pem )
     #"\n" + pem.split( "\n" )[ 1..(-2) ].join( "\n" ) + "\n"
-    "\n" + pem.gsub( /-----(BEGIN|END) CERTIFICATE-----\n/, '' )
+    pem.gsub( /-----(BEGIN|END) CERTIFICATE-----\n/, '' ).chomp
   end
   
   def parse_dc_certname( name )
