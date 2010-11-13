@@ -808,6 +808,7 @@ end # MXF_Metadata
 # an ordered certificate chain is created by iterating through your certificates,
 # starting with a self-signed root certificate -> verify -> append to (empty) certificate chain
 # verify root-signed intermediate certificate -> append ... repeat until leaf certificate.
+#
 # returns reversed list of OpenSSL::X509::Certificates (leaf, inter, ..., root)
 class X509CertificateChain
   def initialize( certchain_text )
@@ -909,7 +910,6 @@ class DCSignature # see ETM_SMPTE_430_3_2008
   end
   def xml
     return @signed_xml
-    #return @signed_with_cert_chain_xml
   end
 end
 
