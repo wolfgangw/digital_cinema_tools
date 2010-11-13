@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.10.05"
+CinemaSlidesVersion = "v0.2010.11.12"
 Author = "Wolfgang Woehl"
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
@@ -9,6 +9,7 @@ Author = "Wolfgang Woehl"
 #
 # Export CINEMASLIDESDIR to point to the desired location for temporary files, asset depot etc.
 #   (or use the default location HOME/cinemaslidesdir)
+# Export CINEMACERTSTORE to point at a directory that holds your signing certificate and validating certificate chain
 #
 # Requires:
 #   ruby, gem, bash
@@ -36,9 +37,11 @@ require 'fileutils'
 require 'ftools' # File.copy. not needed (and not working) in ruby 1.9
 require 'optparse'
 require 'ostruct'
+require 'openssl'
 require 'digest/md5'
 require 'base64'
 require 'pp'
+require 'tempfile'
 begin
   require 'rubygems'
 rescue LoadError
@@ -58,7 +61,7 @@ class Optparser
     options.size = '2k'
     options.size_choices = [ '2k', '4k' ]
     options.aspect = 'flat'
-    options.aspect_choices = [ 'flat', 'scope', 'hd', Regexp.new('\d+(\.\d+)?x\d+(\.\d+)?') ] # custom aspect ratios: match '<numeric>x<numeric>'
+    options.aspect_choices = [ 'flat', 'scope', 'hd', Regexp.new( '\d+(\.\d+)?x\d+(\.\d+)?' ) ] # custom aspect ratios: match '<numeric>x<numeric>'
     options.aspect_malformed = FALSE
     options.resize = TRUE # option to _not_ resize images (useful for images which are close to target dimensions and would suffer from scaling/-resize)
     options.fps = 24.0
@@ -81,6 +84,8 @@ class Optparser
     options.dcp_kind_choices = [ 'feature', 'trailer', 'test', 'teaser', 'rating', 'advertisement', 'short', 'transitional', 'psa', 'policy' ]
     options.dcp_wrap_stereoscopic = FALSE
     options.dcp_user_output_path = nil
+    options.dcp_color_transform_matrix = 'srgb_to_xyz'
+    options.dcp_color_transform_matrix_choices = [ 'iturec709_to_xyz', 'srgb_to_xyz', '709', 'srgb', Regexp.new( '(\d+(\.\d+)?\s*){9,9}' ) ]
     options.montage = FALSE
     options.keep = FALSE
     options.dont_check = FALSE
@@ -92,13 +97,14 @@ class Optparser
     options.transition_and_timing << 'cut'
     options.transition_and_timing << 5 # duration
     options.mplayer_gamma = 1.2
+    options.sign = FALSE
 
 
     opts = OptionParser.new do |opts|
       opts.banner = <<BANNER
 cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
 
-Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp_out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
+Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
 
 BANNER
 
@@ -202,6 +208,9 @@ BANNER
       end
       opts.on( '--dont-drop', 'Do not drop and ignore unreadable files or files ImageMagick cannot decode but nag and exit instead' ) do
         options.dont_drop = TRUE
+      end
+      opts.on( '--sign', 'Sign CPL and PKL (export ENV variable CINEMACERTSTORE to point at a directory that holds your signing certificate and validating certificate chain)' ) do
+        options.sign = TRUE
       end
       opts.on( '-v', '--verbosity level', String, "Use 'quiet', 'info' or 'debug' (Default: info)" ) do |p|
         if options.verbosity_choices.include?( p )
@@ -789,10 +798,136 @@ class MXF_Metadata < Hash
 end # MXF_Metadata
 
 
+# FIXME expects an ordered (pem format) certificate chain for now:
+#
+# 1. self-signed root certificate
+# 2. intermediate certificate signed by root certificate
+# 3. ...
+# n. leaf cert signed by previous intermediate 
+#
+# an ordered certificate chain is created by iterating through your certificates,
+# starting with a self-signed root certificate -> verify -> append to (empty) certificate chain
+# verify root-signed intermediate certificate -> append ... repeat until leaf certificate.
+# returns reversed list of OpenSSL::X509::Certificates (leaf, inter, ..., root)
+class X509CertificateChain
+  def initialize( certchain_text )
+    @certs = Array.new
+    c = Array.new
+
+    certchain_text.split( /\n/ ).each do |line|
+      if line =~ /-----BEGIN CERTIFICATE-----/
+        c = Array.new
+        c << line
+      elsif line =~ /-----END CERTIFICATE-----/
+        c << line
+        @certs << OpenSSL::X509::Certificate.new( c.join( "\n" ) + "\n" )
+      else
+        c << line
+      end
+    end
+    
+    @certs.reverse!
+    
+  end # initialize
+  def to_a
+    @certs
+  end
+  def []( index )
+    @certs[ index ]
+  end
+  def size
+    @certs.size
+  end
+end # X509Certificate_Metadata
+
+
+# 
+class DCSignature # see ETM_SMPTE_430_3_2008
+  def initialize( xml_to_sign, signerkey_file, certificate_chain )
+    signing_cert = certificate_chain.first
+    doc = Nokogiri::XML( xml_to_sign ) { |x| x.noblanks } # Thanks, Aaron Patterson
+    @builder_signature_template = Nokogiri::XML::Builder.with( doc.at( doc.root.node_name ) ) do |xml|
+      xml.Signer_ {
+        xml[ 'ds' ].X509Data_ {
+          xml.X509IssuerSerial_ {
+            xml.X509IssuerName_ parse_dc_certname( signing_cert.issuer.to_s )
+            xml.X509SerialNumber_ signing_cert.serial.to_s
+          } # X509IssuerSerial
+          xml.X509SubjectName_ parse_dc_certname( signing_cert.subject.to_s ) # informational
+        } # X509Data
+      } # Signer
+      # signature template:
+      xml[ 'ds' ].Signature_ {
+        xml.SignedInfo_ {
+          xml.CanonicalizationMethod_( 'Algorithm' => 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315' )
+          xml.SignatureMethod_( 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#rsa-sha1' )
+          xml.Reference_( 'URI' => "" ) {
+            xml.Transforms_ {
+              xml.Transform_( 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#enveloped-signature' )
+            } # Transforms
+            xml.DigestMethod_( 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#sha1' )
+            xml.DigestValue_
+          } # Reference
+        } # SignedInfo
+        xml.SignatureValue_
+      } # Signature
+    end # @builder_signature_template
+    
+    pre_signed_xml = @builder_signature_template.to_xml( :indent => 2 )
+    tmp = Tempfile.new( 'cinemaslides-' )
+    tmpfile = File.open( tmp.path, 'w' ) { |f| f.write pre_signed_xml; f.close }
+    signed_xml = `xmlsec1 --sign --privkey-pem #{ signerkey_file } #{ tmp.path }`
+    doc = Nokogiri::XML::Document.parse( signed_xml ) { |x| x.noblanks }
+
+    # FIXME doc pickup is wrong here, thus the ...
+    @builder = Nokogiri::XML::Builder.with( doc.at( doc.root.node_name ) ) do |xml|
+      xml[ 'ds' ].KeyInfo_ {
+        certificate_chain.each do |cert|
+          xml.X509Data_ {
+            xml.X509IssuerSerial_ {
+              xml.X509IssuerName_ parse_dc_certname( cert.issuer.to_s )
+              xml.X509SerialNumber_ cert.serial.to_s
+            } # X509IssuerSerial
+            xml.X509Certificate stripped( cert.to_pem )
+          } # X509Data
+        end # certs
+      } # KeyInfo
+    end # @builder
+    
+    @signed_with_cert_chain_xml = @builder.to_xml( :indent => 2 )
+    # ... evil hack: remove Signature from where it sits ...
+    @signed_with_cert_chain_xml.gsub!( /<\/ds:Signature>/, '' )
+    # ... and put it back in at the end, before root closes down. vital newline, too
+    @signed_with_cert_chain_xml.gsub!( /<\/(CompositionPlaylist|PackingList)>/, '</ds:Signature>' + "\n" + '</\1>' )
+    
+  end # initialize
+  
+  def stripped( pem )
+    #"\n" + pem.split( "\n" )[ 1..(-2) ].join( "\n" ) + "\n"
+    pem.gsub( /-----(BEGIN|END) CERTIFICATE-----\n/, '' ).chomp
+  end
+  
+  def parse_dc_certname( name )
+    # as an alternative to the regexp match used here we could use OpenSSL::X509::Name methods like
+    # #Name.to_a -> to get an array of RDNs:
+    # [["O", "example.com", 19], ["OU", "csc.example.com", 19], ["CN", "CS.dcstore.CONTENT", 19], ["dnQualifier", "/I8bDQt32ucQDc+53O1pZn2jTw8=", 19]]
+    # for '/O=example.com/OU=csc.example.com/CN=CS.dcstore.CONTENT/dnQualifier=/I8bDQt32ucQDc+53O1pZn2jTw8='
+    o = name.match( /(O=.+)\/OU=/ )[1] # Can O RDNs have slashes? safeguard
+    ou = name.match( /(OU=.+)\/CN=/ )[1] # ditto
+    cn = name.match( /(CN=.+)\/dnQualifier=/ )[1] # ditto
+    dnq = name.match( /dnQualifier=.+/ )[0]
+    return [ dnq, cn, ou, o ].join( ',' )
+  end
+  def xml
+    return @signed_with_cert_chain_xml
+  end
+end
+
+
 class CPL_SMPTE_429_7_2006
   def initialize( cpl_uuid, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
-      xml.CompositionPlaylist_( :xmlns => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' ) {
+      xml.CompositionPlaylist_( :xmlns => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL', 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
         xml.Id_ "urn:uuid:#{ cpl_uuid }"
         xml.AnnotationText_ annotation
         xml.IssueDate_ issue_date
@@ -847,7 +982,7 @@ class CPL_SMPTE_429_7_2006
           end # image_mxfs.each
         } # ReelList
       } # CompositionPlaylist
-    end # Builder
+    end # @builder
   end # initialize
     
   def xml
@@ -870,7 +1005,7 @@ end # CPL_SMPTE_429_7_2006
 class PKL_SMPTE_429_8_2007
   def initialize( pkl_uuid, annotation, issue_date, issuer, creator, assets )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
-      xml.PackingList_( :xmlns => 'http://www.smpte-ra.org/schemas/429-8/2007/PKL' ) {
+      xml.PackingList_( :xmlns => 'http://www.smpte-ra.org/schemas/429-8/2007/PKL', 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
         xml.Id_ "urn:uuid:#{ pkl_uuid }"
         xml.AnnotationText_ annotation
         xml.IssueDate_ issue_date
@@ -1049,6 +1184,12 @@ if @output_type == "dcp"
     @logger.critical( "Not a usable encoder: '#{ options.encoder }'" )
     exit
   end
+  if options.sign == TRUE
+    if ENV[ 'CINEMACERTSTORE' ].nil?
+      @logger.critical( 'CINEMACERTSTORE not set. Cannot locate signing certificate and validating cerificate chain' )
+      exit
+    end
+  end
   # mark assets with encoder ids
   case options.encoder
   when 'openjpeg-tm'
@@ -1214,6 +1355,7 @@ fps = options.fps
 if @output_type == "dcp"
   @output_format = "tiff"
   original_suffix = @output_format
+  ITUREC709_TO_XYZ = "0.412390799265959  0.357584339383878  0.180480788401834 0.21263900587151 0.715168678767756 0.0721923153607337 0.0193308187155918 0.119194779794626 0.950532152249661"
   SRGB_TO_XYZ = "0.4124564 0.3575761 0.1804375 0.2126729 0.7151522 0.0721750 0.0193339 0.1191920 0.9503041"
 else
   @output_format = options.output_format
@@ -1498,13 +1640,13 @@ keeper = nil # keep a conform for the next crossfade (2nd will be 1st then, don'
       image1 = conform( @source[ index ], fps )
       image2 = conform( @source[ index + 1 ], fps )
       keeper = image2
-      fade_in( image1, fps, crossfade_time )
+      #fade_in( image1, fps, crossfade_time )
       full_level( image1, fps, duration )
       crossfade( image1, image2, fps, crossfade_time )
     when @source.length - 1 # last image
       image = keeper
       full_level( image, fps, duration )
-      fade_out( image, fps, crossfade_time )
+      #fade_out( image, fps, crossfade_time )
     else
       image1 = keeper
       image2 = conform( @source[ index + 1 ], fps )
@@ -1565,9 +1707,9 @@ when "dcp"
   
   files.each do |file|
     counter += 1
-    asset_link = file + '.j2c'
+    asset_link = File.join( @j2cdir, File.basename( file ).gsub( '.tiff', '' ) + '.j2c' )
     if File.dirname( File.readlink( file ) ) == @conformdir # 1st file is always a link to the asset depot
-      File.link( previous_asset, asset_link )
+      File.link( previous_asset, asset_link ) 
       @logger.cr( "Skip (Full level): #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
     else
       asset, todo = check_for_asset( file, 'j2c', fps ) # possible "Skip" message only with debug verbosity
@@ -1586,8 +1728,6 @@ when "dcp"
       File.link( asset, asset_link )
     end
   end
-
-  `mv #{ File.join( @conformdir, '*.j2c' ) } #{ @j2cdir }`
   
   # Setup MXF container names
   image_mxf_uuid = `kmuuidgen -n`
@@ -1633,7 +1773,15 @@ when "dcp"
     content_version_label = content_version_id,
     rating_list = nil
   )
-  File.open( cpl_file, 'w' ) { |f| f.write( cpl.xml ) }
+  if options.sign == TRUE
+    signerkey_file = File.join( ENV[ 'CINEMACERTSTORE' ], 'signer.key' )
+    certchain_text = File.read( File.join( ENV[ 'CINEMACERTSTORE' ], 'dc-certificate-chain' ) )
+    certchain = X509CertificateChain.new( certchain_text ).to_a
+    cpl_xml = DCSignature.new( cpl.xml, signerkey_file, certchain ).xml
+  else
+    cpl_xml = cpl.xml
+  end
+  File.open( cpl_file, 'w' ) { |f| f.write( cpl_xml ) }
 
   # Write PackingList
   @logger.info( 'Write PKL ...' )
@@ -1657,7 +1805,12 @@ when "dcp"
     creator = 'cinemaslides pkl',
     pkl_assets.flatten
   )
-  File.open( pkl_file, 'w' ) { |f| f.write( pkl.xml ) }
+  if options.sign == TRUE
+    pkl_xml = DCSignature.new( pkl.xml, signerkey_file, certchain ).xml
+  else
+    pkl_xml = pkl.xml
+  end
+  File.open( pkl_file, 'w' ) { |f| f.write( pkl_xml ) }
   
   # Write Assetmap
   @logger.info( 'Write ASSETMAP' )
@@ -1695,7 +1848,6 @@ FIXME cleanup dcpdir after montage summary exit (with -o ...)
 FIXME sox, what's taking you so long? conform_audio()
 FIXME projected length <- frames cast
 FIXME estimate required/check available disk space
-FIXME max number of commandline args? (32768 here)
 FIXME See $ cinemaslides 01.jpg 02.jpg -x crossfade,1,0 (temporary @framecount fix in full_level())
 FIXME verbosity level "info" -> jpeg 2000 encoder talk
 FIXME crossfades border case: 0.0416666666666667 (1/24) crossfade time -> level shoots off the roof
