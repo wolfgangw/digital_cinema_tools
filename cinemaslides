@@ -1186,7 +1186,7 @@ if @output_type == "dcp"
   end
   if options.sign == TRUE
     if ENV[ 'CINEMACERTSTORE' ].nil?
-      @logger.critical( 'CINEMACERTSTORE not set. Cannot locate signing certificate and validating cerificate chain' )
+      @logger.critical( "CINEMACERTSTORE not set. Cannot locate signer.key and dc-certificate-chain" )
       exit
     end
   end
