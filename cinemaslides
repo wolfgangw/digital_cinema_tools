@@ -870,36 +870,25 @@ class DCSignature # see ETM_SMPTE_430_3_2008
           } # Reference
         } # SignedInfo
         xml.SignatureValue_
+        xml[ 'ds' ].KeyInfo_ {
+          certificate_chain.each do |cert|
+            xml.X509Data_ {
+              xml.X509IssuerSerial_ {
+                xml.X509IssuerName_ parse_dc_certname( cert.issuer.to_s )
+                xml.X509SerialNumber_ cert.serial.to_s
+              } # X509IssuerSerial
+              xml.X509Certificate stripped( cert.to_pem )
+            } # X509Data
+          end # certs
+        } # KeyInfo
       } # Signature
     end # @builder_signature_template
-    
+
     pre_signed_xml = @builder_signature_template.to_xml( :indent => 2 )
     tmp = Tempfile.new( 'cinemaslides-' )
     tmpfile = File.open( tmp.path, 'w' ) { |f| f.write pre_signed_xml; f.close }
-    signed_xml = `xmlsec1 --sign --privkey-pem #{ signerkey_file } #{ tmp.path }`
-    doc = Nokogiri::XML::Document.parse( signed_xml ) { |x| x.noblanks }
+    @signed_xml = `xmlsec1 --sign --privkey-pem #{ signerkey_file } #{ tmp.path }`
 
-    # FIXME doc pickup is wrong here, thus the ...
-    @builder = Nokogiri::XML::Builder.with( doc.at( doc.root.node_name ) ) do |xml|
-      xml[ 'ds' ].KeyInfo_ {
-        certificate_chain.each do |cert|
-          xml.X509Data_ {
-            xml.X509IssuerSerial_ {
-              xml.X509IssuerName_ parse_dc_certname( cert.issuer.to_s )
-              xml.X509SerialNumber_ cert.serial.to_s
-            } # X509IssuerSerial
-            xml.X509Certificate stripped( cert.to_pem )
-          } # X509Data
-        end # certs
-      } # KeyInfo
-    end # @builder
-    
-    @signed_with_cert_chain_xml = @builder.to_xml( :indent => 2 )
-    # ... evil hack: remove Signature from where it sits ...
-    @signed_with_cert_chain_xml.gsub!( /<\/ds:Signature>/, '' )
-    # ... and put it back in at the end, before root closes down. vital newline, too
-    @signed_with_cert_chain_xml.gsub!( /<\/(CompositionPlaylist|PackingList)>/, '</ds:Signature>' + "\n" + '</\1>' )
-    
   end # initialize
   
   def stripped( pem )
@@ -919,7 +908,8 @@ class DCSignature # see ETM_SMPTE_430_3_2008
     return [ dnq, cn, ou, o ].join( ',' )
   end
   def xml
-    return @signed_with_cert_chain_xml
+    return @signed_xml
+    #return @signed_with_cert_chain_xml
   end
 end
 
