@@ -50,7 +50,7 @@ File.open( 'ca.cnf', 'w' ) { |f| f.write( ca_cnf ) }
 ca_dnq = `openssl rsa -outform PEM -pubout -in ca.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 ca_dnq = ca_dnq.gsub( '/', '\/' ) # can have values like '0Za8/aABE05Aroz7le1FOpEdFhk=', note the '/'. protect for name parser
 # The following simply concatenates the dnq. Somehow I have a feeling that that's not quite right. Someone knows?
-ca_subject = '/O=example.com/OU=csc.example.com/CN=dcstore.ROOT/dnQualifier=' + ca_dnq
+ca_subject = '/O=example.org/OU=csc.example.org/CN=.dcstore.ROOT/dnQualifier=' + ca_dnq
 # Generate self-signed certificate
 `openssl req -new -x509 -sha256 -config ca.cnf -days 365 -set_serial 5 -subj "#{ ca_subject }" -key ca.key -outform PEM -out ca.self-signed.pem`
 ###
@@ -76,7 +76,7 @@ EOF
 File.open( 'intermediate.cnf', 'w' ) { |f| f.write( inter_cnf ) }
 inter_dnq = `openssl rsa -outform PEM -pubout -in intermediate.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 inter_dnq = inter_dnq.gsub( '/', '\/' )
-inter_subject = "/O=example.com/OU=csc.example.com/CN=dcstore.INTERMEDIATE/dnQualifier=" + inter_dnq
+inter_subject = "/O=example.org/OU=csc.example.org/CN=.dcstore.INTERMEDIATE/dnQualifier=" + inter_dnq
 # Request signing for intermediate certificate
 `openssl req -new -config intermediate.cnf -days 365 -subj "#{ inter_subject }" -key intermediate.key -out intermediate.csr`
 # Sign with root certificate
@@ -105,7 +105,7 @@ File.open( 'leaf.cnf', 'w' ) { |f| f.write( leaf_cnf ) }
 leaf_dnq = `openssl rsa -outform PEM -pubout -in leaf.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 leaf_dnq = leaf_dnq.gsub( '/', '\/' )
 # Note the CN role signifier 'CS' (Content signer/creator), separated by leftmost period character from the unique entity label
-leaf_subject = "/O=example.com/OU=csc.example.com/CN=CS.dcstore.LEAF/dnQualifier=" + leaf_dnq
+leaf_subject = "/O=example.org/OU=csc.example.org/CN=CS.dcstore.LEAF/dnQualifier=" + leaf_dnq
 # Request signing for leaf certificate
 `openssl req -new -config leaf.cnf -days 365 -subj "#{ leaf_subject }" -key leaf.key -outform PEM -out leaf.csr`
 # Sign with intermediate certificate
