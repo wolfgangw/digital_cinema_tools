@@ -3,12 +3,15 @@
 #
 # Make a digital cinema compliant certificate chain
 # Proof of concept. In real-world applications you'd want 
-# to secure keys with passphrases and set up some infrastructure
-# to allow for various intermediate and leaf certificates.
+# to secure keys with appropriate file permissions and 
+# passphrases. Also you'd want to set up some infrastructure 
+# to allow for various intermediate and leaf certificates and 
+# to enable the relevant tools to find your keys and certificates.
 #
 # Intentionally no ruby-specific openssl bindings here,
 # merely building shell calls to openssl.
-# Should make it easy to port to different environments.
+#    - So why is this a ruby script then?
+#    - Because I nearly broke my bones trying to properly quote the required dnq's in bash. Solutions much appreciated
 #
 # No directory and file checks here. Watch out where you run it.
 #
@@ -16,22 +19,10 @@
 # $ cd certificate-store
 # $ make-dc-certificate-chain.rb
 #
-# CTP: How to verify certificates and create a certificate chain file:
-#
-# $ openssl verify -CAfile ca.self-signed.pem ca.self-signed.pem
-# ca.self-signed.pem: OK
-# $ cp ca.self-signed.pem certificate_chain
-# $ openssl verify -CAfile certificate_chain intermediate.signed.pem
-# intermediate.signed.pem: OK
-# $ cat intermediate.signed.pem >> certificate_chain
-# $ openssl verify -CAfile certificate_chain leaf.signed.pem
-# leaf.signed.pem: OK
-# $ cat leaf.signed.pem >> certificate_chain
-#
-# Use leaf.signed.pem to sign files
+# Use leaf.key to sign files
 
 # Clean up previous runs
-old = Dir.glob( [ 'ca.*', 'inter.*', 'cs.*' ] )
+old = Dir.glob( [ 'ca.*', 'inter.*', 'cs.*', 'dc-certificate-chain', 'signer.key' ] )
 old.each do |file|
   File.delete( file )
 end
@@ -126,4 +117,17 @@ puts "\n+++ Certificate info +++\n"
 [ [ 'Self-signed CA certificate (issuer == subject)', 'ca.self-signed.pem' ], [ 'Intermediate certificate', 'intermediate.signed.pem' ], [ 'Leaf certificate', 'leaf.signed.pem' ] ].each do |certificate|
   puts "\n#{ certificate.first } (#{ certificate.last }):\n#{ `openssl x509 -noout -subject -in #{ certificate.last }` }   signed by\n #{ `openssl x509 -noout -issuer -in #{ certificate.last }` }"
 end
+
+# Verify certificates
+puts "\n+++ Verify certificates and write dc-certificate-chain +++\n\n"
+puts `openssl verify -CAfile ca.self-signed.pem ca.self-signed.pem`
+`cp ca.self-signed.pem dc-certificate-chain`
+puts `openssl verify -CAfile dc-certificate-chain intermediate.signed.pem`
+`cat intermediate.signed.pem >> dc-certificate-chain`
+puts `openssl verify -CAfile dc-certificate-chain leaf.signed.pem`
+`cat leaf.signed.pem >> dc-certificate-chain`
+
+`ln -s leaf.key signer.key`
+
+puts "\nDONE"
 
