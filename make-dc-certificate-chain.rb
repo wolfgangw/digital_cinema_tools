@@ -22,7 +22,7 @@
 # Use leaf.key to sign files
 
 # Clean up previous runs
-old = Dir.glob( [ 'ca.*', 'inter.*', 'cs.*', 'dc-certificate-chain', 'signer.key' ] )
+old = Dir.glob( [ 'ca.*', 'intermediate.*', 'leaf.*', 'dc-certificate-chain', 'signer.key' ] )
 old.each do |file|
   File.delete( file )
 end
@@ -74,6 +74,7 @@ OU = Organization unit
 CN = Entity and dnQualifier
 EOF
 File.open( 'intermediate.cnf', 'w' ) { |f| f.write( inter_cnf ) }
+# equiv.   openssl x509 -pubkey -noout -in intermediate.signed.pem | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64
 inter_dnq = `openssl rsa -outform PEM -pubout -in intermediate.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 inter_dnq = inter_dnq.gsub( '/', '\/' )
 inter_subject = "/O=example.org/OU=csc.example.org/CN=.dcstore.INTERMEDIATE/dnQualifier=" + inter_dnq
@@ -93,7 +94,9 @@ leaf_cnf = <<EOF
 distinguished_name	= req_distinguished_name
 x509_extensions	= v3_ca
 [ v3_ca ]
-basicConstraints = critical,CA:false,pathlen:0
+# pathlen not needed. Would the cert be rejected because of pathlen marked critical?
+# Answer: no. see SMPTE 430-2-2006 section 6.2 Validation Rules - Check 5
+basicConstraints = critical,CA:false
 keyUsage = digitalSignature,keyEncipherment
 subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid,issuer:always
@@ -103,10 +106,12 @@ OU = Organization unit
 CN = Entity and dnQualifier
 EOF
 File.open( 'leaf.cnf', 'w' ) { |f| f.write( leaf_cnf ) }
+# equiv.  openssl x509 -pubkey -noout -in leaf.signed.pem | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64
 leaf_dnq = `openssl rsa -outform PEM -pubout -in leaf.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 leaf_dnq = leaf_dnq.gsub( '/', '\/' )
-# Note the CN role signifier 'CS' (Content signer/creator), separated by leftmost period character from the unique entity label
-leaf_subject = "/O=example.org/OU=csc.example.org/CN=CS.dcstore.LEAF/dnQualifier=" + leaf_dnq
+# Note the CN list of roles (RO=rights owner, SM=security manager, CS=content signer)
+# Roles are separated by space character and by leftmost period character from the unique entity label
+leaf_subject = "/O=example.org/OU=csc.example.org/CN=RO SM CS.dcstore.LEAF/dnQualifier=" + leaf_dnq
 # Request signing for leaf certificate
 `openssl req -new -config leaf.cnf -days 365 -subj "#{ leaf_subject }" -key leaf.key -outform PEM -out leaf.csr`
 # Issue/Sign with intermediate certificate/private key
