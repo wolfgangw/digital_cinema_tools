@@ -115,8 +115,8 @@ leaf_subject = "/O=example.org/OU=csc.example.org/CN=CS.dcstore.LEAF/dnQualifier
 
 ### Print out issuer and subject information for each of the generated certificates
 puts "\n+++ Certificate info +++\n"
-[ [ 'Self-signed CA certificate (issuer == subject)', 'ca.self-signed.pem' ], [ 'Intermediate certificate', 'intermediate.signed.pem' ], [ 'Leaf certificate', 'leaf.signed.pem' ] ].each do |certificate|
-  puts "\n#{ certificate.first } (#{ certificate.last }):\n#{ `openssl x509 -noout -subject -in #{ certificate.last }` }   signed by\n #{ `openssl x509 -noout -issuer -in #{ certificate.last }` }"
+[ [ 'Self-signed CA certificate (issuer == subject)', 'ca.self-signed.pem' ], [ 'Intermediate certificate', 'intermediate.signed.pem' ], [ 'Leaf certificate', 'leaf.signed.pem' ] ].each do |t|
+  puts "\n#{ t.first } (#{ t.last }):\n#{ `openssl x509 -noout -subject -in #{ t.last }` }   signed by\n #{ `openssl x509 -noout -issuer -in #{ t.last }` }"
 end
 
 # For illustration: Verify certificates and write certificate chain
