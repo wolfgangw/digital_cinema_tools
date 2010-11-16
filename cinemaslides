@@ -9,7 +9,7 @@ Author = "Wolfgang Woehl"
 #
 # Export CINEMASLIDESDIR to point to the desired location for temporary files, asset depot etc.
 #   (or use the default location HOME/cinemaslidesdir)
-# Export CINEMACERTSTORE to point at a directory that holds your signing certificate and validating certificate chain
+# Export CINEMACERTSTORE to point at a directory that holds your signing key and validating certificate chain
 #
 # Requires:
 #   ruby, gem, bash
@@ -18,6 +18,7 @@ Author = "Wolfgang Woehl"
 #   asdcplib (http://www.cinecert.com/asdcplib/)
 #   highline (gem install highline)
 #   nokogiri (gem install nokogiri, requires ruby-dev, libxml2-dev)
+#   For signed DCPs: xmlsec1 (http://www.aleksey.com/xmlsec/). Work on this is in progress, expect bugs and flying saucers.
 #
 requirements = [ 'convert', 'identify', 'montage', 'display', 'mplayer', 'sox', 'soxi', 'opendcp_j2k', 'image_to_j2k', 'kdu_compress', 'asdcp-test', 'kmuuidgen' ]
 #
