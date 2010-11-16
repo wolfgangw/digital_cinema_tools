@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.11.12"
+CinemaSlidesVersion = "v0.2010.11.16"
 Author = "Wolfgang Woehl"
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
