@@ -862,7 +862,7 @@ class DCSignature # see ETM_SMPTE_430_3_2008
       xml[ 'ds' ].Signature_ {
         xml.SignedInfo_ {
           xml.CanonicalizationMethod_( 'Algorithm' => 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315' )
-          xml.SignatureMethod_( 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#rsa-sha1' )
+          xml.SignatureMethod_( 'Algorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256' )
           xml.Reference_( 'URI' => "" ) {
             xml.Transforms_ {
               xml.Transform_( 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#enveloped-signature' )
