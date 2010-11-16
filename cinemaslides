@@ -844,7 +844,7 @@ end # X509Certificate_Metadata
 
 # 
 class DCSignature # see ETM_SMPTE_430_3_2008
-  def initialize( xml_to_sign, signerkey_file, certificate_chain )
+  def initialize( xml_to_sign, signer_key_file, ca_cert_file, intermediate_cert_file, certificate_chain )
     signing_cert = certificate_chain.first
     doc = Nokogiri::XML( xml_to_sign ) { |x| x.noblanks } # Thanks, Aaron Patterson
     @builder_signature_template = Nokogiri::XML::Builder.with( doc.at( doc.root.node_name ) ) do |xml|
@@ -888,12 +888,14 @@ class DCSignature # see ETM_SMPTE_430_3_2008
     pre_signed_xml = @builder_signature_template.to_xml( :indent => 2 )
     tmp = Tempfile.new( 'cinemaslides-' )
     tmpfile = File.open( tmp.path, 'w' ) { |f| f.write pre_signed_xml; f.close }
-    @signed_xml = `xmlsec1 --sign --privkey-pem #{ signerkey_file } #{ tmp.path }`
+
+    # FIXME
+    @signed_xml = `xmlsec1 --sign --privkey-pem #{ signer_key_file } --trusted-pem #{ ca_cert_file } --trusted-pem #{ intermediate_cert_file } #{ tmp.path }`
+    #
 
   end # initialize
   
   def stripped( pem )
-    #"\n" + pem.split( "\n" )[ 1..(-2) ].join( "\n" ) + "\n"
     pem.gsub( /-----(BEGIN|END) CERTIFICATE-----\n/, '' ).chomp
   end
   
@@ -909,7 +911,7 @@ class DCSignature # see ETM_SMPTE_430_3_2008
     return [ dnq, cn, ou, o ].join( ',' )
   end
   def xml
-    return @signed_xml
+    @signed_xml
   end
 end
 
@@ -1764,10 +1766,13 @@ when "dcp"
     rating_list = nil
   )
   if options.sign == TRUE
-    signerkey_file = File.join( ENV[ 'CINEMACERTSTORE' ], 'signer.key' )
-    certchain_text = File.read( File.join( ENV[ 'CINEMACERTSTORE' ], 'dc-certificate-chain' ) )
+    # FIXME hardcoded number and names of signer key and certificates
+    signer_key_file = File.join( ENV[ 'CINEMACERTSTORE' ], 'signer.key' )
+    ca_cert_file = File.join( ENV[ 'CINEMACERTSTORE' ], 'ca.self-signed.pem' )
+    intermediate_cert_file = File.join( ENV[ 'CINEMACERTSTORE' ], 'intermediate.signed.pem' )
+    certchain_text = File.read( File.join( ENV[ 'CINEMACERTSTORE' ], 'dc-certificate-chain' ) ) # verified chain
     certchain = X509CertificateChain.new( certchain_text ).to_a
-    cpl_xml = DCSignature.new( cpl.xml, signerkey_file, certchain ).xml
+    cpl_xml = DCSignature.new( cpl.xml, signer_key_file, ca_cert_file, intermediate_cert_file, certchain ).xml
   else
     cpl_xml = cpl.xml
   end
@@ -1796,7 +1801,7 @@ when "dcp"
     pkl_assets.flatten
   )
   if options.sign == TRUE
-    pkl_xml = DCSignature.new( pkl.xml, signerkey_file, certchain ).xml
+    pkl_xml = DCSignature.new( pkl.xml, signerkey_file, ca_cert_file, intermediate_cert_file, certchain ).xml
   else
     pkl_xml = pkl.xml
   end
