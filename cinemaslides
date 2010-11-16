@@ -1801,7 +1801,7 @@ when "dcp"
     pkl_assets.flatten
   )
   if options.sign == TRUE
-    pkl_xml = DCSignature.new( pkl.xml, signerkey_file, ca_cert_file, intermediate_cert_file, certchain ).xml
+    pkl_xml = DCSignature.new( pkl.xml, signer_key_file, ca_cert_file, intermediate_cert_file, certchain ).xml
   else
     pkl_xml = pkl.xml
   end
