@@ -1866,7 +1866,7 @@ FEATURE MPEG MXFI
 
 CODE slideshow objects
 CODE options catch all (missing arguments trace back deep)
-CODE better way to check for and provide requirements alternatives ( mplayer|ffplay, openjpeg|kakadu etc. )
+CODE better way to check for and provide requirements alternatives ( mplayer|ffplay, openjpeg|kakadu, signature related )
 
 mplayer crash with some a710 jpgs. exif? portrait orientation + conform size exceed?
 TODO
