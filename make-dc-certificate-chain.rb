@@ -87,7 +87,7 @@ ca_dnq = ca_dnq.gsub( '/', '\/' ) # can have values like '0Za8/aABE05Aroz7le1FOp
 ca_subject = '/O=example.org/OU=csc.example.org/CN=.dcstore.ROOT/dnQualifier=' + ca_dnq
 
 # Generate self-signed certificate
-`openssl req -new -x509 -sha256 -config ca.cnf -days 365 -set_serial 5 -subj "#{ ca_subject }" -key ca.key -outform PEM -out ca.self-signed.pem`
+`openssl req -new -x509 -sha256 -config ca.cnf -days 3650 -set_serial 5 -subj "#{ ca_subject }" -key ca.key -outform PEM -out ca.self-signed.pem`
 ###
 
 
@@ -119,9 +119,9 @@ inter_dnq = inter_dnq.gsub( '/', '\/' )
 inter_subject = "/O=example.org/OU=csc.example.org/CN=.dcstore.INTERMEDIATE/dnQualifier=" + inter_dnq
 
 # Request signing for intermediate certificate
-`openssl req -new -config intermediate.cnf -days 365 -subj "#{ inter_subject }" -key intermediate.key -out intermediate.csr`
+`openssl req -new -config intermediate.cnf -days 3649 -subj "#{ inter_subject }" -key intermediate.key -out intermediate.csr`
 # Issue/Sign with root certificate/private key
-`openssl x509 -req -sha256 -days 365 -CA ca.self-signed.pem -CAkey ca.key -set_serial 6 -in intermediate.csr -extfile intermediate.cnf -extensions v3_ca -out intermediate.signed.pem`
+`openssl x509 -req -sha256 -days 3649 -CA ca.self-signed.pem -CAkey ca.key -set_serial 6 -in intermediate.csr -extfile intermediate.cnf -extensions v3_ca -out intermediate.signed.pem`
 ###
 
 
@@ -158,9 +158,9 @@ leaf_dnq = leaf_dnq.gsub( '/', '\/' )
 leaf_subject = "/O=example.org/OU=csc.example.org/CN=RO SM CS.dcstore.LEAF/dnQualifier=" + leaf_dnq
 
 # Request signing for leaf certificate
-`openssl req -new -config leaf.cnf -days 365 -subj "#{ leaf_subject }" -key leaf.key -outform PEM -out leaf.csr`
+`openssl req -new -config leaf.cnf -days 3648 -subj "#{ leaf_subject }" -key leaf.key -outform PEM -out leaf.csr`
 # Issue/Sign with intermediate certificate/private key
-`openssl x509 -req -sha256 -days 365 -CA intermediate.signed.pem -CAkey intermediate.key -set_serial 7 -in leaf.csr -extfile leaf.cnf -extensions v3_ca -out leaf.signed.pem`
+`openssl x509 -req -sha256 -days 3648 -CA intermediate.signed.pem -CAkey intermediate.key -set_serial 7 -in leaf.csr -extfile leaf.cnf -extensions v3_ca -out leaf.signed.pem`
 ###
 
 
