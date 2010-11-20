@@ -8,19 +8,21 @@
 #
 # Requires ruby and openssl
 #
-# Proof of concept. In real-world applications you'd want 
-# to secure keys with appropriate file permissions and 
-# passphrases. Also you'd want to set up some infrastructure 
-# to allow for various intermediate and leaf certificates and 
-# to enable the relevant tools to find your keys and certificates.
+# Proof of concept. In real-world applications private keys 
+# would be protected with appropriate file permissions and
+# passphrases to restrict access.
+# Also they'd be part of a key- and certificate-handling
+# infrastructure to allow for various intermediate and leaf 
+# certificates and to enable the related tools to locate 
+# keys and certificates.
 #
-# Script, in principle, does the same thing 3 times,
+# The script, in principle, does the same thing 3 times,
 # once to create a root authority, then an intermediate
 # authority and finally a leaf at the end of the branch:
 #
 #   a) Create a private/public key pair
 #   b) define digital-cinema-specific properties of the corresponding, to-be-created certificate
-#   c) Issue a request for signature (which is the public key component plus metadata)
+#   c) Issue a request for signature (The request holds the public key component plus metadata)
 #   d) Sign and thereby issue a signed certificate (self-signed in the case of the root certificate)
 #
 # The relation between 2 certificates is established in d)
