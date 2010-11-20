@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Wolfgang Woehl v0.2010.11.16
+# Wolfgang Woehl v0.2010.11.20
 #
 # Create 3 related digital cinema compliant certificates,
 # verify root certificate -> intermediate ->  leaf certificate
