@@ -126,9 +126,10 @@ inter_subject = "/O=example.org/OU=csc.example.org/CN=.dcstore.INTERMEDIATE/dnQu
 
 
 ### Make a leaf certificate, issued/signed by the intermediate certificate and intermediate private key
-# Use the leaf certificate to sign content (like CPLs and PKLs)
+# Use leaf's private key to sign content (like CPLs, PKLs and KDMs)
 
 # Generate leaf's key pair
+# Some apps require passphrase-protected signing keys. Add the -des3 switch to interactively provide a passphrase.
 `openssl genrsa -out leaf.key 2048`
 
 # Note basicConstraints and keyUsage
