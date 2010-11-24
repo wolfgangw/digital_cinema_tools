@@ -3,7 +3,7 @@
 # Wolfgang Woehl v0.2010.11.20
 #
 # Create 3 related digital cinema compliant certificates,
-# verify root certificate -> intermediate ->  leaf certificate
+# verify root certificate -> intermediate -> leaf certificate
 # and concatenate into a certificate chain.
 #
 # Requires ruby and openssl
@@ -66,6 +66,7 @@ end
 `openssl genrsa -out ca.key 2048`
 
 # Note basicConstraints and keyUsage
+# pathlen restricts the length of a certificate chain that verifies back to this point
 ca_cnf = <<EOF
 [ req ]
 distinguished_name = req_distinguished_name
@@ -85,7 +86,6 @@ File.open( 'ca.cnf', 'w' ) { |f| f.write( ca_cnf ) }
 # Subject dnQualifier (Public key thumbprint, see SMPTE 430-2-2006 sections 5.3.1, 5.4 and DCI CTP section 2.1.11)
 ca_dnq = `openssl rsa -outform PEM -pubout -in ca.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 ca_dnq = ca_dnq.gsub( '/', '\/' ) # can have values like '0Za8/aABE05Aroz7le1FOpEdFhk=', note the '/'. protect for name parser
-# The following simply concatenates the dnq. Somehow I have a feeling that that's not quite right. Someone knows?
 ca_subject = '/O=example.org/OU=csc.example.org/CN=.dcstore.ROOT/dnQualifier=' + ca_dnq
 
 # Generate self-signed certificate
