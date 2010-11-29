@@ -1,26 +1,40 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.11.16"
-Author = "Wolfgang Woehl"
+CinemaSlidesVersion = "v0.2010.11.29"
+#
+# Wolfgang Woehl v0.2010
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
+#
+# It offers preview modes, a basic set of transition types and a basic set of DCP authoring options.
+# It will conform images to cinema-compliant specs and transform to X'Y'Z'.
+# Additional proof-of-concept features:
+#   + plaintext/encrypted DCPs
+#   + signatures
+#   + KDM mode
 #
 # Run "cinemaslides -h" to see options
 # Run "cinemaslides --examples" to see a couple of example invocations
 #
-# Export CINEMASLIDESDIR to point to the desired location for temporary files, asset depot etc.
+# Export CINEMASLIDESDIR to point at the desired location for temporary files, asset depot etc.
 #   (or use the default location HOME/cinemaslidesdir)
 # Export CINEMACERTSTORE to point at a directory that holds your signing key and validating certificate chain
+# Use "make-dc-certificate-cain.rb (https://github.com/wolfgangw/digital_cinema_tools/blob/master/make-dc-certificate-chain.rb)
+#   to create a proof-of-concept, digital cinema compliant X.509 certificate chain that will work out of the box with current cinemaslides.
 #
 # Requires:
-#   ruby, gem, bash
-#   ImageMagick, MPlayer, SoX
+#   ruby, gem, bash (install your distribution's packages)
+#   asdcplib (including asdcp-test and kmuuidgen, http://www.cinecert.com/asdcplib/)
+#   ImageMagick, MPlayer, SoX (install your distribution's packages)
 #   OpenJPEG (http://code.google.com/p/openjpeg/downloads/list) or Kakadu (see the note on Kakadu's terms of use below)
-#   asdcplib (http://www.cinecert.com/asdcplib/)
 #   highline (gem install highline)
 #   nokogiri (gem install nokogiri, requires ruby-dev, libxml2-dev)
-#   For signed DCPs: xmlsec1 (http://www.aleksey.com/xmlsec/). Work on this is in progress, expect bugs and flying saucers.
-#
-requirements = [ 'convert', 'identify', 'montage', 'display', 'mplayer', 'sox', 'soxi', 'opendcp_j2k', 'image_to_j2k', 'kdu_compress', 'asdcp-test', 'kmuuidgen' ]
+# In addition for encrypted essence DCPs:
+#   asdcplib's kmrandgen
+# For signed DCPs and KDM mode (KDM mode is work in progress, expect bugs and flying saucers):
+#   xmlsec1 (http://www.aleksey.com/xmlsec/)
+#   openssl (standard cli interface, install your distribution's package)
+#   dc-thumbprint (see DCI's Compliance Test Plan, section C.2.1. dc-thumbprint Source Code Listing)
+#   asdcplib's kmuuidgen
 #
 ###
 #   Kakadu (http://www.kakadusoftware.com/index.php) is a proprietary JPEG 2000 implementation, written by Dr. Taubman
@@ -35,7 +49,13 @@ requirements = [ 'convert', 'identify', 'montage', 'display', 'mplayer', 'sox', 
 # Ruby geeks: If you value your sanity don't read beyond this line. I'm working on it ...
 
 require 'fileutils'
-require 'ftools' # File.copy. not needed (and not working) in ruby 1.9
+if RUBY_VERSION <= '1.9'
+  require 'ftools' # File.copy
+  begin
+    require 'rubygems'
+  rescue LoadError
+  end
+end
 require 'optparse'
 require 'ostruct'
 require 'openssl'
@@ -43,10 +63,6 @@ require 'digest/md5'
 require 'base64'
 require 'pp'
 require 'tempfile'
-begin
-  require 'rubygems'
-rescue LoadError
-end
 require 'nokogiri'
 require 'highline/import'
 
@@ -79,14 +95,21 @@ class Optparser
     options.audio_bps = 24
     options.audio_bps_choices = [ '16', '24' ]
     options.dcp_title = 'Cinemaslides test'
-    options.dcp_issuer = ENV[ 'USER' ] + '@' + `hostname`.chomp
-    options.dcp_annotation = 'Cinemaslides test ' + DateTime.now.to_s
+    options.issuer = ENV[ 'USER' ] + '@' + `hostname`.chomp
+    options.annotation = 'cinemaslides ' + DateTime.now.to_s
     options.dcp_kind = 'test'
     options.dcp_kind_choices = [ 'feature', 'trailer', 'test', 'teaser', 'rating', 'advertisement', 'short', 'transitional', 'psa', 'policy' ]
     options.dcp_wrap_stereoscopic = FALSE
     options.dcp_user_output_path = nil
     options.dcp_color_transform_matrix = 'srgb_to_xyz'
     options.dcp_color_transform_matrix_choices = [ 'iturec709_to_xyz', 'srgb_to_xyz', '709', 'srgb', Regexp.new( '(\d+(\.\d+)?\s*){9,9}' ) ]
+    options.dcp_encrypt = FALSE
+    options.sign = FALSE
+    options.kdm = FALSE
+    options.kdm_cpl = NIL
+    options.kdm_target = NIL
+    options.kdm_start = 0 # time window will start now
+    options.kdm_end = 28 # time window will be 4 weeks
     options.montage = FALSE
     options.keep = FALSE
     options.dont_check = FALSE
@@ -98,14 +121,13 @@ class Optparser
     options.transition_and_timing << 'cut'
     options.transition_and_timing << 5 # duration
     options.mplayer_gamma = 1.2
-    options.sign = FALSE
 
 
     opts = OptionParser.new do |opts|
       opts.banner = <<BANNER
-cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" }
-
-Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer>] [--annotation <DCP annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [-v, --verbosity <level>] [--examples] [-h, --help] image [more images ...] audiofile [more audiofiles ...]
+cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" } #{ ENV[ 'CINEMACERTSTORE' ].nil? ? "\nExport CINEMACERTSTORE to point to a directory which holds your digital cinema compliant signing key and certificates" : "\nCINEMACERTSTORE is set (#{ ENV[ 'CINEMACERTSTORE' ] })" }
+ 
+Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [--encrypt] [--kdm] [--cpl <cpl file>] [--start <days from now>] [--end <days from now] [--target <certificate>] [-v, --verbosity <level>] [--examples] [-h, --help] [ image and audio files ] [ KDM mode parameters ]
 
 BANNER
 
@@ -175,14 +197,14 @@ BANNER
           options.audio_bps = p
         end
       end
-      opts.on( '--title title', 'DCP title tag', String ) do |p|
+      opts.on( '--title title', String, 'DCP content title' ) do |p|
         options.dcp_title = p
       end
-      opts.on( '--issuer issuer', 'DCP issuer tag', String ) do |p|
-        options.dcp_issuer = p
+      opts.on( '--issuer issuer', String, 'DCP/KDM issuer. In KDM mode the first 3 letters will be used to signify the KDM creation facility, following KDM naming conventions.' ) do |p|
+        options.issuer = p
       end
-      opts.on( '--annotation annotation', 'DCP annotation tag', String ) do |p|
-        options.dcp_annotation = p
+      opts.on( '--annotation annotation', String, 'DCP/KDM annotation' ) do |p|
+        options.annotation = p
       end
       opts.on( '--kind kind', "DCP content kind. Use 'feature', 'trailer, 'test', 'teaser', 'rating', 'advertisement', 'short', 'transitional', 'psa' or 'policy' (Default: test)" ) do |p|
         if options.dcp_kind_choices.include?( p.downcase )
@@ -213,6 +235,24 @@ BANNER
       opts.on( '--sign', 'Sign CPL and PKL (export ENV variable CINEMACERTSTORE to point at a directory that holds your signing certificate and validating certificate chain)' ) do
         options.sign = TRUE
       end
+      opts.on( '--encrypt', 'Encrypt trackfiles. Implies signature. Stores content keys in CINEMASLIDESDIR/keys' ) do
+        options.dcp_encrypt = TRUE
+      end
+      opts.on( '--kdm', 'KDM mode: Generate key delivery message. Use with --cpl, --start, --end, --issuer and --target' ) do
+        options.kdm = TRUE
+      end
+      opts.on( '--cpl <file>', String, 'KDM mode: Specify CPL file' ) do |p|
+        options.kdm_cpl = p
+      end
+      opts.on( '--start <days>', Integer, 'KDM mode: KDM validity starts <days> from now (Default: Now)' ) do |p|
+        options.kdm_start = p
+      end
+      opts.on( '--end <days>', Integer, 'KDM mode: KDM validity ends <days> from now (Default: 4 weeks from now)' ) do |p|
+        options.kdm_end = p
+      end
+      opts.on( '--target <certificate>', String, 'KDM mode: Path to the recipient device certificate' ) do |p|
+        options.kdm_target = p
+      end
       opts.on( '-v', '--verbosity level', String, "Use 'quiet', 'info' or 'debug' (Default: info)" ) do |p|
         if options.verbosity_choices.include?( p )
           options.verbosity = p
@@ -229,6 +269,10 @@ cinemaslides #{ CinemaSlidesVersion }
 Specify options in any order. Order of image/audio files matters. Audio is optional.
 Audio timing is handled in a first-come, first-served manner -- independently from image timings
 
+In order to use signature and KDM generation you need to have 3 related, digital cinema compliant
+certificates in $CINEMACERTSTORE (#{ app } needs some specific names for now -- #{ CinemaSlidesVersion })
+(Use https://github.com/wolfgangw/digital_cinema_tools/blob/master/make-dc-certificate-chain.rb for that)
+
   Preview slideshow with audio (Half sized preview. Cut transition. Default duration: 5 seconds each):
 $ #{ app } image1.jpg audio.wav image2.tiff
 
@@ -244,8 +288,8 @@ $ #{ app } audio.wav *.tiff --montagepreview --aspect scope -t dcp --title 'Slid
   Transition: fade in for 0.5 seconds, hold for 10, fade out for 4
 $ #{ app } -x fade,0.5,10,4 ...
 
-  Carousel goes berserk
-$ #{ app } -t dcp --title "Motion sequence" --fps 24 -x fade,0,0.0416666666666667,0 motion_sequence/*
+  Carousel goes berserk (note option --dont-check in order to avoid extensive checks for each image)
+$ #{ app } -t dcp --title "Motion sequence" --fps 24 -x cut,0.04167 --dont-check motion_sequence/
 
   Write DCP to custom location
 $ #{ app } --dcp-out /media/usb-disk/slideshow --type dcp image.tiff audio.wav --title "First composition"
@@ -253,14 +297,25 @@ $ #{ app } --dcp-out /media/usb-disk/slideshow --type dcp image.tiff audio.wav -
   Write another composition to the same custom location (PKL and ASSETMAP will be extended)
 $ #{ app } -o /media/usb-disk/slideshow -t dcp image2.tiff image3.tiff song.wav --title "Another composition"
 
-  Some kind of finer-grained timing control:
-$ #{ app } -x cut,3    title title title 1st_slide 2nd_slide disclaimer disclaimer
+  Timings are global. Some workaround kind of finer-grained timing control:
+$ #{ app } -x cut,3    title title title 1st_slide 2nd_slide credits credits
 
   Slideshow of your truetype fonts:
 $ #{ app } -x crossfade,2,2 `find /usr/share/fonts/truetype/ -name '*ttf' -type f`
 
   Custom aspect ratios (Work fine on a Solo G3, what about other servers?):
 $ #{ app } --aspect 1.33x1 | --aspect 3072x2304 | --aspect 3x1 [...]
+
+  Encrypt DCP trackfiles and store content keys in $CINEMASLIDESDIR/keys (--encrypt implies signing):
+  Go check the final CPL for key IDs and compare to stored content keys
+  Using asdcplib you can decrypt and extract essence with
+        asdcp-test -x decrypted_ -k '<content key -- 16 bytes in hex>' <encrypted MXF>
+$ #{ app } -t dcp --encrypt --title "Encryption test" -o ENCRYPTION_TST_F_2K_20101231_WOE_OV -x cut,0.04167 demo_sequence/
+
+  Generate KDM for some content, targeting a server certificate with a time window from now to 10 days from now
+  200100400530_000487.pem is an example target (Our XDC Solo G3's certificate):
+$ #{ app } -v --kdm --cpl ENCRYPTION_TST_F_2K_20101231_WOE_OV/cpl_<UUID>_.xml --start 0 --end 10 --target 200100400530_000487.pem
+
 EXAMPLES
         puts examples
         exit
@@ -286,8 +341,7 @@ ARGV.each do |arg|
     commandline += ' ' + arg
   end
 end
-
-
+# destructive parse
 options = Optparser.parse(ARGV)
 
 
@@ -340,10 +394,10 @@ class Logger
     printf "\033[#{ color }m#{ @prefix } #{ text }\033[0m#{ ' ' * 24 }\n"
   end
 end
-@logger = Logger.new( '*', options.verbosity ) # prefix messages with '*'
+@logger = Logger.new( prefix = '*', options.verbosity )
 
 
-def check_requirements( requirements )
+def check_external( requirements )
   available_tools = Array.new
   missing_tools = Array.new
   requirements.each do |tool|
@@ -735,7 +789,7 @@ def fadetype( level )
   # composite source -size [source's size] xc:black -blend level.abs result
   #"-modulate #{ level + 100 }"#,#{ level + 100 }" # second parameter is saturation. this one has channel clipping issues
   #"-modulate #{ level + 100 } -blur 0x#{ level }" # experiment, color starvation -> heavy banding
-  #"-brightness-contrast #{ level }x#{ level }" # not in ubuntu 10.04's im 6.5.7-8, rolls off into crushed blacks
+  #"-brightness-contrast #{ level }x#{ level }" # not in ubuntu 10.04's im 6.5.7-8, crushes off into swamp blacks
 end
 
 
@@ -780,26 +834,28 @@ def confirm_or_create( location )
   end
 end
 
+
 class MXF_Metadata < Hash
-    def initialize( mxf )
-      asdcp_info = `asdcp-test -v -i #{ mxf }`.chomp
-      if asdcp_info =~ /File essence type is JPEG 2000/ # ... (stereoscopic)? pictures
-        asdcp_info = asdcp_info.split( /\n-- JPEG 2000 Metadata --/ ).first
-      end
-      asdcp_info = asdcp_info.split( /\n\s*/ )
-      @meta = Hash.new
-      asdcp_info.each do |line|
-        key, value = line.split( ': ' )
-        @meta[ key ] = value
-      end
+  def initialize( mxf )
+    asdcp_info = `asdcp-test -v -i #{ mxf }`.chomp
+    if asdcp_info =~ /File essence type is JPEG 2000/ # ... (stereoscopic)? pictures
+      asdcp_info = asdcp_info.split( /\n-- JPEG 2000 Metadata --/ ).first
     end
-    def hash
-      @meta
+    asdcp_info = asdcp_info.split( /\n\s*/ )
+    @meta = Hash.new
+    asdcp_info.each do |line|
+      key, value = line.split( ': ' )
+      @meta[ key ] = value
     end
+  end # initialize
+  
+  def hash
+    @meta
+  end
 end # MXF_Metadata
 
 
-# FIXME expects an ordered (pem format) certificate chain for now:
+# FIXME expects an ordered certificate chain (pem format) for now:
 #
 # 1. self-signed root certificate
 # 2. intermediate certificate signed by root certificate
@@ -840,11 +896,176 @@ class X509CertificateChain
   def size
     @certs.size
   end
-end # X509Certificate_Metadata
+end # X509CertificateChain
+
+
+module DCTools
+  def transform_cert_name( name )
+    # OpenSSL::X509::Name.to_a -> to get an array of RDNs:
+    # [["O", "example.com", 19], ["OU", "csc.example.com", 19], ["CN", "CS.dcstore.CONTENT", 19], ["dnQualifier", "/I8bDQt32ucQDc+53O1pZn2jTw8=", 19]]
+    # for '/O=example.com/OU=csc.example.com/CN=CS.dcstore.CONTENT/dnQualifier=/I8bDQt32ucQDc+53O1pZn2jTw8='
+    tmp = Array.new
+    name.to_a.each do |rdn|
+      tmp << [ rdn[ 0 ], rdn[ 1 ] ].join( '=' )
+    end
+    return tmp.join( ',' )
+  end
+  
+  def asdcp_digest( message )
+    # equiv. openssl dgst -sha1 -binary <message> | openssl base64
+    `asdcp-test -t #{ message }`.split( ' ' ).first
+  end
+  
+  def cipher_data_payload_binary_package( signer_cert_thumbprint, cpl_id, key_type, key_id, kdm_not_valid_before, kdm_not_valid_after, key )
+    structure_id_bin = %w( f1 dc 12 44 60 16 9a 0e 85 bc 30 06 42 f8 66 ab ).pack( 'H2H2H2H2H2H2H2H2H2H2H2H2H2H2H2H2' )
+    signer_cert_thumbprint_bin = `echo '#{ signer_cert_thumbprint }' | openssl base64 -d`
+    cpl_id_bin = uuid_to_bin( cpl_id )
+    key_id_bin = uuid_to_bin( key_id )
+    key_bin = key.split( /(\w\w)/ ).delete_if { |e| e == '' }.pack( 'H2H2H2H2H2H2H2H2H2H2H2H2H2H2H2H2' )
+    binary_package = structure_id_bin + signer_cert_thumbprint_bin + cpl_id_bin + key_type + key_id_bin + kdm_not_valid_before + kdm_not_valid_after + key_bin
+  end
+  
+  def uuid_to_bin( uuid_string )
+    uuid_string.gsub( /[^0-9A-Fa-f]/, '' )[ 0..31 ].to_a.pack 'H*'
+  end
+  
+  def stripped( pem )
+    pem.gsub( /-----(BEGIN|END) CERTIFICATE-----\n/, '' ).chomp
+  end
+end
+include DCTools
+
+
+class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
+  def initialize( message_uuid, message_annotation, issue_date, signing_cert, recipient_cert, cpl_uuid, cpl_content_title_text, kdm_not_valid_before, kdm_not_valid_after, device_list_identifier, device_list_description, device_cert_thumbprint, keys, cipher_data_payloads )
+    # FIXME 'standalone' => 'no' nokogiri undefined method
+    @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
+      xml.DCinemaSecurityMessage_( :xmlns => 'http://www.smpte-ra.org/schemas/430-3/2006/ETM', 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#', 'xmlns:enc' => 'http://www.w3.org/2001/04/xmlenc#', 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
+        xml<< '<!-- cinemaslides kdm -->'
+        xml.AuthenticatedPublic_( 'Id' => 'ID_AuthenticatedPublic' ) {
+          xml.MessageId_ "urn:uuid:#{ message_uuid }"
+          xml.MessageType_ 'http://www.smpte-ra.org/430-1/2006/KDM'
+          xml.AnnotationText_ message_annotation
+          xml.IssueDate_ issue_date
+          xml.Signer_ {
+            xml[ 'dsig' ].X509IssuerName_ transform_cert_name( signing_cert.issuer )
+            xml[ 'dsig' ].X509SerialNumber_ signing_cert.serial.to_s
+          } # Signer
+          xml.RequiredExtensions_ {
+            xml.KDMRequiredExtensions_( :xmlns => 'http://www.smpte-ra.org/schemas/430-1/2006/KDM' ) {
+              xml.Recipient_ {
+                xml.X509IssuerSerial_ {
+                  xml[ 'dsig' ].X509IssuerName_ transform_cert_name( recipient_cert.issuer )
+                  xml[ 'dsig' ].X509SerialNumber recipient_cert.serial.to_s
+                } # X509IssuerSerial
+                xml.X509SubjectName_ transform_cert_name( recipient_cert.subject )
+              } # Recipient
+              xml.CompositionPlaylistId_ "urn:uuid:#{ cpl_uuid }"
+              xml.ContentTitleText_ cpl_content_title_text
+              xml.ContentKeysNotValidBefore_ kdm_not_valid_before
+              xml.ContentKeysNotValidAfter_ kdm_not_valid_after
+              xml.AuthorizedDeviceInfo_ {
+                xml.DeviceListIdentifier_ "urn:uuid:#{ device_list_identifier }"
+                xml.DeviceListDescription_ device_list_description
+                xml.DeviceList_ {
+                  #device_list.each do |device|
+                  xml.CertificateThumbprint_ device_cert_thumbprint
+                  #end
+                } # DeviceList
+              } # AuthorizedDeviceInfo
+              xml.KeyIdList_ {
+                keys.each do |key|
+                  # FIXME
+                  key_id = key.split( ':' ).first
+                  key_type = key.split( ':' )[ 1 ]
+                  xml.TypedKeyId_ {
+                    xml.KeyType_ key_type
+                    xml.KeyId_ "urn:uuid:#{ key_id }"
+                  } # TypedKeyId
+                end
+              } # KeyIdList
+              xml.ForensicMarkFlagList_ {
+                # example
+                xml.ForensicMarkFlag_ 'http://www.smpte-ra.org/430-1/2006/KDM#mrkflg-picture-disable'
+                xml.ForensicMarkFlag_ 'http://www.smpte-ra.org/430-1/2006/KDM#mrkflg-audio-disable'
+              } # ForensicMarkFlagList
+            } # KDMRequiredExtensions
+          } # RequiredExtensions
+          xml.NonCriticalExtensions_
+        } # AuthenticatedPublic
+        xml.AuthenticatedPrivate_( 'Id' => 'ID_AuthenticatedPrivate' ) {
+          cipher_data_payloads.each do |b64|
+            xml[ 'enc' ].EncryptedKey_( 'xmlns:enc' => 'http://www.w3.org/2001/04/xmlenc#' ) {
+              xml[ 'enc' ].EncryptionMethod_( 'Algorithm' => 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p' ) {
+                xml[ 'ds' ].DigestMethod_( 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#', 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#sha1' )
+              } # EncryptionMethod
+              xml[ 'enc' ].CipherData_ {
+                xml[ 'enc' ].CipherValue_ b64
+              } # CipherData
+            } # EncryptedKey
+          end
+        } # AuthenticatedPrivate
+      } # DCinemaSecurityMessage
+    end # @builder
+  end # initialize
+  
+  def xml
+    @builder.to_xml( :indent => 2 )
+  end
+end
+
+
+class DCSignatureKDM
+  def initialize( xml_to_sign, signer_key_file, ca_cert_file, intermediate_cert_file, certificate_chain )
+    doc = Nokogiri::XML( xml_to_sign ) { |x| x.noblanks }
+    @builder_signature_template = Nokogiri::XML::Builder.with( doc.at( doc.root.node_name ) ) do |xml|
+      xml[ 'dsig' ].Signature_( 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#' ) {
+        xml.SignedInfo_ {
+          xml.CanonicalizationMethod_( 'Algorithm' => 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments' )
+          xml.SignatureMethod_( 'Algorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256' )
+          xml.Reference_( 'URI' => '#ID_AuthenticatedPublic' ) {
+            xml.DigestMethod_( 'Algorithm' => 'http://www.w3.org/2001/04/xmlenc#sha256' )
+            xml.DigestValue_
+          } # Reference
+          xml.Reference_( 'URI' => '#ID_AuthenticatedPrivate' ) {
+            xml.DigestMethod_( 'Algorithm' => 'http://www.w3.org/2001/04/xmlenc#sha256' )
+            xml.DigestValue_
+          } # Reference
+        } # SignedInfo
+        xml.SignatureValue_
+        xml.KeyInfo_ {
+          certificate_chain.each do |cert|
+            xml.X509Data_ {
+              xml.X509IssuerSerial_ {
+                xml.X509IssuerName_ transform_cert_name( cert.issuer )
+                xml.X509SerialNumber_ cert.serial.to_s
+              } # X509IssuerSerial
+              xml.X509Certificate stripped( cert.to_pem )
+            } # X509Data
+          end # certs
+        } # KeyInfo
+      } # Signature
+    end # @builder_signature_template
+    
+    pre_signed_xml = @builder_signature_template.to_xml( :indent => 2 )
+    tmp = Tempfile.new( 'cinemaslides-' )
+    tmpfile = File.open( tmp.path, 'w' ) { |f| f.write pre_signed_xml; f.close }
+    #File.copy( tmp.path, 'presigned.xml' )
+
+    # FIXME hardcoded certificate chain size
+    @signed_xml = `xmlsec1 --sign --id-attr:Id http://www.smpte-ra.org/schemas/430-3/2006/ETM:AuthenticatedPublic --id-attr:Id http://www.smpte-ra.org/schemas/430-3/2006/ETM:AuthenticatedPrivate --privkey-pem #{ signer_key_file } --trusted-pem #{ ca_cert_file } --trusted-pem #{ intermediate_cert_file } #{ tmp.path }`
+    #
+    
+    def xml
+      @signed_xml
+    end
+    
+  end # initialize
+end # class DCSignatureKDM
 
 
 # 
-class DCSignature # see ETM_SMPTE_430_3_2008
+class DCSignature
   def initialize( xml_to_sign, signer_key_file, ca_cert_file, intermediate_cert_file, certificate_chain )
     signing_cert = certificate_chain.first
     doc = Nokogiri::XML( xml_to_sign ) { |x| x.noblanks } # Thanks, Aaron Patterson
@@ -852,10 +1073,10 @@ class DCSignature # see ETM_SMPTE_430_3_2008
       xml.Signer_ {
         xml[ 'ds' ].X509Data_ {
           xml.X509IssuerSerial_ {
-            xml.X509IssuerName_ parse_dc_certname( signing_cert.issuer.to_s )
+            xml.X509IssuerName_ transform_cert_name( signing_cert.issuer )
             xml.X509SerialNumber_ signing_cert.serial.to_s
           } # X509IssuerSerial
-          xml.X509SubjectName_ parse_dc_certname( signing_cert.subject.to_s ) # informational
+          xml.X509SubjectName_ transform_cert_name( signing_cert.subject ) # informational
         } # X509Data
       } # Signer
       # signature template:
@@ -876,7 +1097,7 @@ class DCSignature # see ETM_SMPTE_430_3_2008
           certificate_chain.each do |cert|
             xml.X509Data_ {
               xml.X509IssuerSerial_ {
-                xml.X509IssuerName_ parse_dc_certname( cert.issuer.to_s )
+                xml.X509IssuerName_ transform_cert_name( cert.issuer )
                 xml.X509SerialNumber_ cert.serial.to_s
               } # X509IssuerSerial
               xml.X509Certificate stripped( cert.to_pem )
@@ -890,27 +1111,12 @@ class DCSignature # see ETM_SMPTE_430_3_2008
     tmp = Tempfile.new( 'cinemaslides-' )
     tmpfile = File.open( tmp.path, 'w' ) { |f| f.write pre_signed_xml; f.close }
 
-    # FIXME
+    # FIXME hardcoded certificate chain size
     @signed_xml = `xmlsec1 --sign --privkey-pem #{ signer_key_file } --trusted-pem #{ ca_cert_file } --trusted-pem #{ intermediate_cert_file } #{ tmp.path }`
     #
-
+    
   end # initialize
   
-  def stripped( pem )
-    pem.gsub( /-----(BEGIN|END) CERTIFICATE-----\n/, '' ).chomp
-  end
-  
-  def parse_dc_certname( name )
-    # as an alternative to the regexp match used here we could use OpenSSL::X509::Name methods like
-    # #Name.to_a -> to get an array of RDNs:
-    # [["O", "example.com", 19], ["OU", "csc.example.com", 19], ["CN", "CS.dcstore.CONTENT", 19], ["dnQualifier", "/I8bDQt32ucQDc+53O1pZn2jTw8=", 19]]
-    # for '/O=example.com/OU=csc.example.com/CN=CS.dcstore.CONTENT/dnQualifier=/I8bDQt32ucQDc+53O1pZn2jTw8='
-    o = name.match( /(O=.+)\/OU=/ )[1] # Can O RDNs have slashes? safeguard
-    ou = name.match( /(OU=.+)\/CN=/ )[1] # ditto
-    cn = name.match( /(CN=.+)\/dnQualifier=/ )[1] # ditto
-    dnq = name.match( /dnQualifier=.+/ )[0]
-    return [ dnq, cn, ou, o ].join( ',' )
-  end
   def xml
     @signed_xml
   end
@@ -918,7 +1124,7 @@ end
 
 
 class CPL_SMPTE_429_7_2006
-  def initialize( cpl_uuid, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
+  def initialize( cpl_uuid, encrypt, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
       xml.CompositionPlaylist_( :xmlns => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL', 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
         xml.Id_ "urn:uuid:#{ cpl_uuid }"
@@ -947,6 +1153,10 @@ class CPL_SMPTE_429_7_2006
                     xml.IntrinsicDuration_ image_meta[ 'ContainerDuration' ]
                     xml.EntryPoint_ 0 # FIXME
                     xml.Duration_ image_meta[ 'ContainerDuration' ] # FIXME
+                    if encrypt == TRUE
+                      xml.KeyId_ "urn:uuid:#{ image_meta[ 'CryptographicKeyID' ] }"
+                      xml.Hash_ asdcp_digest( image_mxf )
+                    end
                     xml.FrameRate_ image_meta[ 'SampleRate' ].to_s.gsub( '/', ' ' ) # FIXME SampleRate?
                     xml.ScreenAspectRatio_ image_meta[ 'AspectRatio' ].to_s.gsub( '/', ' ' )
                   } # MainStereoscopicPicture
@@ -957,6 +1167,10 @@ class CPL_SMPTE_429_7_2006
                     xml.IntrinsicDuration_ image_meta[ 'ContainerDuration' ]
                     xml.EntryPoint_ 0 # FIXME
                     xml.Duration_ image_meta[ 'ContainerDuration' ] # FIXME
+                    if encrypt == TRUE
+                      xml.KeyId_ "urn:uuid:#{ image_meta[ 'CryptographicKeyID' ] }"
+                      xml.Hash_ asdcp_digest( image_mxf )
+                    end
                     xml.FrameRate_ image_meta[ 'SampleRate' ].to_s.gsub( '/', ' ' ) # FIXME SampleRate?
                     xml.ScreenAspectRatio_ image_meta[ 'AspectRatio' ].to_s.gsub( '/', ' ' )
                   } # MainPicture
@@ -968,6 +1182,10 @@ class CPL_SMPTE_429_7_2006
                     xml.IntrinsicDuration_ audio_meta[ 'ContainerDuration' ]
                     xml.EntryPoint_ 0 # FIXME
                     xml.Duration_ audio_meta[ 'ContainerDuration' ].to_s.gsub( '/', ' ' ) # FIXME
+                    if encrypt == TRUE
+                      xml.KeyId_ "urn:uuid:#{ audio_meta[ 'CryptographicKeyID' ] }"
+                      xml.Hash_ asdcp_digest( audio_mxfs[ index ] )
+                    end
                   } # MainSound
                 end
               } # AssetList
@@ -1017,11 +1235,10 @@ class PKL_SMPTE_429_8_2007
               metadata = MXF_Metadata.new( asset ).hash
               asset_uuid = metadata[ 'AssetUUID' ]
             end
-            sha1_digest_base64 = `asdcp-test -t #{ asset }`.split( ' ' ).first
             xml.Asset_ {
               xml.Id_ "urn:uuid:#{ asset_uuid }"
               # optional: AnnotationText per asset
-              xml.Hash_ sha1_digest_base64 # FIXME Base64.encode64( Digest::SHA1.digest( File.read( asset ) ) ).chomp
+              xml.Hash_ asdcp_digest( asset )
               xml.Size_ File.size( asset )
               xml.Type_ mimetype
               xml.OriginalFileName_ File.basename( asset )
@@ -1090,37 +1307,386 @@ class AM_SMPTE_429_9_2007
     return @builder.to_xml( :indent => 2 )
   end
 end # AM_SMPTE_429_9_2007
+
+
+# FIXME right now this is tightly coupled with make-dc-certificate-chain.rb's output
+# FIXME hardcoded number and names of signer key, certificates and verified chain
+def signature_context
+  signer_key_file = File.join( CINEMACERTSTORE, 'signer.key' )
+  ca_cert_file = File.join( CINEMACERTSTORE, 'ca.self-signed.pem' )
+  intermediate_cert_file = File.join( CINEMACERTSTORE, 'intermediate.signed.pem' )
+  certchain_text = File.read( File.join( CINEMACERTSTORE, 'dc-certificate-chain' ) ) # verified chain
+  certchain = X509CertificateChain.new( certchain_text ).to_a
+  signer_cert_obj = certchain.first
+  return signer_key_file, ca_cert_file, intermediate_cert_file, certchain_text, certchain, signer_cert_obj
+end
+
+
+def essence_types
+  { 'MainPicture' => 'MDIK', 'MainStereoscopicPicture' => 'MDIK', 'MainSound' => 'MDAK', 'MainSubtitle' => 'MDSK' }
+end
+
+
+def key_id_type_for( assetname, node )
+  key_id = node.xpath( "AssetList/#{ assetname }/KeyId" ).text.split( ':' ).last
+  unless key_id.nil?
+    type = essence_types[ assetname ]
+    key_type_id = Hash.new
+    key_type_id[ key_id ] = type
+    @logger.debug( "   #{ type } => #{ key_id }" )
+    return key_type_id
+  end
+end
+
+
+def kdm_cpl_info( doc )
+  # removing namespaces feels broken right there.
+  # makes the KeyId searches in reels set below work, though,
+  # whereas searches with ns prefixes wouldn't
+  # FIXME reference counter for keys
+  doc.remove_namespaces!
+  cpl_uuid = doc.xpath( '//CompositionPlaylist/Id' ).text.split( ':' ).last
+  content_title_text = doc.xpath( '//CompositionPlaylist/ContentTitleText' ).text
+  @logger.info( "Content title: #{ content_title_text }" )
+  @logger.debug( "CPL UUID: #{ cpl_uuid }" )
+  
+  reels = doc.xpath( '//CompositionPlaylist/ReelList/Reel' )
+  @logger.debug( "CPL has #{ reels.size } reel#{ ( reels.size > 1 or reels.size == 0 ) ? 's' : '' }" )
+  
+  key_ids_types = Array.new
+  reels.each_with_index do |reel, index|
+    reel_id = reel.xpath( "Id" ).text.split( ':' ).last
+    @logger.debug( "Reel # #{ index + 1 } (#{ reel_id })" )
+    [ 'MainPicture', 'MainStereoscopicPicture', 'MainSound', 'MainSubtitle' ].each do |assetname|
+      key = key_id_type_for( assetname, reel )
+      next if key.nil?
+      if key_ids_types.include?( key )
+        @logger.debug( '   <Key seen>' )
+      else
+        key_ids_types << key
+      end
+    end
+  end
+  return cpl_uuid, content_title_text, key_ids_types
+end
+
+
+def key_spec_valid?( candidate )
+  if /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:(MDIK|MDAK|MDSK):[0-9a-f]{32}/.match( candidate ) == NIL
+    FALSE
+  else
+    TRUE
+  end
+end
+
+
+def time_to_datetime( time )
+  DateTime.parse( time.to_s )
+end
+
+
+def yyyymmdd( datetime ) # used in KDM filenames. See http://www.kdmnamingconvention.com/
+  datetime.to_s.split('T').first.gsub( /-/,'' )
+end
 ###
 
 
+appname = File.basename( $0 )
+@logger.info( "#{ appname } #{ CinemaSlidesVersion }" )
 @logger.debug( commandline )
 
 
-available_tools, missing_tools = check_requirements( requirements )
-if options.output_type == "dcp"
-  if missing_tools.include?( "kdu_compress" )
-    if missing_tools.include?( "image_to_j2k" ) # both openjpeg and kakadu not available
-      @logger.warn( "No JPEG 2000 codec available (Needed for DCP creation). Check your installation." )
-    elsif options.encoder == "kakadu" # openjpeg is available, kakadu is not
-      options.encoder = "openjpeg"
-      @logger.warn( "kakadu's kdu_compress is not available. Falling back to openjpeg" )
-    end
-  elsif missing_tools.include?( "image_to_j2k" ) # kakadu is available, openjpeg is not
-    if options.encoder == "openjpeg"
-      options.encoder = "kakadu"
-      @logger.warn( "openjpeg's image_to_j2k is not available. Falling back to kakadu" )
+CINEMASLIDESDIR = ENV[ 'CINEMASLIDESDIR' ]
+if CINEMASLIDESDIR.nil?
+  @cinemaslidesdir = File.join( ENV[ 'HOME' ], "cinemaslidesdir" )
+  @logger.debug( "CINEMASLIDESDIR not set. Will use #{ @cinemaslidesdir }" )
+else
+  @logger.debug( "CINEMASLIDESDIR is set to #{ CINEMASLIDESDIR }" )
+  @cinemaslidesdir = CINEMASLIDESDIR
+end
+
+
+### KDM mode
+if options.kdm == TRUE
+  @logger = Logger.new( prefix = 'kdm *', options.verbosity )
+  
+  mandatory = [ 'xmlsec1', 'openssl', 'dc-thumbprint', 'kmuuidgen' ]
+  available_mandatory, missing_mandatory = check_external( mandatory )
+  if ! missing_mandatory.empty?
+    @logger.info( "Required tools: #{ mandatory.join( ', ' ) }" )
+    @logger.info( "Missing tool#{ missing_mandatory.size != 1 ? 's' : '' }: #{ missing_mandatory.join( ', ' ) }" )
+    @logger.info( "Check your installation" )
+    exit
+  else
+    @logger.info( "All necessary tools available" )
+  end
+
+  # failure of any of the following checks is reason to exit
+  kdm_no_go = FALSE
+  kdm_issue_date = DateTime.now
+  
+  # set up signature context
+  # FIXME check availability and validity of certificates/keys
+  # FIXME include verification of certchain and matrjoschka-contained validity periods
+  if ENV[ 'CINEMACERTSTORE' ].nil?
+    @logger.info( "Expecting certificates at $CINEMACERTSTORE. Set this environment variable with 'export CINEMACERTSTORE=<path>'" )
+    @logger.info( "Run make-dc-certificate-chain.rb in that directory to create the required certificates." )
+    @logger.info( "Sorry for the inconvenience. Work in progress" )
+    kdm_no_go = TRUE
+  else
+    CINEMACERTSTORE = ENV[ 'CINEMACERTSTORE' ]
+    @logger.debug( "CINEMACERTSTORE is set to #{ CINEMACERTSTORE }" )
+    signer_key_file, ca_cert_file, intermediate_cert_file, certchain_text, certchain, signer_cert_obj = signature_context
+    signing_cert = OpenSSL::X509::Certificate.new( File.read( File.join( CINEMACERTSTORE, 'leaf.signed.pem' ) ) )
+    signing_cert_thumbprint = `dc-thumbprint #{ File.join( CINEMACERTSTORE, 'leaf.signed.pem' ) }`.chomp
+  end
+  
+  # check for key directory
+  @keysdir = File.join( @cinemaslidesdir, 'keys' )
+  if ( File.exists?( @keysdir ) and File.ftype( @keysdir ) == 'directory' )
+    @logger.debug( "Content keystore at: #{ @keysdir }" )
+  else
+    @logger.info( "No keys directory found (Looking for #{ @keysdir })" )
+    @logger.info( "#{ $0 } will set it up once it builds an encrypted DCP" )
+    kdm_no_go = TRUE
+  end
+  
+  # check presence and validity of cpl and referenced content keys
+  if options.kdm_cpl == NIL
+    @logger.info( "No CPL specified. Use --cpl <CPL>" )
+    kdm_no_go = TRUE
+  else
+    # Get CPL info
+    if File.exists?( options.kdm_cpl ) and File.ftype( options.kdm_cpl ) == 'file'
+      xml_obj = Nokogiri::XML( File.read( options.kdm_cpl ) )
+      if xml_obj.root == NIL
+        @logger.info( "#{ options.kdm_cpl } is not XML" )
+        kdm_no_go = TRUE
+      else
+        if xml_obj.root.node_name == 'CompositionPlaylist' # FIXME validation
+          @logger.info( "CPL: #{ options.kdm_cpl }" )
+          cpl_uuid, cpl_content_title_text, cpl_key_ids_types = kdm_cpl_info( xml_obj )
+          if cpl_key_ids_types.size == 0
+            @logger.info( "KDM not applicable: #{ options.kdm_cpl } doesn't reference content keys" )
+            kdm_no_go = TRUE
+          else
+            @logger.info( "CPL references #{ cpl_key_ids_types.size } content key#{ ( cpl_key_ids_types.size > 1 or cpl_key_ids_types.size == 0 ) ? 's' : '' }" )
+            # check presence and local specs compliance of content keys
+            @logger.info( "Checking content keys ..." )
+            keys = Array.new
+            keys_missing = 0
+            keys_invalid = 0
+            cpl_key_ids_types.each do |kit|
+              if File.exists?( File.join( @keysdir, kit.keys.first ) )
+                candidate_key = File.read( File.join( @keysdir, kit.keys.first ) )
+                if key_spec_valid?( candidate_key )
+                  @logger.debug( "   Found: #{ kit.keys.first }" )
+                  keys << candidate_key
+                else
+                  @logger.info( "Key file #{ kit.keys.first } doesn't fit specs: <UUID>:<Key type>:<Key>" )
+                  keys_invalid += 1
+                end
+              else
+                @logger.info( "   Not found: #{ kit.keys.first }" )
+                keys_missing += 1
+              end
+            end
+            if keys_missing > 0
+              @logger.info( "Keys not found: #{ keys_missing }/#{ cpl_key_ids_types.size }" )
+            end
+            if keys_invalid > 0
+              @logger.info( "Key specs invalid: #{ keys_invalid }/#{ cpl_key_ids_types.size }" )
+            end
+            if keys_missing + keys_invalid > 0 # yes, thank you very much
+              kdm_no_go = TRUE
+            else
+              @logger.info( "All content keys present" )
+            end
+          end
+        else
+          @logger.info( "#{ options.kdm_cpl } is not a composition playlist" )
+          kdm_no_go = TRUE
+        end
+      end
+    else
+      @logger.info( 'Specify a valid XML file' )
+      kdm_no_go = TRUE
     end
   end
-end
-# boy-oh-boy-oh-boy
-if available_tools.size < requirements.size - 1 # all tools needed minus 1 codec alternative
-  @logger.info( "Missing tools: #{ missing_tools.join(', ') }" ) unless missing_tools.empty?
-  @logger.warn( "Check your tools" )
+  
+  # check KDM time window
+  kdm_not_valid_before = ( DateTime.now + options.kdm_start ) # check for valid window
+  kdm_not_valid_after = ( DateTime.now + options.kdm_end )
+  if kdm_not_valid_before > kdm_not_valid_after
+    @logger.info( "KDM time window opens after it's supposed to close" )
+    kdm_no_go = TRUE
+  else
+    # defer logger.info to after we have a valid target certificate
+  end
+  
+  # check presence and validity of target certificate
+  if options.kdm_target == NIL
+    @logger.info( "No target certificate specified. Use --target <certificate>" )
+    kdm_no_go = TRUE
+  else
+    if File.exists?( options.kdm_target ) and File.ftype( options.kdm_target ) != 'directory'
+      begin
+        recipient_cert = OpenSSL::X509::Certificate.new( File.read( options.kdm_target ) )
+        recipient_cert_thumbprint = `dc-thumbprint #{ options.kdm_target }`.chomp
+        recipient_cn_name = 'TEST'
+        # print RDN info and make target name for kdm filename
+        @logger.debug( "Target:" )
+        recipient_cert.subject.to_a.each do |rdn|
+          @logger.debug( "   #{ [ rdn[ 0 ], rdn[ 1 ] ].join( '=' ) }" )
+          if rdn[ 0 ] == 'CN'
+            recipient_cn_name = rdn[ 1 ].split( /^([^.]+.)/ ).last # Not sure. This is supposed to pick up everything after the first dot
+            @logger.debug( "Target device name: #{ recipient_cn_name }" )
+          end
+        end
+        recipient_description = recipient_cn_name
+        # target cert valid in time window?
+        if time_to_datetime( recipient_cert.not_before ) < kdm_not_valid_before and time_to_datetime( recipient_cert.not_after ) > kdm_not_valid_after
+          @logger.info( "Target certificate is valid during KDM time window" )
+          # deferred from KDM time window check
+          @logger.info( "KDM valid from  #{ kdm_not_valid_before.to_s }" )
+          @logger.info( "KDM valid until #{ kdm_not_valid_after.to_s }" )
+        else
+          @logger.info( "Target certificate is not valid during KDM time window" )
+          @logger.info( "   valid from  #{ time_to_datetime( recipient_cert.not_before ).to_s }" )
+          @logger.info( "   valid until #{ time_to_datetime( recipient_cert.not_after ).to_s }" )
+          kdm_no_go = TRUE
+        end
+      rescue OpenSSL::X509::CertificateError => e # recipient_cert.class == NilClass
+        @logger.info( "#{ options.kdm_target }: #{ e.message }" )
+        kdm_no_go = TRUE
+      end
+    else
+      @logger.info( 'Specify a valid target certificate in PEM format' )
+      kdm_no_go = TRUE
+    end
+  end
+  
+  ### exit now if any of the requirements for KDM generation are not met
+  if kdm_no_go == TRUE
+    @logger.info( "KDM generation skipped. See above" )
+    exit
+  end
+  
+  kdm_message_uuid = `kmuuidgen -n`
+  kdm_message_annotation = options.annotation
+  device_list_identifier = `kmuuidgen -n` # FIXME
+
+  #
+  cipher_data_payloads = Array.new
+  cpl_key_ids_types.each do |kit|
+    # FIXME
+    key = File.read( File.join( @keysdir, kit.keys.first ) ).split( ':' ).last
+    key_id = kit.keys.first
+    cipher_data_payload = cipher_data_payload_binary_package( 
+      signing_cert_thumbprint,
+      cpl_uuid,
+      kit.values.first, # key_type (plus yeah, i know, idiotic data type chosen for key_ids_types. i'll make up my mind wrt how and where to get key type from)
+      key_id,
+      kdm_not_valid_before.to_s,
+      kdm_not_valid_after.to_s,
+      key
+    )
+    tmp = Tempfile.new( 'cinemaslides-' )
+    tmpfile = File.open( tmp.path, 'w' ) { |f| f.write cipher_data_payload ; f.close }
+    @logger.debug( "Encrypting payload for #{ key_id }" )
+    # targeting ...
+    cipher_data_payload_encrypted_b64 = `openssl rsautl -encrypt -oaep -certin -inkey #{ options.kdm_target } -in #{ tmp.path } | openssl base64`.chomp
+    cipher_data_payloads << cipher_data_payload_encrypted_b64
+  end
+  
+  # KDM data and template for signature
+  @logger.debug( 'Build KDM XML with data and signature template' )
+  kdm_xml = KDM_SMPTE_430_1_2006.new(
+    kdm_message_uuid,
+    kdm_message_annotation,
+    kdm_issue_date.to_s,
+    signing_cert,
+    recipient_cert,
+    cpl_uuid,
+    cpl_content_title_text,
+    kdm_not_valid_before,
+    kdm_not_valid_after,
+    device_list_identifier,
+    recipient_description,
+    recipient_cert_thumbprint,
+    keys,
+    cipher_data_payloads
+  ).xml
+  
+  # Sign and write kdm to disk
+  @logger.info( 'Sign and write KDM to disk' )
+
+  kdm_signed_xml = DCSignatureKDM.new( 
+    kdm_xml,
+    signer_key_file,
+    ca_cert_file,
+    intermediate_cert_file,
+    certchain
+  ).xml
+  
+  kdm_cpl_content_title = cpl_content_title_text.upcase.gsub( ' ', '-' )[0..19]
+  kdm_creation_facility_code = options.issuer.upcase.gsub( ' ', '' )[0..2]
+  kdm_file = "k_#{ kdm_cpl_content_title }_#{ recipient_cn_name }_#{ yyyymmdd( kdm_not_valid_before ) }_#{ yyyymmdd( kdm_not_valid_after ) }_#{ kdm_creation_facility_code }_OV_#{ kdm_message_uuid[0..7] }.xml"
+  if File.exists?( kdm_file )
+    @logger.info( "KDM exists: #{ kdm_file }" )
+    @logger.info( "4 bytes UUID collision. Shouldn't happen :) Not overwriting" )
+    exit
+  else
+    File.open( kdm_file, 'w' ) { |f| f.write( kdm_signed_xml ) }
+    @logger.info( "Pick up KDM at #{ kdm_file }" )
+    @logger.info( 'KDM done' )
+  end
+  
+  exit
+end ### KDM mode
+
+
+# check required tools -- well, it's still messy
+def missing_exit( tool )
+  @logger.info( "#{ tool } not available. Check your installation" )
   exit
 end
-@logger.debug( "Available tools: #{ available_tools.sort.join(', ') }" ) unless available_tools.empty?
-@logger.debug( "Missing tools: #{ missing_tools.join(', ') }" ) unless missing_tools.empty?
-@logger.debug( "All necessary tools available" ) if missing_tools.empty? # FIXME
+
+case options.output_type
+when 'preview', 'fullpreview'
+  mandatory = [ 'convert', 'identify', 'montage', 'display', 'mplayer', 'sox', 'soxi' ]
+when 'dcp'
+  codec_options = [ 'image_to_j2k', 'kdu_compress', 'opendcp_j2k' ]
+  available_codecs, missing_codecs = check_external( codec_options )
+  if available_codecs.empty?
+    @logger.warn( "No JPEG 2000 codec available (Needed for DCP creation). Check your installation" )
+    exit
+  end
+  case options.encoder
+  when 'kakadu'
+    missing_exit( 'kdu_compress' ) if missing_codecs.include?( 'kdu_compress' )
+  when 'openjpeg'
+    missing_exit( 'image_to_j2k' ) if missing_codecs.include?( 'image_to_j2k' )
+  when 'openjpeg-tm'
+    missing_exit( 'opendcp_j2k' ) if missing_codecs.include?( 'opendcp_j2k' )
+  end
+  
+  mandatory = [ 'convert', 'identify', 'sox', 'soxi', 'asdcp-test', 'kmuuidgen' ]
+  if options.dcp_encrypt == TRUE
+    mandatory << 'kmrandgen'
+  end
+end
+available_mandatory, missing_mandatory = check_external( mandatory )
+available_mandatory += available_codecs unless available_codecs.nil?
+
+@logger.debug( "Available tools: #{ available_mandatory.sort.join(', ') }" ) unless available_mandatory.empty?
+@logger.debug( "Missing tools: #{ ( missing_mandatory + missing_codecs ).join(', ') }" ) unless ( missing_mandatory.empty? or missing_codecs.empty? )
+@logger.debug( "All necessary tools available" ) if ( missing_mandatory.empty? and ( options.otput_type == 'dcp' ? missing_codecs.empty? : TRUE ) ) # FIXME
+
+if missing_mandatory.size > 0
+  @logger.info( "Check your installation" )
+  exit
+end
 
 
 ### Get options and initialize
@@ -1147,8 +1713,8 @@ end
 
 m = options.size.match( /catch:(.*)/ )
 unless m.nil?
-  if [ 'eep', 'ind' ].include?( m[1] )
-    @logger.info( "Did you mean to say '--k#{ m[ 1 ] }'?" )
+  if [ 'eep', 'ind', 'dm' ].include?( m[1] ) # yeah, ugh, catch keep, kind, kdm
+    @logger.info( "Sorry for being fussy here, but did you mean to say '--k#{ m[ 1 ] }'? Option parser bailout" )
   else
     @logger.info( "Can't understand -k's argument: '#{ m[ 1 ] }'. Use #{ options.size_choices.join( ' or ' ) }" )
   end
@@ -1177,10 +1743,16 @@ if @output_type == "dcp"
     @logger.critical( "Not a usable encoder: '#{ options.encoder }'" )
     exit
   end
+  if options.dcp_encrypt == TRUE
+    options.sign = TRUE
+  end
   if options.sign == TRUE
     if ENV[ 'CINEMACERTSTORE' ].nil?
-      @logger.critical( "CINEMACERTSTORE not set. Cannot locate signer.key and dc-certificate-chain" )
+      @logger.critical( "CINEMACERTSTORE not set. Cannot locate 'signer.key', 'ca.self-signed.pem', 'intermediate.signed.pem' and 'dc-certificate-chain'" )
       exit
+    else
+      CINEMACERTSTORE = ENV[ 'CINEMACERTSTORE' ]
+      signer_key_file, ca_cert_file, intermediate_cert_file, certchain_text, certchain, signer_cert_obj = signature_context
     end
   end
   # mark assets with encoder ids
@@ -1259,7 +1831,7 @@ else # check files
         @logger.debug( "#{ audio_identify.upcase } #{ audiofile_duration }: #{ file }" )
       end
     # see http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=16398
-    # basically IM defers deep analysis of xml to the coder
+    # basically IM defers deep analysis of xml to the coder.
     # the lightweight identify ping of xml might return false positives
     elsif image_identify == "SVG"
       xml = Nokogiri::XML( File.open( file ) )
@@ -1313,8 +1885,12 @@ if options.dont_check == TRUE
 end
 
 @logger.debug( "Images: #{ @source.join( ', ' ) }" )
-@logger.debug( "Audio files: #{ @source_audio.join( ', ' ) }" )
-@logger.debug( "No decode delegates for: #{ no_decode_delegate.nil? ? 'Not checked' : no_decode_delegate.join( ', ' ) }" )
+@logger.debug( "Audio files: #{ @source_audio.join( ', ' ) }" ) unless @source_audio.empty?
+if no_decode_delegate.nil?
+  @logger.debug( "No decode delegates for: Not checked" )
+else
+  @logger.debug( "No decode delegates for: #{ no_decode_delegate.join( ', ' ) }" ) unless no_decode_delegate.empty?
+end
 
 
 # check options.transition_and_timing
@@ -1367,20 +1943,13 @@ image_sequence_frames = sequence_frames - ( ( black_leader + black_tail ) * fps 
 
 # set up diretories to write output to. These locations are created upon demand only,
 # hence the mkdir's are clustered out a bit. FIXME
-CINEMASLIDESDIR = ENV['CINEMASLIDESDIR']
-if CINEMASLIDESDIR.nil?
-  @cinemaslidesdir = File.join( ENV[ 'HOME' ], "cinemaslidesdir" )
-  @logger.debug( "CINEMASLIDESDIR not set. Will use #{ @cinemaslidesdir }" )
-else
-  @logger.debug( "CINEMASLIDESDIR is set to #{ CINEMASLIDESDIR }" )
-  @cinemaslidesdir = CINEMASLIDESDIR
-end
 @workdir = File.join( @cinemaslidesdir, "#{ File.basename( $0 ) }_#{ timestamp }_#{ @output_type }" )
 @conformdir = File.join( @workdir, "conform" )
 @j2cdir = File.join( @workdir, "j2c" )
 @thumbsdir = File.join( @cinemaslidesdir, "thumbs" )
 @assetsdir = File.join( @cinemaslidesdir, "assets" )
 @assetsdir_audio = File.join( @cinemaslidesdir, 'assets-audio' )
+@keysdir = File.join( @cinemaslidesdir, 'keys' )
 
 if confirm_or_create( @cinemaslidesdir ) == TRUE
   @logger.debug( "#{ @cinemaslidesdir } is writeable" )
@@ -1418,6 +1987,11 @@ when 'dcp' # silently ignore option.dcp_user_output_path when previewing
     @logger.critical( "#{ @dcpdir } is not writeable. Check your mounts and permissions." )
     exit
   end
+  
+  # location of content keys
+  if options.dcp_encrypt == TRUE
+    Dir.mkdir( @keysdir ) unless File.exists?( @keysdir )
+  end
 end
 ###
 
@@ -1431,12 +2005,15 @@ y = y.to_i / 6 # ...
 
 case @output_type
 when "dcp"
-  @logger.info( "Creating #{ @dcp_wrap_stereoscopic == TRUE ? '3D' : '2D' } #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
+  @logger.info( "Creating#{ options.sign == TRUE ? ' signed' : '' }#{ options.dcp_encrypt == TRUE ? ' and encrypted' : '' }#{ @dcp_wrap_stereoscopic == TRUE ? ' 3D' : ' 2D' } #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
   @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
   @logger.info( "Title:      #{ options.dcp_title }" )
-  @logger.info( "Annotation: #{ options.dcp_annotation }" )
-  @logger.info( "Issuer:     #{ options.dcp_issuer }" )
+  @logger.info( "Annotation: #{ options.annotation }" )
+  @logger.info( "Issuer:     #{ options.issuer }" )
   @logger.info( "Kind:       #{ options.dcp_kind }" )
+  if options.sign == TRUE
+    @logger.info( "Signer:     #{ signer_cert_obj.subject.to_s }" )
+  end
 when "preview", "fullpreview"
   @logger.info( "Creating #{ @output_type } (#{ @aspect } #{ @dimensions } @ #{ fps } fps)" )
   @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
@@ -1729,23 +2306,46 @@ when "dcp"
     audio_mxf_uuid = `kmuuidgen -n`
     audio_mxf = File.join( @dcpdir, "pcm_#{ audio_mxf_uuid }_.mxf" )
   end
+  
+  # Generate content keys. Proof-of-concept, ad-hoc, hairy, you name it.
+  if options.dcp_encrypt == TRUE
+    image_key = `kmrandgen -n -s 16`
+    image_key_id = `kmuuidgen -n`
+    File.open( File.join( @keysdir, image_key_id ), 'w' ) { |f| f.write( image_key_id + ':MDIK:' + image_key ) }
+    unless @source_audio.empty?
+      audio_key = `kmrandgen -n -s 16`
+      audio_key_id = `kmuuidgen -n`
+      File.open( File.join( @keysdir, audio_key_id ), 'w' ) { |f| f.write( audio_key_id + ':MDAK:' + audio_key ) }
+    end
+  end
+  
+  def write_asdcp_track( opts_params_args )
+    asdcp_line = "asdcp-test #{ opts_params_args } > /dev/null 2>&1"
+    @logger.debug( asdcp_line )
+    `#{ asdcp_line }`
+  end
 
   # Make image trackfile
   @logger.info( 'Write image trackfile ...' )
   if @dcp_wrap_stereoscopic == TRUE
     @logger.info( 'Wrap as stereoscopic essence' )
-    `asdcp-test -L -E -a #{ image_mxf_uuid } -c #{ image_mxf } -3 #{ @j2cdir } #{ @j2cdir } > /dev/null 2>&1`
+    # ugh, FIXME, for crying out loud
+    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + image_key + ' -j ' + image_key_id : '-E' } -a #{ image_mxf_uuid } -c #{ image_mxf } -3 #{ @j2cdir } #{ @j2cdir }"
   else
-    `asdcp-test -L -E -p #{ fps } -a #{ image_mxf_uuid } -c #{ image_mxf } #{ @j2cdir } > /dev/null 2>&1`
+    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + image_key + ' -j ' + image_key_id : '-E' } -p #{ fps } -a #{ image_mxf_uuid } -c #{ image_mxf } #{ @j2cdir }"
   end
+  write_asdcp_track( opts_params_args )
   @logger.debug( "Image trackfile UUID: #{ image_mxf_uuid }" )
   
   # Make audio trackfile
   unless @source_audio.empty?
     @logger.info( 'Write audio trackfile ...' )
-    `asdcp-test -L -E -p #{ fps } -a #{ audio_mxf_uuid } -c #{ audio_mxf } #{ @final_audio } > /dev/null 2>&1`
+    # FIXME 2.0 sound only here (v0.2010.11.19), hence no label. might be trouble on some servers
+    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + audio_key + ' -j ' + audio_key_id : '-E' } -p #{ fps } -a #{ audio_mxf_uuid } -c #{ audio_mxf } #{ @final_audio }"
     @logger.debug( "Audio trackfile UUID: #{ audio_mxf_uuid }" )
+    write_asdcp_track( opts_params_args ) 
   end
+  
 
   # Write CompositionPlaylist
   @logger.info( 'Write CPL' )
@@ -1754,11 +2354,12 @@ when "dcp"
   cpl_file = File.join( @dcpdir, 'cpl_' + cpl_uuid + '_.xml' )
   cpl = CPL_SMPTE_429_7_2006.new( 
     cpl_uuid,
+    options.dcp_encrypt,
     image_mxf.to_a, # reels
     @source_audio.empty? ? nil : audio_mxf.to_a, # reels
-    annotation = options.dcp_annotation,
+    annotation = options.annotation,
     issue_date = DateTime.now.to_s,
-    issuer = options.dcp_issuer,
+    issuer = options.issuer,
     creator = 'cinemaslides cpl',
     content_title = options.dcp_title,
     content_kind = options.dcp_kind,
@@ -1767,12 +2368,6 @@ when "dcp"
     rating_list = nil
   )
   if options.sign == TRUE
-    # FIXME hardcoded number and names of signer key and certificates
-    signer_key_file = File.join( ENV[ 'CINEMACERTSTORE' ], 'signer.key' )
-    ca_cert_file = File.join( ENV[ 'CINEMACERTSTORE' ], 'ca.self-signed.pem' )
-    intermediate_cert_file = File.join( ENV[ 'CINEMACERTSTORE' ], 'intermediate.signed.pem' )
-    certchain_text = File.read( File.join( ENV[ 'CINEMACERTSTORE' ], 'dc-certificate-chain' ) ) # verified chain
-    certchain = X509CertificateChain.new( certchain_text ).to_a
     cpl_xml = DCSignature.new( cpl.xml, signer_key_file, ca_cert_file, intermediate_cert_file, certchain ).xml
   else
     cpl_xml = cpl.xml
@@ -1795,9 +2390,9 @@ when "dcp"
   pkl_file = File.join( @dcpdir, 'pkl_' + pkl_uuid + '_.xml' )
   pkl = PKL_SMPTE_429_8_2007.new(
     pkl_uuid,
-    options.dcp_annotation, # FIXME
+    options.annotation, # FIXME
     issue_date = DateTime.now.to_s,
-    options.dcp_issuer,
+    options.issuer,
     creator = 'cinemaslides pkl',
     pkl_assets.flatten
   )
@@ -1819,14 +2414,14 @@ when "dcp"
   am = AM_SMPTE_429_9_2007.new(
     am_uuid,
     issue_date = DateTime.now.to_s,
-    options.dcp_issuer,
+    options.issuer,
     creator = 'cinemaslides am',
     am_assets.flatten
   )
   File.open( am_file, 'w' ) { |f| f.write( am.xml ) }
 
   # readme and report
-  readme_file_name = options.dcp_annotation.gsub( /[\\\/\&: ]/, '_' ) + '.readme'
+  readme_file_name = options.annotation.gsub( /[\\\/\&: ]/, '_' ) + '.readme'
   readme_file_path = File.join( @dcpdir, readme_file_name )
   File.open( readme_file_path, 'w' ) { |f| f.write( commandline + "\n" ) }
   final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
@@ -1837,6 +2432,8 @@ end # End Create DCP
 
 
 TODO = <<TODO
+FIXME output some basic help message when app is called without any args. as it is app merely utters 'No image files specified'
+FIXME calculates message digest twice when building an encrypted package (for CPL and PKL)
 FIXME fps and --wrap-stereoscopic not in total harmony yet
 FIXME generic readme/report output
 FIXME check write completion on slow media (with -o | --dcp-out)
