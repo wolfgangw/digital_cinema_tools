@@ -288,7 +288,7 @@ $ #{ app } audio.wav *.tiff --montagepreview --aspect scope -t dcp --title 'Slid
   Transition: fade in for 0.5 seconds, hold for 10, fade out for 4
 $ #{ app } -x fade,0.5,10,4 ...
 
-  Carousel goes berserk (note option --dont-check in order to avoid extensive checks for each image)
+  Carousel goes berserk (note option --dont-check in order to avoid extensive checks for lots of images)
 $ #{ app } -t dcp --title "Motion sequence" --fps 24 -x cut,0.04167 --dont-check motion_sequence/
 
   Write DCP to custom location
@@ -312,9 +312,8 @@ $ #{ app } --aspect 1.33x1 | --aspect 3072x2304 | --aspect 3x1 [...]
         asdcp-test -x decrypted_ -k '<content key -- 16 bytes in hex>' <encrypted MXF>
 $ #{ app } -t dcp --encrypt --title "Encryption test" -o ENCRYPTION_TST_F_2K_20101231_WOE_OV -x cut,0.04167 demo_sequence/
 
-  Generate KDM for some content, targeting a server certificate with a time window from now to 10 days from now
-  200100400530_000487.pem is an example target (Our XDC Solo G3's certificate):
-$ #{ app } -v --kdm --cpl ENCRYPTION_TST_F_2K_20101231_WOE_OV/cpl_<UUID>_.xml --start 0 --end 10 --target 200100400530_000487.pem
+  Generate KDM for some content, targeting our XDC Solo G3 server certificate with a time window from now to 10 days from now:
+$ #{ app } -v debug --kdm --cpl ENCRYPTION_TST_F_2K_20101231_WOE_OV/cpl_<UUID>_.xml --start 0 --end 10 --target 200100400530_000487.pem
 
 EXAMPLES
         puts examples
