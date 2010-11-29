@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Spread out (hard-coded) shell jobs on a multi-core cpu. See e() for the beef
-# Wolfgang Woehl 11/2010
+# Wolfgang Woehl v0.2010.11
 #
 # Based on Martin Christoph's http://www.da7a.de/linux/bash-parallelverarbeitung
 # 
@@ -27,13 +27,15 @@ e()
   #
   # examples:
   #
-  # file format conversion gains significantly
-  # for example 600 12bpc 1920x1080 tiffs with single job sequence ~220 secs, with threads-test.bash ~120 secs
-  convert ${file} -quality 100 $(basename ${file}).jpg
+  #   file format conversion gains significantly
+  #   for example 600 12bpc 1920x1080 tiffs with single job sequence ~220 secs, with threads-test.bash ~120 secs
+  #   convert ${file} -quality 100 $(basename ${file}).jpg
   #
-  #image_to_j2k -cinema2K 24 -i ${file} -o $(basename ${file}).j2c > /dev/null 2>&1
+  #   image_to_j2k -cinema2K 24 -i ${file} -o $(basename ${file}).j2c > /dev/null 2>&1
   #
-  #kdu_compress -i ${file} -o $(basename ${file}).j2c Sprofile=CINEMA2K Creslengths=1302083 Creslengths:C0=1302083,1041666 Creslengths:C1=1302083,1041666 Creslengths:C2=1302083,1041666 > /dev/null 2>&1
+  #   opendcp_j2k -i ${file} -o $(basename ${file}).j2c -l 3
+  #
+  #   kdu_compress -i ${file} -o $(basename ${file}).j2c Sprofile=CINEMA2K Creslengths=1302083 Creslengths:C0=1302083,1041666 Creslengths:C1=1302083,1041666 Creslengths:C2=1302083,1041666 > /dev/null 2>&1
   #
 }
  
