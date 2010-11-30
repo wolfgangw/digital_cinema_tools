@@ -937,7 +937,7 @@ include DCTools
 
 class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
   def initialize( message_uuid, message_annotation, issue_date, signing_cert, recipient_cert, cpl_uuid, cpl_content_title_text, kdm_not_valid_before, kdm_not_valid_after, device_list_identifier, device_list_description, device_cert_thumbprint, keys, cipher_data_payloads )
-    # FIXME 'standalone' => 'no' nokogiri undefined method
+    # FIXME Nokogiri does not support :standalone
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
       xml.DCinemaSecurityMessage_( :xmlns => 'http://www.smpte-ra.org/schemas/430-3/2006/ETM', 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#', 'xmlns:enc' => 'http://www.w3.org/2001/04/xmlenc#', 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
         xml<< '<!-- cinemaslides kdm -->'
