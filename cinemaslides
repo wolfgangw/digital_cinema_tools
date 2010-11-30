@@ -943,7 +943,14 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
         xml<< '<!-- cinemaslides kdm -->'
         xml.AuthenticatedPublic_( 'Id' => 'ID_AuthenticatedPublic' ) {
           xml.MessageId_ "urn:uuid:#{ message_uuid }"
-          xml.MessageType_ 'http://www.smpte-ra.org/430-1/2006/KDM'
+          # see SMPTE 430-1-Am1-2009 (D-Cinema Operations - Key delivery message - Amendment 1)
+          # for an informative note regarding MessageType:
+          #   Informative Note: The MessageType value "http://www.smpte-ra.org/430-1/2006/KDM#kdm-key-type" 
+          #   is legal and correct, but, in the event a future revision of the KDM specification requires 
+          #   a revision to the MessageType value, the MessageType value should follow the pattern 
+          #   http://www.smpte-ra.org/430-1/2006/KDM and match the target namespace of the schema.
+          # The amended MessageType value triggers errors on some cinema servers, hence roll back to
+          xml.MessageType_ 'http://www.smpte-ra.org/430-1/2006/KDM#kdm-key-type'
           xml.AnnotationText_ message_annotation
           xml.IssueDate_ issue_date
           xml.Signer_ {
