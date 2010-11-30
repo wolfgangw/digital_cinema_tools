@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
-CinemaSlidesVersion = "v0.2010.11.29"
+AppVersion = "v0.2010.11.30"
+AppName = File.basename( $0 )
 #
 # Wolfgang Woehl v0.2010
 #
@@ -96,7 +97,7 @@ class Optparser
     options.audio_bps_choices = [ '16', '24' ]
     options.dcp_title = 'Cinemaslides test'
     options.issuer = ENV[ 'USER' ] + '@' + `hostname`.chomp
-    options.annotation = 'cinemaslides ' + DateTime.now.to_s
+    options.annotation = "#{ AppName } " + DateTime.now.to_s
     options.dcp_kind = 'test'
     options.dcp_kind_choices = [ 'feature', 'trailer', 'test', 'teaser', 'rating', 'advertisement', 'short', 'transitional', 'psa', 'policy' ]
     options.dcp_wrap_stereoscopic = FALSE
@@ -125,7 +126,7 @@ class Optparser
 
     opts = OptionParser.new do |opts|
       opts.banner = <<BANNER
-cinemaslides #{ CinemaSlidesVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" } #{ ENV[ 'CINEMACERTSTORE' ].nil? ? "\nExport CINEMACERTSTORE to point to a directory which holds your digital cinema compliant signing key and certificates" : "\nCINEMACERTSTORE is set (#{ ENV[ 'CINEMACERTSTORE' ] })" }
+#{ AppName } #{ AppVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" } #{ ENV[ 'CINEMACERTSTORE' ].nil? ? "\nExport CINEMACERTSTORE to point to a directory which holds your digital cinema compliant signing key and certificates" : "\nCINEMACERTSTORE is set (#{ ENV[ 'CINEMACERTSTORE' ] })" }
  
 Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [--encrypt] [--kdm] [--cpl <cpl file>] [--start <days from now>] [--end <days from now] [--target <certificate>] [-v, --verbosity <level>] [--examples] [-h, --help] [ image and audio files ] [ KDM mode parameters ]
 
@@ -264,13 +265,13 @@ BANNER
       opts.on( '--examples', 'Some examples and explanations' ) do
         app = File.basename( $0 )
         examples = <<EXAMPLES
-cinemaslides #{ CinemaSlidesVersion }
+#{ AppName } #{ AppVersion }
 
 Specify options in any order. Order of image/audio files matters. Audio is optional.
 Audio timing is handled in a first-come, first-served manner -- independently from image timings
 
 In order to use signature and KDM generation you need to have 3 related, digital cinema compliant
-certificates in $CINEMACERTSTORE (#{ app } needs some specific names for now -- #{ CinemaSlidesVersion })
+certificates in $CINEMACERTSTORE (#{ app } needs some specific names for now -- #{ AppVersion })
 (Use https://github.com/wolfgangw/digital_cinema_tools/blob/master/make-dc-certificate-chain.rb for that)
 
   Preview slideshow with audio (Half sized preview. Cut transition. Default duration: 5 seconds each):
@@ -935,12 +936,16 @@ end
 include DCTools
 
 
+# FIXME got cornered by a (weak) prototyping decision concerning keyfile format.
+# FIXME thus keys (format '<key id>:<key type>:<key data>') are passed in here 
+# FIXME when all we need for KeyIdList is type and id.
+# FIXME will merge with cipher_data_payloads to pass in a list of all those.
 class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
   def initialize( message_uuid, message_annotation, issue_date, signing_cert, recipient_cert, cpl_uuid, cpl_content_title_text, kdm_not_valid_before, kdm_not_valid_after, device_list_identifier, device_list_description, device_cert_thumbprint, keys, cipher_data_payloads )
     # FIXME Nokogiri does not support :standalone
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
       xml.DCinemaSecurityMessage_( :xmlns => 'http://www.smpte-ra.org/schemas/430-3/2006/ETM', 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#', 'xmlns:enc' => 'http://www.w3.org/2001/04/xmlenc#', 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
-        xml<< '<!-- cinemaslides kdm -->'
+        xml<< "<!-- #{ AppName } #{ AppVersion } smpte kdm -->"
         xml.AuthenticatedPublic_( 'Id' => 'ID_AuthenticatedPublic' ) {
           xml.MessageId_ "urn:uuid:#{ message_uuid }"
           # see SMPTE 430-1-Am1-2009 (D-Cinema Operations - Key delivery message - Amendment 1)
@@ -971,12 +976,11 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
               xml.ContentKeysNotValidBefore_ kdm_not_valid_before
               xml.ContentKeysNotValidAfter_ kdm_not_valid_after
               xml.AuthorizedDeviceInfo_ {
+                # FIXME ad-hoc DeviceListIdentifier
                 xml.DeviceListIdentifier_ "urn:uuid:#{ device_list_identifier }"
                 xml.DeviceListDescription_ device_list_description
                 xml.DeviceList_ {
-                  #device_list.each do |device|
                   xml.CertificateThumbprint_ device_cert_thumbprint
-                  #end
                 } # DeviceList
               } # AuthorizedDeviceInfo
               xml.KeyIdList_ {
@@ -1062,11 +1066,10 @@ class DCSignatureKDM
     @signed_xml = `xmlsec1 --sign --id-attr:Id http://www.smpte-ra.org/schemas/430-3/2006/ETM:AuthenticatedPublic --id-attr:Id http://www.smpte-ra.org/schemas/430-3/2006/ETM:AuthenticatedPrivate --privkey-pem #{ signer_key_file } --trusted-pem #{ ca_cert_file } --trusted-pem #{ intermediate_cert_file } #{ tmp.path }`
     #
     
-    def xml
-      @signed_xml
-    end
-    
   end # initialize
+  def xml
+    @signed_xml
+  end
 end # class DCSignatureKDM
 
 
@@ -1386,19 +1389,20 @@ def key_spec_valid?( candidate )
 end
 
 
-def time_to_datetime( time )
+# date helpers
+def time_to_datetime( time ) # OpenSSL's ruby bindings return Time objects for certificate validity info
   DateTime.parse( time.to_s )
 end
-
-
+def datetime_friendly( dt ) # return something in the form of "Tuesday Nov 30 2010 (18:56)"
+  DateTime::DAYNAMES[ dt.wday ] + ' ' + DateTime::ABBR_MONTHNAMES[ dt.month ] + ' ' + dt.day.to_s + ' ' + dt.year.to_s + ' (' + dt.hour.to_s + ':' + dt.min.to_s + ')'
+end
 def yyyymmdd( datetime ) # used in KDM filenames. See http://www.kdmnamingconvention.com/
   datetime.to_s.split('T').first.gsub( /-/,'' )
 end
 ###
 
 
-appname = File.basename( $0 )
-@logger.info( "#{ appname } #{ CinemaSlidesVersion }" )
+@logger.info( "#{ AppName } #{ AppVersion }" )
 @logger.debug( commandline )
 
 
@@ -1445,6 +1449,7 @@ if options.kdm == TRUE
     signer_key_file, ca_cert_file, intermediate_cert_file, certchain_text, certchain, signer_cert_obj = signature_context
     signing_cert = OpenSSL::X509::Certificate.new( File.read( File.join( CINEMACERTSTORE, 'leaf.signed.pem' ) ) )
     signing_cert_thumbprint = `dc-thumbprint #{ File.join( CINEMACERTSTORE, 'leaf.signed.pem' ) }`.chomp
+    @logger.info( "KDM signer: #{ signing_cert.subject.to_s }" )
   end
   
   # check for key directory
@@ -1554,8 +1559,8 @@ if options.kdm == TRUE
         if time_to_datetime( recipient_cert.not_before ) < kdm_not_valid_before and time_to_datetime( recipient_cert.not_after ) > kdm_not_valid_after
           @logger.info( "Target certificate is valid during KDM time window" )
           # deferred from KDM time window check
-          @logger.info( "KDM valid from  #{ kdm_not_valid_before.to_s }" )
-          @logger.info( "KDM valid until #{ kdm_not_valid_after.to_s }" )
+          @logger.info( "KDM is valid from  #{ datetime_friendly( kdm_not_valid_before ) }" )
+          @logger.info( "KDM is valid until #{ datetime_friendly( kdm_not_valid_after ) }" )
         else
           @logger.info( "Target certificate is not valid during KDM time window" )
           @logger.info( "   valid from  #{ time_to_datetime( recipient_cert.not_before ).to_s }" )
@@ -1599,14 +1604,14 @@ if options.kdm == TRUE
     )
     tmp = Tempfile.new( 'cinemaslides-' )
     tmpfile = File.open( tmp.path, 'w' ) { |f| f.write cipher_data_payload ; f.close }
-    @logger.debug( "Encrypting payload for #{ key_id }" )
+    @logger.debug( "Encrypt payload for content key ID #{ key_id }" )
     # targeting ...
     cipher_data_payload_encrypted_b64 = `openssl rsautl -encrypt -oaep -certin -inkey #{ options.kdm_target } -in #{ tmp.path } | openssl base64`.chomp
     cipher_data_payloads << cipher_data_payload_encrypted_b64
   end
   
   # KDM data and template for signature
-  @logger.debug( 'Build KDM XML with data and signature template' )
+  @logger.debug( 'Prepare KDM XML for signature' )
   kdm_xml = KDM_SMPTE_430_1_2006.new(
     kdm_message_uuid,
     kdm_message_annotation,
@@ -1625,7 +1630,7 @@ if options.kdm == TRUE
   ).xml
   
   # Sign and write kdm to disk
-  @logger.info( 'Sign and write KDM to disk' )
+  @logger.debug( 'Sign and write KDM to disk' )
 
   kdm_signed_xml = DCSignatureKDM.new( 
     kdm_xml,
@@ -1640,7 +1645,7 @@ if options.kdm == TRUE
   kdm_file = "k_#{ kdm_cpl_content_title }_#{ recipient_cn_name }_#{ yyyymmdd( kdm_not_valid_before ) }_#{ yyyymmdd( kdm_not_valid_after ) }_#{ kdm_creation_facility_code }_OV_#{ kdm_message_uuid[0..7] }.xml"
   if File.exists?( kdm_file )
     @logger.info( "KDM exists: #{ kdm_file }" )
-    @logger.info( "4 bytes UUID collision. Shouldn't happen :) Not overwriting" )
+    @logger.info( "4 bytes UUID collision: #{ kdm_message_uuid }. Not overwriting" )
     exit
   else
     File.open( kdm_file, 'w' ) { |f| f.write( kdm_signed_xml ) }
@@ -1687,7 +1692,7 @@ available_mandatory += available_codecs unless available_codecs.nil?
 
 @logger.debug( "Available tools: #{ available_mandatory.sort.join(', ') }" ) unless available_mandatory.empty?
 @logger.debug( "Missing tools: #{ ( missing_mandatory + missing_codecs ).join(', ') }" ) unless ( missing_mandatory.empty? or missing_codecs.empty? )
-@logger.debug( "All necessary tools available" ) if ( missing_mandatory.empty? and ( options.otput_type == 'dcp' ? missing_codecs.empty? : TRUE ) ) # FIXME
+@logger.debug( "All necessary tools available" ) if ( missing_mandatory.empty? and ( options.output_type == 'dcp' ? missing_codecs.empty? : TRUE ) ) # FIXME
 
 if missing_mandatory.size > 0
   @logger.info( "Check your installation" )
@@ -2352,7 +2357,6 @@ when "dcp"
     write_asdcp_track( opts_params_args ) 
   end
   
-
   # Write CompositionPlaylist
   @logger.info( 'Write CPL' )
   cpl_uuid = `kmuuidgen -n` # FIXME
@@ -2366,7 +2370,7 @@ when "dcp"
     annotation = options.annotation,
     issue_date = DateTime.now.to_s,
     issuer = options.issuer,
-    creator = 'cinemaslides cpl',
+    creator = "#{ AppName } #{ AppVersion } smpte cpl",
     content_title = options.dcp_title,
     content_kind = options.dcp_kind,
     content_version_id = cpl_uuid + '_' + issue_date,
@@ -2399,7 +2403,7 @@ when "dcp"
     options.annotation, # FIXME
     issue_date = DateTime.now.to_s,
     options.issuer,
-    creator = 'cinemaslides pkl',
+    creator = "#{ AppName } #{ AppVersion } smpte pkl",
     pkl_assets.flatten
   )
   if options.sign == TRUE
@@ -2421,7 +2425,7 @@ when "dcp"
     am_uuid,
     issue_date = DateTime.now.to_s,
     options.issuer,
-    creator = 'cinemaslides am',
+    creator = "#{ AppName } #{ AppVersion } smpte am",
     am_assets.flatten
   )
   File.open( am_file, 'w' ) { |f| f.write( am.xml ) }
