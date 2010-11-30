@@ -989,7 +989,9 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
                   key_id = key.split( ':' ).first
                   key_type = key.split( ':' )[ 1 ]
                   xml.TypedKeyId_ {
-                    xml.KeyType_ key_type
+                    # Nokogiri, apparently, won't take attributes for tags with content, so ...
+                    xml<< "<KeyType scope=\"http://www.smpte-ra.org/430-1/2006/KDM#kdm-key-type\">#{ key_type }</KeyType>"
+                    #xml.KeyType_( :scope => 'http://www.smpte-ra.org/430-1/2006/KDM#kdm-key-type' ) key_type
                     xml.KeyId_ "urn:uuid:#{ key_id }"
                   } # TypedKeyId
                 end
@@ -1481,7 +1483,7 @@ if options.kdm == TRUE
             @logger.info( "KDM not applicable: #{ options.kdm_cpl } doesn't reference content keys" )
             kdm_no_go = TRUE
           else
-            @logger.info( "CPL references #{ cpl_key_ids_types.size } content key#{ ( cpl_key_ids_types.size > 1 or cpl_key_ids_types.size == 0 ) ? 's' : '' }" )
+            @logger.info( "CPL references #{ cpl_key_ids_types.size } content key#{ ( cpl_key_ids_types.size != 1 ) ? 's' : '' }" )
             # check presence and local specs compliance of content keys
             @logger.info( "Checking content keys ..." )
             keys = Array.new
@@ -1532,7 +1534,7 @@ if options.kdm == TRUE
     @logger.info( "KDM time window opens after it's supposed to close" )
     kdm_no_go = TRUE
   else
-    # defer logger.info to after we have a valid target certificate
+    # defer logger.info to after we have a valid target certificate in order to check containment of time window in target validity period
   end
   
   # check presence and validity of target certificate
