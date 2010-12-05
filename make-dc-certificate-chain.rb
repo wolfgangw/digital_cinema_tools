@@ -156,21 +156,9 @@ File.open( 'leaf.cnf', 'w' ) { |f| f.write( leaf_cnf ) }
 # equiv.  openssl x509 -pubkey -noout -in leaf.signed.pem | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64
 leaf_dnq = `openssl rsa -outform PEM -pubout -in leaf.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 leaf_dnq = leaf_dnq.gsub( '/', '\/' )
-#
-# Note role indicator in CN (CS=content signer)
-# See Digital Cinema System Specification v1.1 section 9.4.3.5 Functions of the Security Manager (SM) item 4:
-#
-#   Validate Composition Playlists (CPL), and log results as a prerequisite to
-#   preparing the suite for the associated composition playback. For encrypted
-#   content, validation shall be by cross checking that the associated KDM's
-#   ContentAuthenticator element matches a certificate thumbprint of one of the
-#   certificates in the CPL's signer chain (see item 1 above), and that such certificate
-#   indicate only a “Content Signer” (CS) role per Section 5.3.4, “Naming and Roles”
-#   of the certificate specification (SMPTE430-2 D-Cinema Operation - Digital
-#   Certificate).
-
+# Note the CN list of roles (RO=rights owner, SM=security manager, CS=content signer)
 # Roles are separated by space character and by leftmost period character from the unique entity label
-leaf_subject = "/O=example.org/OU=csc.example.org/CN=CS.dcstore.LEAF/dnQualifier=" + leaf_dnq
+leaf_subject = "/O=example.org/OU=csc.example.org/CN=RO SM CS.dcstore.LEAF/dnQualifier=" + leaf_dnq
 
 # Request signing for leaf certificate
 `openssl req -new -config leaf.cnf -days 3648 -subj "#{ leaf_subject }" -key leaf.key -outform PEM -out leaf.csr`
