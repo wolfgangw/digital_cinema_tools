@@ -9,7 +9,7 @@
 # Example: threads-test.bash tiffs/*
 
 # set THREADS to a number that makes sense (8 is a good starting point on a quad core)
-THREADS=8
+THREADS=4
 # list carries the provided shell arguments, usually a list of files
 list=( "$@" )
 # each shell argument (file) will be processed as 1 task
@@ -22,18 +22,18 @@ e()
   file=${list[${2}]}
   echo "thread: ${1} (${SECONDS}s) -> execute task ${2} -> $(basename ${file})"
   #
-  # define the processing you want to execute for each shell argument here
-  # with these examples output ends up in the current directory
+  # define the processing you want to execute for each shell argument here.
+  # with these examples output ends up in the current directory.
   #
   # examples:
   #
   #   file format conversion gains significantly
-  #   for example 600 12bpc 1920x1080 tiffs with single job sequence ~220 secs, with threads-test.bash ~120 secs
+  #   for example 600 12bpc 1920x1080 tiffs with single job sequence ~220 secs, with threads-test.bash @ 8 threads ~120 secs
   #   convert ${file} -quality 100 $(basename ${file}).jpg
   #
   #   image_to_j2k -cinema2K 24 -i ${file} -o $(basename ${file}).j2c > /dev/null 2>&1
   #
-  #   opendcp_j2k -i ${file} -o $(basename ${file}).j2c -l 3
+  #   opendcp_j2k -i ${file} -o $(basename ${file}).j2c
   #
   #   kdu_compress -i ${file} -o $(basename ${file}).j2c Sprofile=CINEMA2K Creslengths=1302083 Creslengths:C0=1302083,1041666 Creslengths:C1=1302083,1041666 Creslengths:C2=1302083,1041666 > /dev/null 2>&1
   #
