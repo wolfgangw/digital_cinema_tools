@@ -86,6 +86,7 @@ File.open( 'ca.cnf', 'w' ) { |f| f.write( ca_cnf ) }
 # Subject dnQualifier (Public key thumbprint, see SMPTE 430-2-2006 sections 5.3.1, 5.4 and DCI CTP section 2.1.11)
 ca_dnq = `openssl rsa -outform PEM -pubout -in ca.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 ca_dnq = ca_dnq.gsub( '/', '\/' ) # can have values like '0Za8/aABE05Aroz7le1FOpEdFhk=', note the '/'. protect for name parser
+# Note the absence of role indicators in CN (No roles required in CA certificates)
 ca_subject = '/O=example.org/OU=csc.example.org/CN=.dcstore.ROOT/dnQualifier=' + ca_dnq
 
 # Generate self-signed certificate
@@ -118,6 +119,7 @@ File.open( 'intermediate.cnf', 'w' ) { |f| f.write( inter_cnf ) }
 # equiv.   openssl x509 -pubkey -noout -in intermediate.signed.pem | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64
 inter_dnq = `openssl rsa -outform PEM -pubout -in intermediate.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 inter_dnq = inter_dnq.gsub( '/', '\/' )
+# Note the absence of role indicators in CN (No roles required in CA certificates)
 inter_subject = "/O=example.org/OU=csc.example.org/CN=.dcstore.INTERMEDIATE/dnQualifier=" + inter_dnq
 
 # Request signing for intermediate certificate
@@ -156,9 +158,18 @@ File.open( 'leaf.cnf', 'w' ) { |f| f.write( leaf_cnf ) }
 # equiv.  openssl x509 -pubkey -noout -in leaf.signed.pem | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64
 leaf_dnq = `openssl rsa -outform PEM -pubout -in leaf.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 leaf_dnq = leaf_dnq.gsub( '/', '\/' )
-# Note the CN list of roles (RO=rights owner, SM=security manager, CS=content signer)
+# Note the role indicator in CN (CS=content signer)
+# See Digital Cinema System Specification v1.1 section 9.4.3.5. Functions of the Security Manager (SM) part 4:
+#
+#   Validate Composition Playlists (CPL), and log results as a prerequisite to preparing the suite 
+#   for the associated composition playback. For encrypted content, validation shall be by cross 
+#   checking that the associated KDM's ContentAuthenticator element matches a certificate thumbprint 
+#   of one of the certificates in the CPL's signer chain (see item 1 above), and that such certificate
+#   indicate only a "Content Signer" (CS) role per Section 5.3.4, "Naming and Roles" of the certificate 
+#   specification (SMPTE430-2 D-Cinema Operation - Digital Certificate).
+#
 # Roles are separated by space character and by leftmost period character from the unique entity label
-leaf_subject = "/O=example.org/OU=csc.example.org/CN=RO SM CS.dcstore.LEAF/dnQualifier=" + leaf_dnq
+leaf_subject = "/O=example.org/OU=csc.example.org/CN=CS.dcstore.LEAF/dnQualifier=" + leaf_dnq
 
 # Request signing for leaf certificate
 `openssl req -new -config leaf.cnf -days 3648 -subj "#{ leaf_subject }" -key leaf.key -outform PEM -out leaf.csr`
