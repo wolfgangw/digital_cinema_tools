@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-AppVersion = "v0.2010.11.30"
+AppVersion = "v0.2010.12.05"
 AppName = File.basename( $0 )
 #
 # Wolfgang Woehl v0.2010
@@ -609,7 +609,7 @@ def fade( image, seconds, fps, initial, final, step )
 end
 
 
-def sign( value )
+def s_sign( value )
   return ( value.to_f / value.to_f.abs ).to_i
 end
 def sigmoid( value, initial, final, center, rate )
@@ -618,7 +618,7 @@ def sigmoid( value, initial, final, center, rate )
   else
     base = initial
   end
-  return ( initial - final ).abs / ( 1.0 + Math.exp( rate * sign( final - initial ) * ( -( value - center ).to_f ) ) ) + base
+  return ( initial - final ).abs / ( 1.0 + Math.exp( rate * s_sign( final - initial ) * ( -( value - center ).to_f ) ) ) + base
 end
 
 
@@ -908,7 +908,7 @@ module DCTools
     name.to_a.each do |rdn|
       tmp << [ rdn[ 0 ], rdn[ 1 ] ].join( '=' )
     end
-    return tmp.join( ',' )
+    return tmp.reverse.join( ',' )
   end
   
   def asdcp_digest( message )
@@ -941,10 +941,10 @@ include DCTools
 # FIXME when all we need for KeyIdList is type and id.
 # FIXME will merge with cipher_data_payloads to pass in a list of all those.
 class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
-  def initialize( message_uuid, message_annotation, issue_date, signing_cert, recipient_cert, cpl_uuid, cpl_content_title_text, kdm_not_valid_before, kdm_not_valid_after, device_list_identifier, device_list_description, device_cert_thumbprint, keys, cipher_data_payloads )
+  def initialize( message_uuid, message_annotation, issue_date, signing_cert, recipient_cert, cpl_uuid, cpl_content_title_text, cpl_content_authenticator, kdm_not_valid_before, kdm_not_valid_after, device_list_identifier, device_list_description, device_cert_thumbprint, keys, cipher_data_payloads )
     # FIXME Nokogiri does not support :standalone
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
-      xml.DCinemaSecurityMessage_( :xmlns => 'http://www.smpte-ra.org/schemas/430-3/2006/ETM', 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#', 'xmlns:enc' => 'http://www.w3.org/2001/04/xmlenc#', 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
+      xml.DCinemaSecurityMessage_( 'xmlns' => 'http://www.smpte-ra.org/schemas/430-3/2006/ETM', 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#', 'xmlns:enc' => 'http://www.w3.org/2001/04/xmlenc#' ) {
         xml<< "<!-- #{ AppName } #{ AppVersion } smpte kdm -->"
         xml.AuthenticatedPublic_( 'Id' => 'ID_AuthenticatedPublic' ) {
           xml.MessageId_ "urn:uuid:#{ message_uuid }"
@@ -973,6 +973,7 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
               } # Recipient
               xml.CompositionPlaylistId_ "urn:uuid:#{ cpl_uuid }"
               xml.ContentTitleText_ cpl_content_title_text
+              xml.ContentAuthenticator_ cpl_content_authenticator
               xml.ContentKeysNotValidBefore_ kdm_not_valid_before
               xml.ContentKeysNotValidAfter_ kdm_not_valid_after
               xml.AuthorizedDeviceInfo_ {
@@ -989,9 +990,8 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
                   key_id = key.split( ':' ).first
                   key_type = key.split( ':' )[ 1 ]
                   xml.TypedKeyId_ {
-                    # Nokogiri, apparently, won't take attributes for tags with content, so ...
-                    xml<< "<KeyType scope=\"http://www.smpte-ra.org/430-1/2006/KDM#kdm-key-type\">#{ key_type }</KeyType>"
-                    #xml.KeyType_( :scope => 'http://www.smpte-ra.org/430-1/2006/KDM#kdm-key-type' ) key_type
+                    # Nokogiri workaround for tags with attributes and content
+                    xml.KeyType_( key_type, :scope => 'http://www.smpte-ra.org/430-1/2006/KDM#kdm-key-type' )
                     xml.KeyId_ "urn:uuid:#{ key_id }"
                   } # TypedKeyId
                 end
@@ -1009,7 +1009,7 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
           cipher_data_payloads.each do |b64|
             xml[ 'enc' ].EncryptedKey_( 'xmlns:enc' => 'http://www.w3.org/2001/04/xmlenc#' ) {
               xml[ 'enc' ].EncryptionMethod_( 'Algorithm' => 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p' ) {
-                xml[ 'ds' ].DigestMethod_( 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#', 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#sha1' )
+                xml[ 'dsig' ].DigestMethod_( 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#', 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#sha1' )
               } # EncryptionMethod
               xml[ 'enc' ].CipherData_ {
                 xml[ 'enc' ].CipherValue_ b64
@@ -1067,7 +1067,7 @@ class DCSignatureKDM
     # FIXME hardcoded certificate chain size
     @signed_xml = `xmlsec1 --sign --id-attr:Id http://www.smpte-ra.org/schemas/430-3/2006/ETM:AuthenticatedPublic --id-attr:Id http://www.smpte-ra.org/schemas/430-3/2006/ETM:AuthenticatedPrivate --privkey-pem #{ signer_key_file } --trusted-pem #{ ca_cert_file } --trusted-pem #{ intermediate_cert_file } #{ tmp.path }`
     #
-    
+
   end # initialize
   def xml
     @signed_xml
@@ -1082,7 +1082,7 @@ class DCSignature
     doc = Nokogiri::XML( xml_to_sign ) { |x| x.noblanks } # Thanks, Aaron Patterson
     @builder_signature_template = Nokogiri::XML::Builder.with( doc.at( doc.root.node_name ) ) do |xml|
       xml.Signer_ {
-        xml[ 'ds' ].X509Data_ {
+        xml[ 'dsig' ].X509Data_ {
           xml.X509IssuerSerial_ {
             xml.X509IssuerName_ transform_cert_name( signing_cert.issuer )
             xml.X509SerialNumber_ signing_cert.serial.to_s
@@ -1091,7 +1091,7 @@ class DCSignature
         } # X509Data
       } # Signer
       # signature template:
-      xml[ 'ds' ].Signature_ {
+      xml[ 'dsig' ].Signature_ {
         xml.SignedInfo_ {
           xml.CanonicalizationMethod_( 'Algorithm' => 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315' )
           xml.SignatureMethod_( 'Algorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256' )
@@ -1104,7 +1104,7 @@ class DCSignature
           } # Reference
         } # SignedInfo
         xml.SignatureValue_
-        xml[ 'ds' ].KeyInfo_ {
+        xml[ 'dsig' ].KeyInfo_ {
           certificate_chain.each do |cert|
             xml.X509Data_ {
               xml.X509IssuerSerial_ {
@@ -1137,7 +1137,7 @@ end
 class CPL_SMPTE_429_7_2006
   def initialize( cpl_uuid, encrypt, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
-      xml.CompositionPlaylist_( :xmlns => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL', 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
+      xml.CompositionPlaylist_( :xmlns => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL', 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#' ) {
         xml.Id_ "urn:uuid:#{ cpl_uuid }"
         xml.AnnotationText_ annotation
         xml.IssueDate_ issue_date
@@ -1227,7 +1227,7 @@ end # CPL_SMPTE_429_7_2006
 class PKL_SMPTE_429_8_2007
   def initialize( pkl_uuid, annotation, issue_date, issuer, creator, assets )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
-      xml.PackingList_( :xmlns => 'http://www.smpte-ra.org/schemas/429-8/2007/PKL', 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
+      xml.PackingList_( :xmlns => 'http://www.smpte-ra.org/schemas/429-8/2007/PKL', 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#' ) {
         xml.Id_ "urn:uuid:#{ pkl_uuid }"
         xml.AnnotationText_ annotation
         xml.IssueDate_ issue_date
@@ -1382,6 +1382,19 @@ def kdm_cpl_info( doc )
 end
 
 
+def signer_cert_thumbprint( doc )
+  doc.remove_namespaces!
+  certs = doc.xpath( '//CompositionPlaylist/Signature/KeyInfo/X509Data/X509Certificate' )
+  @logger.debug( "CPL carries #{ certs.size } certificates" )
+  signer_cert = "-----BEGIN CERTIFICATE-----\n" + certs.first.text + "\n-----END CERTIFICATE-----\n"
+  tmp = Tempfile.new( 'cinemaslides-' )
+  tmpfile = File.open( tmp.path, 'w' ) { |f| f.write signer_cert; f.close }
+  thumbprint = `dc-thumbprint #{ tmp.path }`.chomp
+  @logger.debug( "CPL signer certificate thumbprint: #{ thumbprint }" )
+  return thumbprint
+end
+
+
 def key_spec_valid?( candidate )
   if /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:(MDIK|MDAK|MDSK):[0-9a-f]{32}/.match( candidate ) == NIL
     FALSE
@@ -1396,7 +1409,7 @@ def time_to_datetime( time ) # OpenSSL's ruby bindings return Time objects for c
   DateTime.parse( time.to_s )
 end
 def datetime_friendly( dt ) # return something in the form of "Tuesday Nov 30 2010 (18:56)"
-  DateTime::DAYNAMES[ dt.wday ] + ' ' + DateTime::ABBR_MONTHNAMES[ dt.month ] + ' ' + dt.day.to_s + ' ' + dt.year.to_s + ' (' + dt.hour.to_s + ':' + dt.min.to_s + ')'
+  "#{ DateTime::DAYNAMES[ dt.wday ] } #{ DateTime::ABBR_MONTHNAMES[ dt.month ] } #{ dt.day.to_s } #{ dt.year.to_s } (#{ '%02d' % dt.hour.to_s }:#{ '%02d' % dt.min.to_s })"
 end
 def yyyymmdd( datetime ) # used in KDM filenames. See http://www.kdmnamingconvention.com/
   datetime.to_s.split('T').first.gsub( /-/,'' )
@@ -1479,6 +1492,7 @@ if options.kdm == TRUE
         if xml_obj.root.node_name == 'CompositionPlaylist' # FIXME validation
           @logger.info( "CPL: #{ options.kdm_cpl }" )
           cpl_uuid, cpl_content_title_text, cpl_key_ids_types = kdm_cpl_info( xml_obj )
+          cpl_content_authenticator = signer_cert_thumbprint( xml_obj )
           if cpl_key_ids_types.size == 0
             @logger.info( "KDM not applicable: #{ options.kdm_cpl } doesn't reference content keys" )
             kdm_no_go = TRUE
@@ -1611,7 +1625,7 @@ if options.kdm == TRUE
     cipher_data_payload_encrypted_b64 = `openssl rsautl -encrypt -oaep -certin -inkey #{ options.kdm_target } -in #{ tmp.path } | openssl base64`.chomp
     cipher_data_payloads << cipher_data_payload_encrypted_b64
   end
-  
+    
   # KDM data and template for signature
   @logger.debug( 'Prepare KDM XML for signature' )
   kdm_xml = KDM_SMPTE_430_1_2006.new(
@@ -1622,6 +1636,7 @@ if options.kdm == TRUE
     recipient_cert,
     cpl_uuid,
     cpl_content_title_text,
+    cpl_content_authenticator,
     kdm_not_valid_before,
     kdm_not_valid_after,
     device_list_identifier,
