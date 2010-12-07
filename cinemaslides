@@ -1138,6 +1138,7 @@ class CPL_SMPTE_429_7_2006
   def initialize( cpl_uuid, encrypt, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
       xml.CompositionPlaylist_( :xmlns => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL', 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#' ) {
+        xml<< "<!-- #{ AppName } #{ AppVersion } smpte cpl -->"
         xml.Id_ "urn:uuid:#{ cpl_uuid }"
         xml.AnnotationText_ annotation
         xml.IssueDate_ issue_date
@@ -1228,6 +1229,7 @@ class PKL_SMPTE_429_8_2007
   def initialize( pkl_uuid, annotation, issue_date, issuer, creator, assets )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
       xml.PackingList_( :xmlns => 'http://www.smpte-ra.org/schemas/429-8/2007/PKL', 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#' ) {
+        xml<< "<!-- #{ AppName } #{ AppVersion } smpte pkl -->"
         xml.Id_ "urn:uuid:#{ pkl_uuid }"
         xml.AnnotationText_ annotation
         xml.IssueDate_ issue_date
@@ -1270,6 +1272,7 @@ class AM_SMPTE_429_9_2007
   def initialize( am_uuid, issue_date, issuer, creator, assets )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
       xml.AssetMap_( :xmlns => 'http://www.smpte-ra.org/schemas/429-9/2007/AM' ) {
+        xml<< "<!-- #{ AppName } #{ AppVersion } smpte am -->"
         xml.Id_ "urn:uuid:#{ am_uuid }"
         xml.Creator_ creator
         xml.VolumeCount_ '1' # FIXME
@@ -1548,7 +1551,7 @@ if options.kdm == TRUE
     @logger.info( "KDM time window opens after it's supposed to close" )
     kdm_no_go = TRUE
   else
-    # defer logger.info to after we have a valid target certificate in order to check containment of time window in target validity period
+    # defer logger.info to after we have a valid target certificate in order to check containment of time window in the target device's validity period
   end
   
   # check presence and validity of target certificate
