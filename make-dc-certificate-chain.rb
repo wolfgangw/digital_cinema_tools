@@ -1,10 +1,11 @@
 #!/usr/bin/env ruby
 #
 # make-dc-certificate-chain.rb
-# Wolfgang Woehl v0.2010.11.20
+# Wolfgang Woehl v0.2010.12.07
 #
-# Creates 3 related digital cinema compliant certificates,
-# verifies root certificate -> intermediate -> leaf certificate
+# Creates 3 related digital cinema compliant certificates as specified
+# by SMPTE 430-2-2006 D-Cinema Operations -- Digital Certificate.
+# Verifies root certificate -> intermediate -> leaf certificate relations
 # and concatenates into a certificate chain.
 #
 # Requires ruby and openssl
@@ -87,7 +88,7 @@ File.open( 'ca.cnf', 'w' ) { |f| f.write( ca_cnf ) }
 ca_dnq = `openssl rsa -outform PEM -pubout -in ca.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 ca_dnq = ca_dnq.gsub( '/', '\/' ) # can have values like '0Za8/aABE05Aroz7le1FOpEdFhk=', note the '/'. protect for name parser
 # Note the absence of role indicators in CA's CN (See SMPTE 430-2-2006 Annex A CommonName Role Descriptions)
-ca_subject = '/O=example.org/OU=csc.example.org/CN=.dcstore.ROOT/dnQualifier=' + ca_dnq
+ca_subject = '/O=example.org/OU=csc.example.org/CN=.dcstore.smpte-430-2.ROOT/dnQualifier=' + ca_dnq
 
 # Generate self-signed certificate
 `openssl req -new -x509 -sha256 -config ca.cnf -days 3650 -set_serial 5 -subj "#{ ca_subject }" -key ca.key -outform PEM -out ca.self-signed.pem`
@@ -120,7 +121,7 @@ File.open( 'intermediate.cnf', 'w' ) { |f| f.write( inter_cnf ) }
 inter_dnq = `openssl rsa -outform PEM -pubout -in intermediate.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 inter_dnq = inter_dnq.gsub( '/', '\/' )
 # Note the absence of role indicators in CA's CN (See SMPTE 430-2-2006 Annex A CommonName Role Descriptions)
-inter_subject = "/O=example.org/OU=csc.example.org/CN=.dcstore.INTERMEDIATE/dnQualifier=" + inter_dnq
+inter_subject = "/O=example.org/OU=csc.example.org/CN=.dcstore.smpte-430-2.INTERMEDIATE/dnQualifier=" + inter_dnq
 
 # Request signing for intermediate certificate
 `openssl req -new -config intermediate.cnf -days 3649 -subj "#{ inter_subject }" -key intermediate.key -out intermediate.csr`
@@ -169,7 +170,7 @@ leaf_dnq = leaf_dnq.gsub( '/', '\/' )
 #   specification (SMPTE430-2 D-Cinema Operation - Digital Certificate).
 #
 # Roles are separated by space character and by leftmost period character from the unique entity label
-leaf_subject = "/O=example.org/OU=csc.example.org/CN=CS.dcstore.LEAF/dnQualifier=" + leaf_dnq
+leaf_subject = "/O=example.org/OU=csc.example.org/CN=CS.dcstore.smpte-430-2.LEAF/dnQualifier=" + leaf_dnq
 
 # Request signing for leaf certificate
 `openssl req -new -config leaf.cnf -days 3648 -subj "#{ leaf_subject }" -key leaf.key -outform PEM -out leaf.csr`
