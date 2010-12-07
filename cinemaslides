@@ -1580,7 +1580,7 @@ if options.kdm == TRUE
         if time_to_datetime( signer_cert_obj.not_before ) < kdm_not_valid_before and time_to_datetime( signer_cert_obj.not_after ) > kdm_not_valid_after
           @logger.info( "Signer certificate is valid during requested KDM time window" )
         else
-          @logger.info( "Signer certificate's validity period does not contain requested KDM time window completely" )
+          @logger.info( "Signer certificate's validity period does not contain requested KDM time window" )
           @logger.info( "   valid from  #{ time_to_datetime( signer_cert_obj.not_before ).to_s }" )
           @logger.info( "   valid until #{ time_to_datetime( signer_cert_obj.not_after ).to_s }" )
           kdm_no_go << 'Signer certificate validity'
@@ -1589,7 +1589,7 @@ if options.kdm == TRUE
         if time_to_datetime( recipient_cert_obj.not_before ) < kdm_not_valid_before and time_to_datetime( recipient_cert_obj.not_after ) > kdm_not_valid_after
           @logger.info( "Target certificate is valid during requested KDM time window" )
         else
-          @logger.info( "Target certificate's validity period does not contain requested KDM time window completely" )
+          @logger.info( "Target certificate's validity period does not contain requested KDM time window" )
           @logger.info( "   valid from  #{ time_to_datetime( recipient_cert_obj.not_before ).to_s }" )
           @logger.info( "   valid until #{ time_to_datetime( recipient_cert_obj.not_after ).to_s }" )
           kdm_no_go << 'Target certificate validity'
