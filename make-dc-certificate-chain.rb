@@ -1,10 +1,11 @@
 #!/usr/bin/env ruby
 #
+# make-dc-certificate-chain.rb
 # Wolfgang Woehl v0.2010.11.20
 #
-# Create 3 related digital cinema compliant certificates,
-# verify root certificate -> intermediate -> leaf certificate
-# and concatenate into a certificate chain.
+# Creates 3 related digital cinema compliant certificates,
+# verifies root certificate -> intermediate -> leaf certificate
+# and concatenates into a certificate chain.
 #
 # Requires ruby and openssl
 #
@@ -33,23 +34,22 @@
 #    - Because I nearly broke my bones trying to properly quote 
 #      the required dnq's in bash. Solutions much appreciated
 #
-# No directory and file checks here. Watch where you run it.
+# No directory and file checks here. Watch where you run it:
 #
 # $ mkdir certstore
 # $ cd certstore
-# $ make-dc-certificate-chain.rb
-#     (creates keys and certificates in the current directory)
+# $ make-dc-certificate-chain.rb # creates keys and certificates in the current directory
+# $ export CINEMACERTSTORE=`pwd` # allows cinemaslides to find the certificates when signing or generating KDMs
 #
-# Use leaf.key to sign files, for example
-#
+# Use leaf.key to sign files. For example:
 # $ xmlsec --sign --privkey-pem leaf.key --trusted-pem intermediate.signed.pem --trusted-pem ca.self-signed.pem presigned_cpl.xml
-#
 # where presigned_cpl.xml is an XML Signature template, containing a 
 # composition playlist, a signer fragment and a signature block,
 # containing a signed info fragment and a signature value stub.
 #
 # See https://github.com/wolfgangw/digital_cinema_tools/blob/master/cinemaslides
-# for one possible implementation.
+# for proof-of-concept code to encrypt essence track files and generate KDMs,
+# using these keys and certificates.
 #
 
 
@@ -86,7 +86,7 @@ File.open( 'ca.cnf', 'w' ) { |f| f.write( ca_cnf ) }
 # Subject dnQualifier (Public key thumbprint, see SMPTE 430-2-2006 sections 5.3.1, 5.4 and DCI CTP section 2.1.11)
 ca_dnq = `openssl rsa -outform PEM -pubout -in ca.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 ca_dnq = ca_dnq.gsub( '/', '\/' ) # can have values like '0Za8/aABE05Aroz7le1FOpEdFhk=', note the '/'. protect for name parser
-# Note the absence of role indicators in CN (No roles required in CA certificates)
+# Note the absence of role indicators in CA's CN (See SMPTE 430-2-2006 Annex A CommonName Role Descriptions)
 ca_subject = '/O=example.org/OU=csc.example.org/CN=.dcstore.ROOT/dnQualifier=' + ca_dnq
 
 # Generate self-signed certificate
@@ -119,7 +119,7 @@ File.open( 'intermediate.cnf', 'w' ) { |f| f.write( inter_cnf ) }
 # equiv.   openssl x509 -pubkey -noout -in intermediate.signed.pem | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64
 inter_dnq = `openssl rsa -outform PEM -pubout -in intermediate.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 inter_dnq = inter_dnq.gsub( '/', '\/' )
-# Note the absence of role indicators in CN (No roles required in CA certificates)
+# Note the absence of role indicators in CA's CN (See SMPTE 430-2-2006 Annex A CommonName Role Descriptions)
 inter_subject = "/O=example.org/OU=csc.example.org/CN=.dcstore.INTERMEDIATE/dnQualifier=" + inter_dnq
 
 # Request signing for intermediate certificate
