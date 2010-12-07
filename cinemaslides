@@ -1330,10 +1330,11 @@ def signature_context
   signer_key_file = File.join( CINEMACERTSTORE, 'signer.key' )
   ca_cert_file = File.join( CINEMACERTSTORE, 'ca.self-signed.pem' )
   intermediate_cert_file = File.join( CINEMACERTSTORE, 'intermediate.signed.pem' )
-  certchain_text = File.read( File.join( CINEMACERTSTORE, 'dc-certificate-chain' ) ) # verified chain
-  certchain = X509CertificateChain.new( certchain_text ).to_a
-  signer_cert_obj = certchain.first
-  return signer_key_file, ca_cert_file, intermediate_cert_file, certchain_text, certchain, signer_cert_obj
+  signer_cert_file = File.join( CINEMACERTSTORE, 'leaf.signed.pem' )
+  certchain_text = File.read( File.join( CINEMACERTSTORE, 'dc-certificate-chain' ) ) # verified chain [ root, intermediate, leaf ]
+  certchain_objs = X509CertificateChain.new( certchain_text ).to_a
+  signer_cert_obj = certchain_objs.first
+  return signer_key_file, signer_cert_file, signer_cert_obj, ca_cert_file, intermediate_cert_file, certchain_text, certchain_objs
 end
 
 
@@ -1465,10 +1466,9 @@ if options.kdm == TRUE
   else
     CINEMACERTSTORE = ENV[ 'CINEMACERTSTORE' ]
     @logger.debug( "CINEMACERTSTORE is set to #{ CINEMACERTSTORE }" )
-    signer_key_file, ca_cert_file, intermediate_cert_file, certchain_text, certchain, signer_cert_obj = signature_context
-    signing_cert = OpenSSL::X509::Certificate.new( File.read( File.join( CINEMACERTSTORE, 'leaf.signed.pem' ) ) )
-    signing_cert_thumbprint = `dc-thumbprint #{ File.join( CINEMACERTSTORE, 'leaf.signed.pem' ) }`.chomp
-    @logger.info( "KDM signer: #{ signing_cert.subject.to_s }" )
+    signer_key_file, signer_cert_file, signer_cert_obj, ca_cert_file, intermediate_cert_file, certchain_text, certchain_objs = signature_context
+    signer_cert_thumbprint = `dc-thumbprint #{ signer_cert_file }`.chomp
+    @logger.info( "KDM signer: #{ signer_cert_obj.subject.to_s }" )
   end
   
   # check for key directory
@@ -1562,12 +1562,12 @@ if options.kdm == TRUE
   else
     if File.exists?( options.kdm_target ) and File.ftype( options.kdm_target ) != 'directory'
       begin
-        recipient_cert = OpenSSL::X509::Certificate.new( File.read( options.kdm_target ) )
+        recipient_cert_obj = OpenSSL::X509::Certificate.new( File.read( options.kdm_target ) )
         recipient_cert_thumbprint = `dc-thumbprint #{ options.kdm_target }`.chomp
         recipient_cn_name = 'TEST'
         # print RDN info and make target name for kdm filename
         @logger.debug( "Target:" )
-        recipient_cert.subject.to_a.each do |rdn|
+        recipient_cert_obj.subject.to_a.each do |rdn|
           @logger.debug( "   #{ [ rdn[ 0 ], rdn[ 1 ] ].join( '=' ) }" )
           if rdn[ 0 ] == 'CN'
             recipient_cn_name = rdn[ 1 ].split( /^([^.]+.)/ ).last # Not sure. This is supposed to pick up everything after the first dot
@@ -1576,18 +1576,18 @@ if options.kdm == TRUE
         end
         recipient_description = recipient_cn_name
         # target cert valid in time window?
-        if time_to_datetime( recipient_cert.not_before ) < kdm_not_valid_before and time_to_datetime( recipient_cert.not_after ) > kdm_not_valid_after
+        if time_to_datetime( recipient_cert_obj.not_before ) < kdm_not_valid_before and time_to_datetime( recipient_cert_obj.not_after ) > kdm_not_valid_after
           @logger.info( "Target certificate is valid during KDM time window" )
           # deferred from KDM time window check
           @logger.info( "KDM is valid from  #{ datetime_friendly( kdm_not_valid_before ) }" )
           @logger.info( "KDM is valid until #{ datetime_friendly( kdm_not_valid_after ) }" )
         else
           @logger.info( "Target certificate is not valid during KDM time window" )
-          @logger.info( "   valid from  #{ time_to_datetime( recipient_cert.not_before ).to_s }" )
-          @logger.info( "   valid until #{ time_to_datetime( recipient_cert.not_after ).to_s }" )
+          @logger.info( "   valid from  #{ time_to_datetime( recipient_cert_obj.not_before ).to_s }" )
+          @logger.info( "   valid until #{ time_to_datetime( recipient_cert_obj.not_after ).to_s }" )
           kdm_no_go = TRUE
         end
-      rescue OpenSSL::X509::CertificateError => e # recipient_cert.class == NilClass
+      rescue OpenSSL::X509::CertificateError => e # recipient_cert_obj.class == NilClass
         @logger.info( "#{ options.kdm_target }: #{ e.message }" )
         kdm_no_go = TRUE
       end
@@ -1614,7 +1614,7 @@ if options.kdm == TRUE
     key = File.read( File.join( @keysdir, kit.keys.first ) ).split( ':' ).last
     key_id = kit.keys.first
     cipher_data_payload = cipher_data_payload_binary_package( 
-      signing_cert_thumbprint,
+      signer_cert_thumbprint,
       cpl_uuid,
       kit.values.first, # key_type (plus yeah, i know, idiotic data type chosen for key_ids_types. i'll make up my mind wrt how and where to get key type from)
       key_id,
@@ -1636,8 +1636,8 @@ if options.kdm == TRUE
     kdm_message_uuid,
     kdm_message_annotation,
     kdm_issue_date.to_s,
-    signing_cert,
-    recipient_cert,
+    signer_cert_obj,
+    recipient_cert_obj,
     cpl_uuid,
     cpl_content_title_text,
     cpl_content_authenticator,
@@ -1658,7 +1658,7 @@ if options.kdm == TRUE
     signer_key_file,
     ca_cert_file,
     intermediate_cert_file,
-    certchain
+    certchain_objs
   ).xml
   
   kdm_cpl_content_title = cpl_content_title_text.upcase.gsub( ' ', '-' )[0..19]
@@ -1784,7 +1784,7 @@ if @output_type == "dcp"
       exit
     else
       CINEMACERTSTORE = ENV[ 'CINEMACERTSTORE' ]
-      signer_key_file, ca_cert_file, intermediate_cert_file, certchain_text, certchain, signer_cert_obj = signature_context
+      signer_key_file, signer_cert_file, signer_cert_obj, ca_cert_file, intermediate_cert_file, certchain_text, certchain_objs = signature_context
     end
   end
   # mark assets with encoder ids
@@ -2399,7 +2399,7 @@ when "dcp"
     rating_list = nil
   )
   if options.sign == TRUE
-    cpl_xml = DCSignature.new( cpl.xml, signer_key_file, ca_cert_file, intermediate_cert_file, certchain ).xml
+    cpl_xml = DCSignature.new( cpl.xml, signer_key_file, ca_cert_file, intermediate_cert_file, certchain_objs ).xml
   else
     cpl_xml = cpl.xml
   end
@@ -2428,7 +2428,7 @@ when "dcp"
     pkl_assets.flatten
   )
   if options.sign == TRUE
-    pkl_xml = DCSignature.new( pkl.xml, signer_key_file, ca_cert_file, intermediate_cert_file, certchain ).xml
+    pkl_xml = DCSignature.new( pkl.xml, signer_key_file, ca_cert_file, intermediate_cert_file, certchain_objs ).xml
   else
     pkl_xml = pkl.xml
   end
@@ -2463,6 +2463,8 @@ end # End Create DCP
 
 
 TODO = <<TODO
+
+FIXME certificate handling and KDM mode, although working, need re-design to allow for more flexibility
 FIXME output some basic help message when app is called without any args. as it is app merely utters 'No image files specified'
 FIXME calculates message digest twice when building an encrypted package (for CPL and PKL)
 FIXME fps and --wrap-stereoscopic not in total harmony yet
@@ -2496,6 +2498,5 @@ CODE slideshow objects
 CODE options catch all (missing arguments trace back deep)
 CODE better way to check for and provide requirements alternatives ( mplayer|ffplay, openjpeg|kakadu, signature related )
 
-mplayer crash with some a710 jpgs. exif? portrait orientation + conform size exceed?
 TODO
 
