@@ -1452,7 +1452,7 @@ if options.kdm == TRUE
   end
 
   # failure of any of the following checks is reason to exit
-  kdm_no_go = FALSE
+  kdm_no_go = Array.new
   kdm_issue_date = DateTime.now
   
   # set up signature context
@@ -1462,7 +1462,7 @@ if options.kdm == TRUE
     @logger.info( "Expecting certificates at $CINEMACERTSTORE. Set this environment variable with 'export CINEMACERTSTORE=<path>'" )
     @logger.info( "Run make-dc-certificate-chain.rb in that directory to create the required certificates." )
     @logger.info( "Sorry for the inconvenience. Work in progress" )
-    kdm_no_go = TRUE
+    kdm_no_go << 'CINEMACERTSTORE not set'
   else
     CINEMACERTSTORE = ENV[ 'CINEMACERTSTORE' ]
     @logger.debug( "CINEMACERTSTORE is set to #{ CINEMACERTSTORE }" )
@@ -1476,22 +1476,22 @@ if options.kdm == TRUE
   if ( File.exists?( @keysdir ) and File.ftype( @keysdir ) == 'directory' )
     @logger.debug( "Content keystore at: #{ @keysdir }" )
   else
-    @logger.info( "No keys directory found (Looking for #{ @keysdir })" )
+    @logger.info( "No content keystore found (Looking for #{ @keysdir })" )
     @logger.info( "#{ $0 } will set it up once it builds an encrypted DCP" )
-    kdm_no_go = TRUE
+    kdm_no_go << 'No content keystore'
   end
   
   # check presence and validity of cpl and referenced content keys
   if options.kdm_cpl == NIL
     @logger.info( "No CPL specified. Use --cpl <CPL>" )
-    kdm_no_go = TRUE
+    kdm_no_go << 'No CPL'
   else
     # Get CPL info
     if File.exists?( options.kdm_cpl ) and File.ftype( options.kdm_cpl ) == 'file'
       xml_obj = Nokogiri::XML( File.read( options.kdm_cpl ) )
       if xml_obj.root == NIL
         @logger.info( "#{ options.kdm_cpl } is not XML" )
-        kdm_no_go = TRUE
+        kdm_no_go << 'No CPL'
       else
         if xml_obj.root.node_name == 'CompositionPlaylist' # FIXME validation
           @logger.info( "CPL: #{ options.kdm_cpl }" )
@@ -1499,7 +1499,7 @@ if options.kdm == TRUE
           cpl_content_authenticator = signer_cert_thumbprint( xml_obj )
           if cpl_key_ids_types.size == 0
             @logger.info( "KDM not applicable: #{ options.kdm_cpl } doesn't reference content keys" )
-            kdm_no_go = TRUE
+            kdm_no_go << 'No content keys referenced in CPL'
           else
             @logger.info( "CPL references #{ cpl_key_ids_types.size } content key#{ ( cpl_key_ids_types.size != 1 ) ? 's' : '' }" )
             # check presence and local specs compliance of content keys
@@ -1524,24 +1524,24 @@ if options.kdm == TRUE
             end
             if keys_missing > 0
               @logger.info( "Keys not found: #{ keys_missing }/#{ cpl_key_ids_types.size }" )
+              kdm_no_go << 'Content key(s) missing'
             end
             if keys_invalid > 0
               @logger.info( "Key specs invalid: #{ keys_invalid }/#{ cpl_key_ids_types.size }" )
+              kdm_no_go << 'Content key(s) not valid'
             end
-            if keys_missing + keys_invalid > 0 # yes, thank you very much
-              kdm_no_go = TRUE
-            else
+            if keys_missing + keys_invalid == 0
               @logger.info( "All content keys present" )
             end
           end
         else
           @logger.info( "#{ options.kdm_cpl } is not a composition playlist" )
-          kdm_no_go = TRUE
+          kdm_no_go << 'No CPL'
         end
       end
     else
       @logger.info( 'Specify a valid XML file' )
-      kdm_no_go = TRUE
+      kdm_no_go << 'No CPL'
     end
   end
   
@@ -1549,8 +1549,8 @@ if options.kdm == TRUE
   kdm_not_valid_before = ( DateTime.now + options.kdm_start ) # check for valid window
   kdm_not_valid_after = ( DateTime.now + options.kdm_end )
   if kdm_not_valid_before > kdm_not_valid_after
-    @logger.info( "KDM time window opens after it's supposed to close" )
-    kdm_no_go = TRUE
+    @logger.info( "KDM time window out of order" )
+    kdm_no_go << 'KDM time window out of order'
   else
     # defer logger.info to after we have a valid target certificate in order to check containment of time window in the target device's validity period
   end
@@ -1558,7 +1558,7 @@ if options.kdm == TRUE
   # check presence and validity of target certificate
   if options.kdm_target == NIL
     @logger.info( "No target certificate specified. Use --target <certificate>" )
-    kdm_no_go = TRUE
+    kdm_no_go << 'No target'
   else
     if File.exists?( options.kdm_target ) and File.ftype( options.kdm_target ) != 'directory'
       begin
@@ -1583,7 +1583,7 @@ if options.kdm == TRUE
           @logger.info( "Signer certificate's validity period does not contain requested KDM time window completely" )
           @logger.info( "   valid from  #{ time_to_datetime( signer_cert_obj.not_before ).to_s }" )
           @logger.info( "   valid until #{ time_to_datetime( signer_cert_obj.not_after ).to_s }" )
-          kdm_no_go = TRUE
+          kdm_no_go << 'Signer certificate validity'
         end
         # target cert valid during requested time window?
         if time_to_datetime( recipient_cert_obj.not_before ) < kdm_not_valid_before and time_to_datetime( recipient_cert_obj.not_after ) > kdm_not_valid_after
@@ -1592,7 +1592,7 @@ if options.kdm == TRUE
           @logger.info( "Target certificate's validity period does not contain requested KDM time window completely" )
           @logger.info( "   valid from  #{ time_to_datetime( recipient_cert_obj.not_before ).to_s }" )
           @logger.info( "   valid until #{ time_to_datetime( recipient_cert_obj.not_after ).to_s }" )
-          kdm_no_go = TRUE
+          kdm_no_go << 'Target certificate validity'
         end
         # deferred from KDM time window check
         @logger.info( "KDM requested valid from  #{ datetime_friendly( kdm_not_valid_before ) }" )
@@ -1600,16 +1600,19 @@ if options.kdm == TRUE
 
       rescue OpenSSL::X509::CertificateError => e # recipient_cert_obj.class == NilClass
         @logger.info( "#{ options.kdm_target }: #{ e.message }" )
-        kdm_no_go = TRUE
+        kdm_no_go << 'Target OpenSSL::X509::CertificateError'
       end
     else
       @logger.info( 'Specify a valid target certificate in PEM format' )
-      kdm_no_go = TRUE
+      kdm_no_go << 'No target'
     end
   end
   
   ### exit now if any of the requirements for KDM generation are not met
-  if kdm_no_go == TRUE
+  if kdm_no_go.size > 0
+    kdm_no_go.each do |error|
+      @logger.info( "Error: #{ error }" )
+    end
     @logger.info( "KDM generation skipped. See above" )
     exit
   else
