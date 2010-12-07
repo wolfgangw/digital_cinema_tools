@@ -1323,8 +1323,9 @@ class AM_SMPTE_429_9_2007
 end # AM_SMPTE_429_9_2007
 
 
-# FIXME right now this is tightly coupled with make-dc-certificate-chain.rb's output
-# FIXME hardcoded number and names of signer key, certificates and verified chain
+# FIXME right now this is tightly coupled with make-dc-certificate-chain.rb's output.
+# FIXME hardcoded number and names of signer key, certificates and verified chain.
+# FIXME also there's an unholy mix of certificate files here and certificate objects there.
 def signature_context
   signer_key_file = File.join( CINEMACERTSTORE, 'signer.key' )
   ca_cert_file = File.join( CINEMACERTSTORE, 'ca.self-signed.pem' )
@@ -1336,7 +1337,7 @@ def signature_context
 end
 
 
-def essence_types
+def key_types
   { 'MainPicture' => 'MDIK', 'MainStereoscopicPicture' => 'MDIK', 'MainSound' => 'MDAK', 'MainSubtitle' => 'MDSK' }
 end
 
@@ -1344,7 +1345,7 @@ end
 def key_id_type_for( assetname, node )
   key_id = node.xpath( "AssetList/#{ assetname }/KeyId" ).text.split( ':' ).last
   unless key_id.nil?
-    type = essence_types[ assetname ]
+    type = key_types[ assetname ]
     key_type_id = Hash.new
     key_type_id[ key_id ] = type
     @logger.debug( "   #{ type } => #{ key_id }" )
