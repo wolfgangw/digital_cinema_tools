@@ -1565,7 +1565,7 @@ if options.kdm == TRUE
         recipient_cert_obj = OpenSSL::X509::Certificate.new( File.read( options.kdm_target ) )
         recipient_cert_thumbprint = `dc-thumbprint #{ options.kdm_target }`.chomp
         recipient_cn_name = 'TEST'
-        # print RDN info and make target name for kdm filename
+        # make target name for kdm filename and print RDN info
         @logger.debug( "Target:" )
         recipient_cert_obj.subject.to_a.each do |rdn|
           @logger.debug( "   #{ [ rdn[ 0 ], rdn[ 1 ] ].join( '=' ) }" )
@@ -1575,18 +1575,29 @@ if options.kdm == TRUE
           end
         end
         recipient_description = recipient_cn_name
-        # target cert valid in time window?
-        if time_to_datetime( recipient_cert_obj.not_before ) < kdm_not_valid_before and time_to_datetime( recipient_cert_obj.not_after ) > kdm_not_valid_after
-          @logger.info( "Target certificate is valid during KDM time window" )
-          # deferred from KDM time window check
-          @logger.info( "KDM is valid from  #{ datetime_friendly( kdm_not_valid_before ) }" )
-          @logger.info( "KDM is valid until #{ datetime_friendly( kdm_not_valid_after ) }" )
+        
+        # signer cert valid during requested time window?
+        if time_to_datetime( signer_cert_obj.not_before ) < kdm_not_valid_before and time_to_datetime( signer_cert_obj.not_after ) > kdm_not_valid_after
+          @logger.info( "Signer certificate is valid during requested KDM time window" )
         else
-          @logger.info( "Target certificate is not valid during KDM time window" )
+          @logger.info( "Signer certificate's validity period does not contain requested KDM time window completely" )
+          @logger.info( "   valid from  #{ time_to_datetime( signer_cert_obj.not_before ).to_s }" )
+          @logger.info( "   valid until #{ time_to_datetime( signer_cert_obj.not_after ).to_s }" )
+          kdm_no_go = TRUE
+        end
+        # target cert valid during requested time window?
+        if time_to_datetime( recipient_cert_obj.not_before ) < kdm_not_valid_before and time_to_datetime( recipient_cert_obj.not_after ) > kdm_not_valid_after
+          @logger.info( "Target certificate is valid during requested KDM time window" )
+        else
+          @logger.info( "Target certificate's validity period does not contain requested KDM time window completely" )
           @logger.info( "   valid from  #{ time_to_datetime( recipient_cert_obj.not_before ).to_s }" )
           @logger.info( "   valid until #{ time_to_datetime( recipient_cert_obj.not_after ).to_s }" )
           kdm_no_go = TRUE
         end
+        # deferred from KDM time window check
+        @logger.info( "KDM requested valid from  #{ datetime_friendly( kdm_not_valid_before ) }" )
+        @logger.info( "KDM requested valid until #{ datetime_friendly( kdm_not_valid_after ) }" )
+
       rescue OpenSSL::X509::CertificateError => e # recipient_cert_obj.class == NilClass
         @logger.info( "#{ options.kdm_target }: #{ e.message }" )
         kdm_no_go = TRUE
@@ -1601,6 +1612,8 @@ if options.kdm == TRUE
   if kdm_no_go == TRUE
     @logger.info( "KDM generation skipped. See above" )
     exit
+  else
+    @logger.info( "KDM requirements all met" )
   end
   
   kdm_message_uuid = `kmuuidgen -n`
