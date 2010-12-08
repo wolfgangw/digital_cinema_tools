@@ -34,7 +34,6 @@ AppName = File.basename( $0 )
 # For signed DCPs and KDM mode (KDM mode is work in progress, expect bugs and flying saucers):
 #   xmlsec1 (http://www.aleksey.com/xmlsec/)
 #   openssl (standard cli interface, install your distribution's package)
-#   dc-thumbprint (see DCI's Compliance Test Plan, section C.2.1. dc-thumbprint Source Code Listing)
 #   asdcplib's kmuuidgen
 #
 ###
@@ -1394,7 +1393,7 @@ def signer_cert_thumbprint( doc )
   signer_cert = "-----BEGIN CERTIFICATE-----\n" + certs.first.text + "\n-----END CERTIFICATE-----\n"
   tmp = Tempfile.new( 'cinemaslides-' )
   tmpfile = File.open( tmp.path, 'w' ) { |f| f.write signer_cert; f.close }
-  thumbprint = `dc-thumbprint #{ tmp.path }`.chomp
+  thumbprint = dc_thumbprint( tmp.path )
   @logger.debug( "CPL signer certificate thumbprint: #{ thumbprint }" )
   return thumbprint
 end
@@ -1419,6 +1418,13 @@ end
 def yyyymmdd( datetime ) # used in KDM filenames. See http://www.kdmnamingconvention.com/
   datetime.to_s.split('T').first.gsub( /-/,'' )
 end
+
+
+def dc_thumbprint( cert_file )
+  tmp = Tempfile.new( 'cinemaslides-' )
+  `openssl asn1parse -in #{ cert_file } -out #{ tmp.path } -noout -strparse 4`
+  `openssl dgst -sha1 -binary #{ tmp.path } | openssl base64`.chomp
+end
 ###
 
 
@@ -1440,7 +1446,7 @@ end
 if options.kdm == TRUE
   @logger = Logger.new( prefix = 'kdm *', options.verbosity )
   
-  mandatory = [ 'xmlsec1', 'openssl', 'dc-thumbprint', 'kmuuidgen' ]
+  mandatory = [ 'xmlsec1', 'openssl', 'kmuuidgen' ]
   available_mandatory, missing_mandatory = check_external( mandatory )
   if ! missing_mandatory.empty?
     @logger.info( "Required tools: #{ mandatory.join( ', ' ) }" )
@@ -1467,7 +1473,7 @@ if options.kdm == TRUE
     CINEMACERTSTORE = ENV[ 'CINEMACERTSTORE' ]
     @logger.debug( "CINEMACERTSTORE is set to #{ CINEMACERTSTORE }" )
     signer_key_file, signer_cert_file, signer_cert_obj, ca_cert_file, intermediate_cert_file, certchain_text, certchain_objs = signature_context
-    signer_cert_thumbprint = `dc-thumbprint #{ signer_cert_file }`.chomp
+    signer_cert_thumbprint = dc_thumbprint( signer_cert_file )
     @logger.info( "KDM signer: #{ signer_cert_obj.subject.to_s }" )
   end
   
@@ -1563,7 +1569,7 @@ if options.kdm == TRUE
     if File.exists?( options.kdm_target ) and File.ftype( options.kdm_target ) != 'directory'
       begin
         recipient_cert_obj = OpenSSL::X509::Certificate.new( File.read( options.kdm_target ) )
-        recipient_cert_thumbprint = `dc-thumbprint #{ options.kdm_target }`.chomp
+        recipient_cert_thumbprint = dc_thumbprint( options.kdm_target )
         recipient_cn_name = 'TEST'
         # make target name for kdm filename and print RDN info
         @logger.debug( "Target:" )
