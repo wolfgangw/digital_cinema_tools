@@ -943,7 +943,7 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
   def initialize( message_uuid, message_annotation, issue_date, signing_cert, recipient_cert, cpl_uuid, cpl_content_title_text, cpl_content_authenticator, kdm_not_valid_before, kdm_not_valid_after, device_list_identifier, device_list_description, device_cert_thumbprint, keys, cipher_data_payloads )
     # FIXME Nokogiri does not support :standalone
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
-      xml.DCinemaSecurityMessage_( 'xmlns' => 'http://www.smpte-ra.org/schemas/430-3/2006/ETM', 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#', 'xmlns:enc' => 'http://www.w3.org/2001/04/xmlenc#' ) {
+      xml.DCinemaSecurityMessage_( 'xmlns' => 'http://www.smpte-ra.org/schemas/430-3/2006/ETM', 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#', 'xmlns:enc' => 'http://www.w3.org/2001/04/xmlenc#' ) {
         xml<< "<!-- #{ AppName } #{ AppVersion } smpte kdm -->"
         xml.AuthenticatedPublic_( 'Id' => 'ID_AuthenticatedPublic' ) {
           xml.MessageId_ "urn:uuid:#{ message_uuid }"
@@ -958,15 +958,15 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
           xml.AnnotationText_ message_annotation
           xml.IssueDate_ issue_date
           xml.Signer_ {
-            xml[ 'dsig' ].X509IssuerName_ transform_cert_name( signing_cert.issuer )
-            xml[ 'dsig' ].X509SerialNumber_ signing_cert.serial.to_s
+            xml[ 'ds' ].X509IssuerName_ transform_cert_name( signing_cert.issuer )
+            xml[ 'ds' ].X509SerialNumber_ signing_cert.serial.to_s
           } # Signer
           xml.RequiredExtensions_ {
             xml.KDMRequiredExtensions_( :xmlns => 'http://www.smpte-ra.org/schemas/430-1/2006/KDM' ) {
               xml.Recipient_ {
                 xml.X509IssuerSerial_ {
-                  xml[ 'dsig' ].X509IssuerName_ transform_cert_name( recipient_cert.issuer )
-                  xml[ 'dsig' ].X509SerialNumber recipient_cert.serial.to_s
+                  xml[ 'ds' ].X509IssuerName_ transform_cert_name( recipient_cert.issuer )
+                  xml[ 'ds' ].X509SerialNumber recipient_cert.serial.to_s
                 } # X509IssuerSerial
                 xml.X509SubjectName_ transform_cert_name( recipient_cert.subject )
               } # Recipient
@@ -1008,7 +1008,7 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
           cipher_data_payloads.each do |b64|
             xml[ 'enc' ].EncryptedKey_( 'xmlns:enc' => 'http://www.w3.org/2001/04/xmlenc#' ) {
               xml[ 'enc' ].EncryptionMethod_( 'Algorithm' => 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p' ) {
-                xml[ 'dsig' ].DigestMethod_( 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#', 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#sha1' )
+                xml[ 'ds' ].DigestMethod_( 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#', 'Algorithm' => 'http://www.w3.org/2000/09/xmldsig#sha1' )
               } # EncryptionMethod
               xml[ 'enc' ].CipherData_ {
                 xml[ 'enc' ].CipherValue_ b64
@@ -1030,7 +1030,7 @@ class DCSignatureKDM
   def initialize( xml_to_sign, signer_key_file, ca_cert_file, intermediate_cert_file, certificate_chain )
     doc = Nokogiri::XML( xml_to_sign ) { |x| x.noblanks }
     @builder_signature_template = Nokogiri::XML::Builder.with( doc.at( doc.root.node_name ) ) do |xml|
-      xml[ 'dsig' ].Signature_( 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#' ) {
+      xml[ 'ds' ].Signature_( 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
         xml.SignedInfo_ {
           xml.CanonicalizationMethod_( 'Algorithm' => 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments' )
           xml.SignatureMethod_( 'Algorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256' )
