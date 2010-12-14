@@ -851,7 +851,7 @@ class DCST_SMPTE_428_7_2007
         xml.StartTime_ start_time
         # fonts = [ [font, id], [font, id], ... ]
         fonts.each do |font|
-          xml.LoadFont_( 'ID' => font[ 0 ] ) "urn:uuid:#{ font[ 1 ] }"
+          xml.LoadFont_( "urn:uuid:#{ font[ 1 ] }", 'ID' => font[ 0 ] )
         end # fonts.each
         xml.SubtitleList_ {
           xml.Font_( 'Color' => default_font_color_code, 'ID' => default_font_name, 'Size' => default_font_size, 'Weight' => default_font_weight ) {
@@ -1374,6 +1374,12 @@ def signature_context
 end
 
 
+# CINEMACERTSTORE is set but we don't know yet whether it points at something useable
+def generic_signature_context
+  
+end
+
+
 def key_types
   { 'MainPicture' => 'MDIK', 'MainStereoscopicPicture' => 'MDIK', 'MainSound' => 'MDAK', 'MainSubtitle' => 'MDSK' }
 end
@@ -1509,9 +1515,14 @@ if options.kdm == TRUE
   else
     CINEMACERTSTORE = ENV[ 'CINEMACERTSTORE' ]
     @logger.debug( "CINEMACERTSTORE is set to #{ CINEMACERTSTORE }" )
-    signer_key_file, signer_cert_file, signer_cert_obj, ca_cert_file, intermediate_cert_file, certchain_text, certchain_objs = signature_context
-    signer_cert_thumbprint = dc_thumbprint( signer_cert_file )
-    @logger.info( "KDM signer: #{ signer_cert_obj.subject.to_s }" )
+    if File.exists?( CINEMACERTSTORE ) and File.ftype( CINEMACERTSTORE ) == 'directory'
+      signer_key_file, signer_cert_file, signer_cert_obj, ca_cert_file, intermediate_cert_file, certchain_text, certchain_objs = signature_context
+      signer_cert_thumbprint = dc_thumbprint( signer_cert_file )
+      @logger.info( "KDM signer: #{ signer_cert_obj.subject.to_s }" )
+    else
+      @logger.info( "#{ CINEMACERTSTORE } should be a directory holding your private signer key and associated certificates" )
+      kdm_no_go << 'CINEMACERTSTORE not a directory'
+    end
   end
   
   # check for key directory
@@ -1839,7 +1850,7 @@ if @output_type == "dcp"
   end
   if options.sign == TRUE
     if ENV[ 'CINEMACERTSTORE' ].nil?
-      @logger.critical( "CINEMACERTSTORE not set. Cannot locate 'signer.key', 'ca.self-signed.pem', 'intermediate.signed.pem' and 'dc-certificate-chain'" )
+      @logger.critical( "CINEMACERTSTORE not set. Cannot locate signer's private key, issuing certificates and certificate chain" )
       exit
     else
       CINEMACERTSTORE = ENV[ 'CINEMACERTSTORE' ]
