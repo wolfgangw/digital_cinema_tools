@@ -1520,7 +1520,7 @@ if options.kdm == TRUE
       signer_cert_thumbprint = dc_thumbprint( signer_cert_file )
       @logger.info( "KDM signer: #{ signer_cert_obj.subject.to_s }" )
     else
-      @logger.info( "#{ CINEMACERTSTORE } should be a directory holding your private signer key and associated certificates" )
+      @logger.info( "CINEMACERTSTORE should point at a directory holding your private signer key and associated certificates" )
       kdm_no_go << 'CINEMACERTSTORE not a directory'
     end
   end
