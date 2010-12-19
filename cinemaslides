@@ -868,7 +868,7 @@ class DCST_SMPTE_428_7_2007
   def xml
     @builder.to_xml( :indent => 2 )
   end
-end
+end # DCST_SMPTE_428_7_2007
 
 
 class MXF_Metadata < Hash
@@ -968,7 +968,7 @@ module DCTools
   def stripped( pem )
     pem.gsub( /-----(BEGIN|END) CERTIFICATE-----\n/, '' ).chomp
   end
-end
+end # DCTools
 include DCTools
 
 
@@ -1060,7 +1060,7 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
   def xml
     @builder.to_xml( :indent => 2 )
   end
-end
+end # KDM_SMPTE_430_1_2006
 
 
 class DCSignatureKDM
@@ -1108,7 +1108,7 @@ class DCSignatureKDM
   def xml
     @signed_xml
   end
-end # class DCSignatureKDM
+end # DCSignatureKDM
 
 
 # 
@@ -1167,7 +1167,7 @@ class DCSignature
   def xml
     @signed_xml
   end
-end
+end # DCSignature
 
 
 class CPL_SMPTE_429_7_2006
