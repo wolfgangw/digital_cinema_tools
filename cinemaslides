@@ -1363,7 +1363,7 @@ end # AM_SMPTE_429_9_2007
 # FIXME hardcoded number and names of signer key, certificates and verified chain.
 # FIXME also there's an unholy mix of certificate files here and certificate objects there.
 def signature_context
-  signer_key_file = File.join( CINEMACERTSTORE, 'signer.key' )
+  signer_key_file = File.join( CINEMACERTSTORE, 'leaf.key' )
   ca_cert_file = File.join( CINEMACERTSTORE, 'ca.self-signed.pem' )
   intermediate_cert_file = File.join( CINEMACERTSTORE, 'intermediate.signed.pem' )
   signer_cert_file = File.join( CINEMACERTSTORE, 'leaf.signed.pem' )
@@ -1429,6 +1429,9 @@ def kdm_cpl_info( doc )
 end
 
 
+# needs to be fixed in due time (signature context cleanup)
+# right now this assumes that the first certificate is the signer's certificate
+# specs allow for any order
 def signer_cert_thumbprint( doc )
   doc.remove_namespaces!
   certs = doc.xpath( '//CompositionPlaylist/Signature/KeyInfo/X509Data/X509Certificate' )
