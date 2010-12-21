@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-AppVersion = "v0.2010.12.05"
+AppVersion = "v0.2010.12.21"
 AppName = File.basename( $0 )
 #
 # Wolfgang Woehl v0.2010
@@ -947,9 +947,10 @@ module DCTools
     return tmp.reverse.join( ',' )
   end
   
-  def asdcp_digest( message )
-    # equiv. openssl dgst -sha1 -binary <message> | openssl base64
-    `asdcp-test -t #{ message }`.split( ' ' ).first
+  def asdcp_digest( file )
+    # equiv. `openssl dgst -sha1 -binary #{ file } | openssl base64`.chomp
+    # equiv. `asdcp-test -t #{ file }`.split( ' ' ).first
+    Base64::encode64( OpenSSL::Digest.digest( OpenSSL::Digest::SHA1.new, File.read( file ) ) ).chomp
   end
   
   def cipher_data_payload_binary_package( signer_cert_thumbprint, cpl_id, key_type, key_id, kdm_not_valid_before, kdm_not_valid_after, key )
