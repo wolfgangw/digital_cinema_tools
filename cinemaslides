@@ -2112,16 +2112,20 @@ y = y.to_i / 6 # ...
 case @output_type
 when "dcp"
   @logger.info( "Creating#{ options.sign == TRUE ? ' signed' : '' }#{ options.dcp_encrypt == TRUE ? ' and encrypted' : '' }#{ @dcp_wrap_stereoscopic == TRUE ? ' 3D' : ' 2D' } #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
+  @logger.info( "Number of images: #{ @source.size }" )
+  @logger.info( "Transition specs: #{ options.transition_and_timing.join( ',' ) }" )
   @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
-  @logger.info( "Title:      #{ options.dcp_title }" )
-  @logger.info( "Annotation: #{ options.annotation }" )
-  @logger.info( "Issuer:     #{ options.issuer }" )
-  @logger.info( "Kind:       #{ options.dcp_kind }" )
+  @logger.info( "Title:            #{ options.dcp_title }" )
+  @logger.info( "Annotation:       #{ options.annotation }" )
+  @logger.info( "Issuer:           #{ options.issuer }" )
+  @logger.info( "Kind:             #{ options.dcp_kind }" )
   if options.sign == TRUE
-    @logger.info( "Signer:     #{ signer_cert_obj.subject.to_s }" )
+    @logger.info( "Signer:           #{ signer_cert_obj.subject.to_s }" )
   end
 when "preview", "fullpreview"
   @logger.info( "Creating #{ @output_type } (#{ @aspect } #{ @dimensions } @ #{ fps } fps)" )
+  @logger.info( "Number of images: #{ @source.size }" )
+  @logger.info( "Transition specs: #{ options.transition_and_timing.join( ',' ) }" )
   @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
 end
 
