@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-AppVersion = "v0.2010.12.21"
+AppVersion = "v0.2010.12.22"
 AppName = File.basename( $0 )
 #
 # Wolfgang Woehl v0.2010
@@ -403,8 +403,10 @@ def check_external( requirements )
     exitstatus = system "which #{ tool } > /dev/null 2>&1"
     case exitstatus
     when TRUE
+      @logger.debug( "Available: #{ tool }" )
       available_tools << tool
     when FALSE
+      @logger.debug( "Missing: #{ tool }" )
       missing_tools << tool
     end
   end
@@ -1375,8 +1377,33 @@ def signature_context
 end
 
 
-# CINEMACERTSTORE is set but we don't know yet whether it points at something useable
+# 
+# CINEMACERTSTORE is set. check if it points at something useable
 def generic_signature_context
+  files = Dir.glob( File.join( CINEMACERTSTORE, '*.pem' ) )
+  certs = Array .new
+  root_ca = NIL
+  
+  files.each do |file|
+    if File.ftype( file ) == 'file'
+      begin
+        certs << OpenSSL::X509::Certificate.new( File.read( file ) )
+        @logger.debug( certs.last.subject.to_s )
+      rescue OpenSSL::X509::CertificateError => e
+        puts e.message
+      end
+    else
+      @logger.debug( "Skip #{ file }" )
+    end
+  end
+  
+  certs.each do |cert|
+    if cert.issuer == cert.subject
+      # root candidate. tbc
+    else
+      # intermediate or leaf. tbc
+    end
+  end
   
 end
 
