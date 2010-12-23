@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-AppVersion = "v0.2010.12.22"
+AppVersion = "v0.2010.12.23"
 AppName = File.basename( $0 )
 #
 # Wolfgang Woehl v0.2010
@@ -23,7 +23,7 @@ AppName = File.basename( $0 )
 #   to create a proof-of-concept, digital cinema compliant X.509 certificate chain that will work out of the box with current cinemaslides.
 #
 # Requires:
-#   ruby, gem, bash (install your distribution's packages)
+#   ruby (1.8.7), gem, bash (install your distribution's packages)
 #   asdcplib (including asdcp-test and kmuuidgen, http://www.cinecert.com/asdcplib/)
 #   ImageMagick, MPlayer, SoX (install your distribution's packages)
 #   OpenJPEG (http://code.google.com/p/openjpeg/downloads/list) or Kakadu (see the note on Kakadu's terms of use below)
@@ -1503,6 +1503,12 @@ end
 
 
 @logger.info( "#{ AppName } #{ AppVersion }" )
+# cinemaslides requires ruby 1.8.7 and will not work with > 1.9, yet.
+# the changes required for 1.9 are subtle. just haven't gotten around to it, yet. coming up
+if RUBY_VERSION < '1.8.7' or RUBY_VERSION >= '1.9'
+  @logger.info( "#{ AppName } requires ruby >= 1.8.7 and < 1.9. Your ruby version: #{ RUBY_VERSION }" )
+  exit
+end
 @logger.debug( commandline )
 
 
