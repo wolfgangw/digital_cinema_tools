@@ -87,7 +87,7 @@ File.open( 'ca.cnf', 'w' ) { |f| f.write( ca_cnf ) }
 # Subject dnQualifier (Public key thumbprint, see SMPTE 430-2-2006 sections 5.3.1, 5.4 and DCI CTP section 2.1.11)
 ca_dnq = `openssl rsa -outform PEM -pubout -in ca.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 ca_dnq = ca_dnq.gsub( '/', '\/' ) # can have values like '0Za8/aABE05Aroz7le1FOpEdFhk=', note the '/'. protect for name parser
-# Note the absence of role indicators in CA's CN (See SMPTE 430-2-2006 Annex A CommonName Role Descriptions)
+# Note the absence of role indicators in CA's CN (See SMPTE 430-2-2006 Annex A, CommonName Role Descriptions)
 ca_subject = '/O=example.org/OU=csc.example.org/CN=.dcstore.smpte-430-2.ROOT/dnQualifier=' + ca_dnq
 
 # Generate self-signed certificate
@@ -120,7 +120,7 @@ File.open( 'intermediate.cnf', 'w' ) { |f| f.write( inter_cnf ) }
 # equiv.   openssl x509 -pubkey -noout -in intermediate.signed.pem | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64
 inter_dnq = `openssl rsa -outform PEM -pubout -in intermediate.key | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
 inter_dnq = inter_dnq.gsub( '/', '\/' )
-# Note the absence of role indicators in CA's CN (See SMPTE 430-2-2006 Annex A CommonName Role Descriptions)
+# Note the absence of role indicators in CA's CN (See SMPTE 430-2-2006 Annex A, CommonName Role Descriptions)
 inter_subject = "/O=example.org/OU=csc.example.org/CN=.dcstore.smpte-430-2.INTERMEDIATE/dnQualifier=" + inter_dnq
 
 # Request signing for intermediate certificate
