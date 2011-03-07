@@ -1378,85 +1378,6 @@ def signature_context
 end
 
 
-# 
-# CINEMACERTSTORE is set. check if it points at something useable and return signature context
-# context = { 
-#   'root' => { 'x509' => obj, 'file' => '/path/to/rootcert' }, 
-#   'leaf' => { 'x509' => obj, 'file' => '/path/to/leafcert', 'key' => '/path/to/private_key' } 
-# }
-# context[ 'chain' ] = []
-# context[ 'chain' ].push( { 'x509' => obj, 'file' => '/path/to/ca1cert' } )
-# context[ 'chain' ].push( { 'x509' => obj, 'file' => '/path/to/ca2cert' } )
-# context[ 'chain' ].push( ... )
-#
-def generic_signature_context
-  files = Dir.glob( File.join( CINEMACERTSTORE, '*' ) )
-  certs = Array .new
-    
-  files.each do |file|
-    if File.ftype( file ) == 'file'
-      begin
-        raw = File.read( file )
-        unless raw.split(/\n-----END CERTIFICATE-----\n/).size > 1
-          certs << OpenSSL::X509::Certificate.new( File.read( file ) )
-          #@logger.debug( certs.last.subject.to_s )
-          puts certs.last.subject.to_s
-        end
-      rescue OpenSSL::X509::CertificateError => e
-        puts e.message
-      end
-    else
-      #@logger.debug( "Skip #{ file }" )
-      puts "Skip #{ file }"
-    end
-  end
-  
-  # basically a ruby version of CTP's dsig_cert.py
-  root = NIL
-  issuer_map = Hash.new
-
-  certs.each do |cert|
-    if cert.issuer == cert.subject
-      # self-signed
-      if root
-        raise "Multiple self-signed (root) certificates found"
-      else
-        root = cert
-      end
-    else
-      # intermediate or leaf
-      issuer_map[ cert.issuer.to_s ] = cert
-    end
-  end
-  if root == NIL
-    raise "Self-signed root certificate not found"
-  end
-  
-  # sort
-  tmp_list = Array.new
-  tmp_list << root
-  begin
-    key = tmp_list.last.subject.to_s
-    child = issuer_map[ key ]
-    while child
-      tmp_list << child
-      key = tmp_list.last.subject.to_s
-      child = issuer_map[ key ] # leaf has not issued a certificate
-    end
-  rescue
-    break
-  end
-  
-  if certs.size != tmp_list.size
-    raise "Certificates do not form a complete chain"
-  end
-  
-  # for testing
-  return tmp_list
-  
-end # generic_signature_context
-
-
 def key_types
   { 'MainPicture' => 'MDIK', 'MainStereoscopicPicture' => 'MDIK', 'MainSound' => 'MDAK', 'MainSubtitle' => 'MDSK' }
 end
@@ -1562,7 +1483,6 @@ end
 
 
 CINEMASLIDESDIR = File.expand_path( ENV[ 'CINEMASLIDESDIR' ] )
-#CINEMASLIDESDIR = ENV[ 'CINEMASLIDESDIR' ]
 if CINEMASLIDESDIR.nil?
   @cinemaslidesdir = File.join( ENV[ 'HOME' ], "cinemaslidesdir" )
   @logger.debug( "CINEMASLIDESDIR not set. Will use #{ @cinemaslidesdir }" )
@@ -2489,7 +2409,7 @@ when "dcp"
           `opendcp_j2k -i #{ file } -o #{ asset } -r #{ fps }`
         when 'openjpeg'
           `image_to_j2k -#{ openjpeg_cinema_profile } -i #{ file } -o #{ asset } > /dev/null 2>&1`
-      when 'kakadu'
+        when 'kakadu'
           `kdu_compress -i #{ file } -o #{ asset } Sprofile=#{ kakadu_cinema_profile } Creslengths=#{ max_bytes_per_image } Creslengths:C0=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C1=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C2=#{ max_bytes_per_image },#{ max_bytes_per_component }`
         end
       end
