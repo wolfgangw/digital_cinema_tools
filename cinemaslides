@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-AppVersion = "v0.2010.12.23"
+AppVersion = "v0.2011.03.07"
 AppName = File.basename( $0 )
 #
 # Wolfgang Woehl v0.2010
@@ -127,7 +127,7 @@ class Optparser
       opts.banner = <<BANNER
 #{ AppName } #{ AppVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" } #{ ENV[ 'CINEMACERTSTORE' ].nil? ? "\nExport CINEMACERTSTORE to point to a directory which holds your digital cinema compliant signing key and certificates" : "\nCINEMACERTSTORE is set (#{ ENV[ 'CINEMACERTSTORE' ] })" }
  
-Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [--encrypt] [--kdm] [--cpl <cpl file>] [--start <days from now>] [--end <days from now] [--target <certificate>] [-v, --verbosity <level>] [--examples] [-h, --help] [ image and audio files ] [ KDM mode parameters ]
+Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [--encrypt] [--kdm] [--cpl <cpl file>] [--start <days from now>] [--end <days from now>] [--target <certificate>] [-v, --verbosity <level>] [--examples] [-h, --help] [ image and audio files ] [ KDM mode parameters ]
 
 BANNER
 
@@ -843,7 +843,7 @@ class DCST_SMPTE_428_7_2007
       xml.SubtitleReel_( 'xmlns:dcst' => "http://www.smpte-ra.org/schemas/428-7/2007/DCST", 'xmlns:xs' => "http://www.w3.org/2001/XMLSchema", 'targetNamespace' => "http://www.smpte-ra.org/schemas/428-7/2007/DCST", 'elementFormDefault' => "qualified", 'attributeFormDefault' => "unqualified" ) {
         xml<< "<!-- #{ AppName } #{ AppVersion } smpte dcst -->"
         xml.Id_ "urn:uuid:#{ subtitle_reel_id }"
-        xml.ContentTtleText_ content_title_text
+        xml.ContentTitleText_ content_title_text
         xml.AnnotationText_ annotation_text
         xml.IssueDate_ issue_date
         xml.ReelNumber_ reel_number
@@ -956,6 +956,7 @@ module DCTools
   end
   
   def cipher_data_payload_binary_package( signer_cert_thumbprint, cpl_id, key_type, key_id, kdm_not_valid_before, kdm_not_valid_after, key )
+    # see SMPTE 430-1-2006 section 6.1.2 Cipher Data
     structure_id_bin = %w( f1 dc 12 44 60 16 9a 0e 85 bc 30 06 42 f8 66 ab ).pack( 'H2H2H2H2H2H2H2H2H2H2H2H2H2H2H2H2' )
     signer_cert_thumbprint_bin = `echo '#{ signer_cert_thumbprint }' | openssl base64 -d`
     cpl_id_bin = uuid_to_bin( cpl_id )
@@ -1378,34 +1379,82 @@ end
 
 
 # 
-# CINEMACERTSTORE is set. check if it points at something useable
+# CINEMACERTSTORE is set. check if it points at something useable and return signature context
+# context = { 
+#   'root' => { 'x509' => obj, 'file' => '/path/to/rootcert' }, 
+#   'leaf' => { 'x509' => obj, 'file' => '/path/to/leafcert', 'key' => '/path/to/private_key' } 
+# }
+# context[ 'chain' ] = []
+# context[ 'chain' ].push( { 'x509' => obj, 'file' => '/path/to/ca1cert' } )
+# context[ 'chain' ].push( { 'x509' => obj, 'file' => '/path/to/ca2cert' } )
+# context[ 'chain' ].push( ... )
+#
 def generic_signature_context
-  files = Dir.glob( File.join( CINEMACERTSTORE, '*.pem' ) )
+  files = Dir.glob( File.join( CINEMACERTSTORE, '*' ) )
   certs = Array .new
-  root_ca = NIL
-  
+    
   files.each do |file|
     if File.ftype( file ) == 'file'
       begin
-        certs << OpenSSL::X509::Certificate.new( File.read( file ) )
-        @logger.debug( certs.last.subject.to_s )
+        raw = File.read( file )
+        unless raw.split(/\n-----END CERTIFICATE-----\n/).size > 1
+          certs << OpenSSL::X509::Certificate.new( File.read( file ) )
+          #@logger.debug( certs.last.subject.to_s )
+          puts certs.last.subject.to_s
+        end
       rescue OpenSSL::X509::CertificateError => e
         puts e.message
       end
     else
-      @logger.debug( "Skip #{ file }" )
+      #@logger.debug( "Skip #{ file }" )
+      puts "Skip #{ file }"
     end
   end
   
+  # basically a ruby version of CTP's dsig_cert.py
+  root = NIL
+  issuer_map = Hash.new
+
   certs.each do |cert|
     if cert.issuer == cert.subject
-      # root candidate. tbc
+      # self-signed
+      if root
+        raise "Multiple self-signed (root) certificates found"
+      else
+        root = cert
+      end
     else
-      # intermediate or leaf. tbc
+      # intermediate or leaf
+      issuer_map[ cert.issuer.to_s ] = cert
     end
   end
+  if root == NIL
+    raise "Self-signed root certificate not found"
+  end
   
-end
+  # sort
+  tmp_list = Array.new
+  tmp_list << root
+  begin
+    key = tmp_list.last.subject.to_s
+    child = issuer_map[ key ]
+    while child
+      tmp_list << child
+      key = tmp_list.last.subject.to_s
+      child = issuer_map[ key ] # leaf has not issued a certificate
+    end
+  rescue
+    break
+  end
+  
+  if certs.size != tmp_list.size
+    raise "Certificates do not form a complete chain"
+  end
+  
+  # for testing
+  return tmp_list
+  
+end # generic_signature_context
 
 
 def key_types
@@ -1512,7 +1561,8 @@ end
 @logger.debug( commandline )
 
 
-CINEMASLIDESDIR = ENV[ 'CINEMASLIDESDIR' ]
+CINEMASLIDESDIR = File.expand_path( ENV[ 'CINEMASLIDESDIR' ] )
+#CINEMASLIDESDIR = ENV[ 'CINEMASLIDESDIR' ]
 if CINEMASLIDESDIR.nil?
   @cinemaslidesdir = File.join( ENV[ 'HOME' ], "cinemaslidesdir" )
   @logger.debug( "CINEMASLIDESDIR not set. Will use #{ @cinemaslidesdir }" )
@@ -1811,8 +1861,12 @@ when 'dcp'
   end
   
   mandatory = [ 'convert', 'identify', 'sox', 'soxi', 'asdcp-test', 'kmuuidgen' ]
+  if options.sign == TRUE
+    mandatory << 'xmlsec1'
+  end
   if options.dcp_encrypt == TRUE
     mandatory << 'kmrandgen'
+    mandatory << 'xmlsec1'
   end
 end
 available_mandatory, missing_mandatory = check_external( mandatory )
@@ -1925,6 +1979,7 @@ end
 # check provided files for readability, type and validity
 # come up with 3 lists: image files, audio files, unusable files
 @source = ARGV
+# FIXME filenames with spaces won't work. bummer
 @source_audio = Array.new
 if options.dont_check == TRUE ####
   if @source.empty?
@@ -1956,6 +2011,7 @@ else # check files
   drops = FALSE
   @source_tmp = @source.clone
   @source.each do |file|
+    @logger.critical( file )
     image_identify = `identify -format '%m' #{ file } 2>/dev/null`.chomp
     if image_identify.empty?
       audio_identify = `soxi -V0 -t #{ file }`.chomp
@@ -2080,8 +2136,7 @@ end
 image_sequence_frames = sequence_frames - ( ( black_leader + black_tail ) * fps )
 
 
-# set up diretories to write output to. These locations are created upon demand only,
-# hence the mkdir's are clustered out a bit. FIXME
+# set up directories to write output to. These locations are created upon demand only, hence the clustered mkdir's. FIXME
 @workdir = File.join( @cinemaslidesdir, "#{ File.basename( $0 ) }_#{ timestamp }_#{ @output_type }" )
 @conformdir = File.join( @workdir, "conform" )
 @j2cdir = File.join( @workdir, "j2c" )
@@ -2434,7 +2489,7 @@ when "dcp"
           `opendcp_j2k -i #{ file } -o #{ asset } -r #{ fps }`
         when 'openjpeg'
           `image_to_j2k -#{ openjpeg_cinema_profile } -i #{ file } -o #{ asset } > /dev/null 2>&1`
-        when 'kakadu'
+      when 'kakadu'
           `kdu_compress -i #{ file } -o #{ asset } Sprofile=#{ kakadu_cinema_profile } Creslengths=#{ max_bytes_per_image } Creslengths:C0=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C1=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C2=#{ max_bytes_per_image },#{ max_bytes_per_component }`
         end
       end
@@ -2575,6 +2630,11 @@ end # End Create DCP
 
 TODO = <<TODO
 
+FIXME source filenames with spaces:
+  a) shell removes protection and hands over unprotected args
+  b) cinemaslides/ruby would have to re-protect spaces when calling shell stuff (convert etc.)
+     but needs unprotected filenames for internal stuff
+  some on-the-fly protection needed here
 FIXME certificate handling and KDM mode, although working, need re-design to allow for more flexibility
 FIXME output some basic help message when app is called without any args. as it is app merely utters 'No image files specified'
 FIXME calculates message digest twice when building an encrypted package (for CPL and PKL)
