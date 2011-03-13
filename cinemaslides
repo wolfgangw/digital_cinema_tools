@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-AppVersion = "v0.2011.03.07"
+AppVersion = "v0.2011.03.13"
 AppName = File.basename( $0 )
 #
 # Wolfgang Woehl v0.2010
@@ -59,12 +59,13 @@ end
 require 'optparse'
 require 'ostruct'
 require 'openssl'
-require 'digest/md5'
+require 'digest'
 require 'base64'
 require 'pp'
 require 'tempfile'
 require 'nokogiri'
 require 'highline/import'
+require 'pathname'
 
 
 # FIXME catch missing parameters, false options, typos etc.
@@ -653,7 +654,7 @@ end
 
 
 def full_level( image, fps, duration )
-  @logger.info( "--- Full level #{ imagecount_info( image ) }" )
+  @logger.cr( "--- Full level #{ imagecount_info( image ) }" )
   level = 0
   file = sequencefile
   File.symlink( image, file )
@@ -695,7 +696,8 @@ def check_for_asset( filename_s, suffix, fps, level = nil )
     origin = [ File.basename( filename_s[ 0 ] ), File.basename( filename_s[ 1 ] ) ].join( ' X ' )
   else # not from crossfade
     if File.exists?( filename_s )
-      id = `identify -format '%#' #{ filename_s }`.chomp
+      id = Digest::MD5.hexdigest( File.read( filename_s ) )
+      #id = `identify -format '%#' #{ filename_s }`.chomp
     else
       id = 'black'
     end
@@ -714,7 +716,7 @@ end
 
 # all fade/crossfade ops are based on these assets
 def conform( image, fps )
-  @logger.info( "Conform image: #{ image }" )
+  @logger.cr( "Conform image: #{ image }" )
   asset, todo = check_for_asset( image, @output_format, fps )
   if todo == TRUE
     convert_resize_extent_color_specs( image, asset )
@@ -2160,7 +2162,8 @@ end
 
 
 def check_for_audio_asset( filename, samplerate, bps, channelcount )
-  hexdigest = Digest::SHA1.hexdigest( File.read( filename ) )
+  #hexdigest = Digest::SHA1.hexdigest( File.read( filename ) )
+  hexdigest = Digest::MD5.hexdigest( File.read( filename ) )
   assetname = File.join( @assetsdir_audio, "#{ hexdigest }_#{ samplerate }_#{ bps }_#{ channelcount }_.wav" )
   if File.exists?( assetname )
     @logger.debug( "Skip: Audio asset exists (#{ filename } -> #{ File.basename( assetname ) })" )
@@ -2400,6 +2403,7 @@ when "dcp"
       File.link( previous_asset, asset_link ) 
       @logger.cr( "Skip (Full level): #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
     else
+      file = Pathname.new( file ).realpath.to_s
       asset, todo = check_for_asset( file, 'j2c', fps ) # possible "Skip" message only with debug verbosity
       previous_asset = asset
       if todo == TRUE
@@ -2412,10 +2416,14 @@ when "dcp"
         when 'kakadu'
           `kdu_compress -i #{ file } -o #{ asset } Sprofile=#{ kakadu_cinema_profile } Creslengths=#{ max_bytes_per_image } Creslengths:C0=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C1=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C2=#{ max_bytes_per_image },#{ max_bytes_per_component }`
         end
+      else
+        @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
       end
       File.link( asset, asset_link )
     end
   end
+  # blank logger garbage
+  @logger.cr( " " * 60 )
   
   # Setup MXF container names
   image_mxf_uuid = `kmuuidgen -n`
