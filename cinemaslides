@@ -660,7 +660,7 @@ def full_level( image, fps, duration )
   File.symlink( image, file )
   if ( 1 ..( duration * fps - 1 ) ).none? # only 1 image needed
     @framecount += 1 # temporary fix for FIXME @framecount stumble (Errno::EEXIST) on first fade out frame with 0 or 1 frame full level settings, like with $ cinemaslides 01.jpg 02.jpg -x crossfade,1,0
-    @logger.debug( "Skip sequence links: Only 1 image needed here" )
+    @logger.cr( "Skip sequence links: Only 1 image needed here" )
   else
     @framecount += 1
     sequence_links_to( file, duration, fps )
@@ -688,16 +688,33 @@ def sequencefile
 end
 
 
-# asset match is based on a /conform's/ IM signature + dimensions + (level unless jpeg 2000 codestream requested) + (encoder + fps if jpeg 2000 codestream is requested) + suffix
+def digest_over_content( file )
+  Digest::MD5.hexdigest( File.read( file ) )
+end
+def digest_over_name( file )
+  Digest::MD5.hexdigest( File.basename( file ) )
+end
+
+
+# entry into the asset depot will trigger a relatively strong and good enough md5 digest over content
+# members of the asset depot will trigger a cheaper and good enough digest over filename (which is in part an md5 digest)
+#   + dimensions + (level unless jpeg 2000 codestream requested) + (encoder + fps if jpeg 2000 codestream is requested) + suffix
 def check_for_asset( filename_s, suffix, fps, level = nil )
   # 2 images from crossfade?
   if filename_s.size == 2
-    id = `identify -format '%#' #{ filename_s[0] }`.chomp + '_' + `identify -format '%#' #{ filename_s[1] }`.chomp
+    if File.dirname( filename_s.first ) != @assetsdir
+      id = digest_over_content( filename_s[0] ) + '_' + digest_over_content( filename_s[1] )
+    else
+      id = digest_over_name( filename_s[0] ) + '_' + digest_over_name( filename_s[1] )
+    end
     origin = [ File.basename( filename_s[ 0 ] ), File.basename( filename_s[ 1 ] ) ].join( ' X ' )
   else # not from crossfade
     if File.exists?( filename_s )
-      id = Digest::MD5.hexdigest( File.read( filename_s ) )
-      #id = `identify -format '%#' #{ filename_s }`.chomp
+      if File.dirname( filename_s ) != @assetsdir
+        id = digest_over_content( filename_s )
+      else
+        id = digest_over_name( filename_s )
+      end
     else
       id = 'black'
     end
@@ -710,6 +727,7 @@ def check_for_asset( filename_s, suffix, fps, level = nil )
   else
     todo = TRUE
   end
+  #@logger.cr( " " * 60 )
   return assetname, todo
 end
 
@@ -2263,7 +2281,7 @@ if options.montage == TRUE
   @logger.info( "Create thumbnails" )
   thumbs = Array.new
   ( 0..( @source.length - 1 ) ).each do |i|
-    thumbfile = File.join( @thumbsdir, Digest::MD5.hexdigest( File.read( @source[ i ] ) ) + "_#{ @thumbs_dimensions }_" + ".jpg" )
+    thumbfile = File.join( @thumbsdir, digest_over_content( @source[ i ] ) + "_#{ @thumbs_dimensions }_" + ".jpg" )
     if File.exists?( thumbfile )
       @logger.debug( "Skip: #{ File.basename( thumbfile ) } exists" )
       thumbs << thumbfile
