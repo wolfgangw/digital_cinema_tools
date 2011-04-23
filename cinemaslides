@@ -2070,7 +2070,7 @@ end
 if options.transition_and_timing.first == "fade" or options.transition_and_timing.first == 'cut'
   sequence_frames = ( ( black_leader + black_tail ) + @source.length * ( fade_in_time + duration + fade_out_time ) ) * fps
 elsif options.transition_and_timing.first == "crossfade"
-  sequence_frames = ( ( black_leader + black_tail ) + crossfade_time + @source.length * ( crossfade_time + duration ) ) * fps # implicit fade in/out first/last when crossfading
+  sequence_frames = ( ( black_leader + black_tail ) + ( ( @source.length - 1 ) * crossfade_time ) + @source.length * duration ) * fps
 end
 # meat of sequence_frames (without black leader/tail) -- where audio will play
 image_sequence_frames = sequence_frames - ( ( black_leader + black_tail ) * fps )
