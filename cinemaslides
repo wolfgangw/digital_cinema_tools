@@ -2428,7 +2428,8 @@ when "dcp"
         @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
         case options.encoder
         when 'openjpeg-tm'
-          `opendcp_j2k -i #{ file } -o #{ asset } -r #{ fps }`
+          # Do not use opendcp_j2k's colorspace transform (-x), files are X'Y'Z' already (Andrae Steiner)
+          `opendcp_j2k -i #{ file } -o #{ asset } -x -r #{ fps }`
         when 'openjpeg'
           `image_to_j2k -#{ openjpeg_cinema_profile } -i #{ file } -o #{ asset } > /dev/null 2>&1`
         when 'kakadu'
