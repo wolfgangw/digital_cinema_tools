@@ -26,7 +26,8 @@ class SequentialCandidate:
         self.args = args
         self.number_of_args = len( self.args )
         args_uuid_safe = []
-        if re.search( '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', self.args[ 0 ] ):
+        self.uuid_re = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+        if re.search( self.uuid_re, self.args[ 0 ] ):
             args_uuid_safe = map( self._mark_uuid, self.args )
         else:
             args_uuid_safe = self.args
@@ -97,7 +98,7 @@ class SequentialCandidate:
         return continuous, order, step
 
     def _mark_uuid( self, string ):
-        return re.sub( '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', '[UUID]', string )
+        return re.sub( self.uuid_re, '[UUID]', string )
 
     def report( self ):
         print self.number_of_args, 'items'
