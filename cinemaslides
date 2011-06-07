@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-AppVersion = "v0.2011.03.30"
+AppVersion = "v0.2011.06.07"
 AppName = File.basename( $0 )
 #
 # Wolfgang Woehl v0.2010
