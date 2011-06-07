@@ -25,9 +25,8 @@ puts "Schema: #{ File.basename( schema ) }"
 puts "XML docs: #{ docs.inspect }"
 
 unless schema == '' or docs.empty?
-  xsd = Nokogiri::XML::Schema( File.read( schema ) )
+  xsd = Nokogiri::XML::Schema( File.open( schema ) )
   docs.each do |doc|
-    xml = Nokogiri::XML( File.read( doc ) )
     puts "Validating #{ doc } ..."
     xsd.validate( doc ).each do |error|
       puts "Error: #{ error.message }"
