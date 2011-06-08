@@ -1502,13 +1502,12 @@ end
 @logger.debug( commandline )
 
 
-CINEMASLIDESDIR = File.expand_path( ENV[ 'CINEMASLIDESDIR' ] )
-if CINEMASLIDESDIR.nil?
+if ENV[ 'CINEMASLIDESDIR' ].nil?
   @cinemaslidesdir = File.join( ENV[ 'HOME' ], "cinemaslidesdir" )
   @logger.debug( "CINEMASLIDESDIR not set. Will use #{ @cinemaslidesdir }" )
 else
-  @logger.debug( "CINEMASLIDESDIR is set to #{ CINEMASLIDESDIR }" )
-  @cinemaslidesdir = CINEMASLIDESDIR
+  @cinemaslidesdir = File.expand_path( ENV[ 'CINEMASLIDESDIR' ] )
+  @logger.debug( "CINEMASLIDESDIR is set to #{ @cinemaslidesdir }" )
 end
 
 
