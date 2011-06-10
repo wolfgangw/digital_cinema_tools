@@ -696,16 +696,16 @@ def digest_over_name( file )
 end
 
 
-# entry into the asset depot will trigger a relatively strong and good enough md5 digest over content
+# entry into the asset depot will trigger a relatively strong and good enough md5 digest over full content (including metadata)
 # members of the asset depot will trigger a cheaper and good enough digest over filename (which is in part an md5 digest)
 #   + dimensions + (level unless jpeg 2000 codestream requested) + (encoder + fps if jpeg 2000 codestream is requested) + suffix
 def check_for_asset( filename_s, suffix, fps, level = nil )
   # 2 images from crossfade?
   if filename_s.size == 2
     if File.dirname( filename_s.first ) != @assetsdir
-      id = digest_over_content( filename_s[0] ) + '_' + digest_over_content( filename_s[1] )
+      id = digest_over_content( filename_s[ 0 ] ) + '_' + digest_over_content( filename_s[ 1 ] )
     else
-      id = digest_over_name( filename_s[0] ) + '_' + digest_over_name( filename_s[1] )
+      id = digest_over_name( filename_s[ 0 ] ) + '_' + digest_over_name( filename_s[ 1 ] )
     end
     origin = [ File.basename( filename_s[ 0 ] ), File.basename( filename_s[ 1 ] ) ].join( ' X ' )
   else # not from crossfade
