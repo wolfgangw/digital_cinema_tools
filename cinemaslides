@@ -2421,7 +2421,7 @@ when "dcp"
   
   files.each do |file|
     counter += 1
-    asset_link = File.join( @j2cdir, File.basename( file ).gsub( '.tiff', '' ) + '.j2c' )
+    asset_link = File.join( @j2cdir, File.basename( file ).gsub( /.tiff$/, '.j2c' ) )
     if File.dirname( File.readlink( file ) ) == @conformdir # 1st file is always a link to the asset depot
       File.link( previous_asset, asset_link ) 
       @logger.cr( "Skip (Full level): #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
