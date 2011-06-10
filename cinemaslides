@@ -1926,22 +1926,61 @@ if options.dont_check == TRUE ####
     exit
   end
 else # check files
-  # remove un-readable elements
-  not_readable = Array.new
-  @source_tmp = Array.new
-  @source.each do |element|
-    if File.exists?( element )
-      ftype = File.ftype( element )
-      if ftype == 'directory'
-        more = Dir.glob( "#{ element }/*" ).sort # this breaks fast (subdirs)
-        @source_tmp << more
-      else
-        @source_tmp << element
+  #
+  # recursively scrounge around for readable files, discard unreadable elements
+  #
+  # See http://log.guidoderosa.net/2009/06/make-ruby-method-filereadlink-behave.html
+  # for the following extension (keeping the code close for now):
+  #
+  # While File.readlink behaves like the analogous shell command,
+  # File.readlink! behaves like 'readlink -f'
+  #
+  class File
+    def File.readlink!(path)
+      path = File.expand_path(path)
+      dirname = File.dirname(path)
+      readlink = File.readlink(path)
+      if not readlink =~ /^\// # it's a relative path
+        readlink = dirname + '/'+ readlink # make it absolute
       end
-    else
-      not_readable << element
-      @logger.debug( "Not readable: #{ element }" )
+      readlink = File.expand_path(readlink) # eliminate this/../../that
+      if File.symlink?(readlink)
+        return File.readlink!(readlink) # recursively follow symlinks
+      else
+        return readlink
+      end
     end
+  end
+
+
+  def scrounge_files( list, readable, unreadable )
+    readable ||= Array.new
+    unreadable ||= Array.new
+    list.each do |item|
+      if File.exists?( item )
+        ftype = File.ftype( item )
+        # Use File#readlink! here to catch link chains (actually had some in a testdir)
+        if ftype == 'file' or ( ftype == 'link' ? File.ftype( File.readlink!( item ) ) == 'file' : false )
+          readable << item
+        elsif ftype == 'directory'
+          scrounge_files( Dir.glob( File.join( item, '*' ) ).sort, readable, unreadable )
+        end
+      else
+        unreadable << item
+        @logger.debug( "Not readable: #{ item }" )
+      end
+    end
+    return readable, unreadable
+  end
+
+
+  @source_tmp = Array.new
+  not_readable = Array.new
+
+  @source.each do |element|
+    readable, unreadable = scrounge_files( element, [], [] )
+    @source_tmp << readable
+    not_readable << unreadable unless unreadable.empty?
   end
   @source = @source_tmp.flatten.compact.dup
   
@@ -1950,7 +1989,6 @@ else # check files
   drops = FALSE
   @source_tmp = @source.clone
   @source.each do |file|
-    @logger.critical( file )
     image_identify = `identify -format '%m' #{ file } 2>/dev/null`.chomp
     if image_identify.empty?
       audio_identify = `soxi -V0 -t #{ file }`.chomp
@@ -1981,6 +2019,7 @@ else # check files
       @logger.debug( "#{ image_identify } #{ dimensions }: #{ file }" )
     end
   end
+  not_readable.flatten.compact!
   if not_readable.size > 0
     drops = TRUE
     @logger.debug( "Not readable: #{ not_readable.join( ', ' ) }" )
@@ -1999,7 +2038,7 @@ else # check files
     if options.dont_drop == TRUE
       exit
     else
-      @logger.debug( "Dropped some unuseable files. Say '--dont-drop' to exit in that case." )
+      @logger.debug( "Dropped some unusable files. Say '--dont-drop' to exit in that case." )
     end
   end
   @source = @source_tmp.dup
