@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-AppVersion = "v0.2011.06.14"
+AppVersion = "v0.2011.06.20"
 AppName = File.basename( $0 )
 #
 # Wolfgang Woehl v0.2010
@@ -732,7 +732,6 @@ def check_for_asset( filename_s, suffix, fps, level = nil )
   else
     todo = TRUE
   end
-  #@logger.cr( " " * 60 )
   return assetname, todo
 end
 
@@ -1965,104 +1964,127 @@ def safe_link( filename )
 end
 
 
-def collect_real_files( candidates, real_files )
-  real_files ||= []
+def collect_and_safeguard_real_files( candidates, real_files )
   candidates.each do |candidate|
     ftype = File.ftype candidate
     case ftype
     when 'link'
-      collect_real_files( File.readlink!( candidate ), real_files )
+      collect_and_safeguard_real_files( File.readlink!( candidate ), real_files )
     when 'directory'
-      collect_real_files( Dir.glob( File.join( candidate, '*' ) ).sort, real_files )
+      collect_and_safeguard_real_files( Dir.glob( File.join( candidate, '*' ) ).sort, real_files )
     when 'file'
       if candidate =~ /[^a-zA-Z0-9\/\-_,.+]/
-        real_files << safe_link( candidate )
-      else 
-        real_files << candidate
+        real_files[ :orig_name ] << candidate
+        real_files[ :safe_name ] << safe_link( candidate )
+      else
+        real_files[ :orig_name ] << candidate
+        real_files[ :safe_name ] << candidate
       end
     end
   end
-  return real_files.flatten
+  return real_files
 end
 
 
-def safeguard_fileargs( list )
-  real_files = Array.new
+def sanitize_fileargs( list )
+  real_files = { :orig_name => [], :safe_name => [] }
   not_readable = Array.new
   list.each do |item|
     item = File.expand_path( item )
     if File.exists?( item )
-      real_files = collect_real_files( item, real_files )
+      real_files = collect_and_safeguard_real_files( item, real_files )
     else
       not_readable << item
     end
   end
-  return real_files.flatten, not_readable
+  return real_files, not_readable
 end
 
 
-# Handle filenames with spaces and rogue chars by replacing them with 
+# Handle filenames with spaces and rogue chars by attaching them to
 # temporary links in @assetsdir.
-@source, not_readable = safeguard_fileargs( ARGV )
+#
+# @source will carry 2 lists:
+#
+# One lists the original filenames which will be used for @logger output.
+# The other one lists safe filenames (links in @assetsdir) which will be used in shell calls etc.
+#
+# Also sanitize_fileargs() will resolve links and glob dirs recursively
+#
+@source, not_readable = sanitize_fileargs( ARGV )
+@source_audio = { :orig_name => [], :safe_name => [] }
 
 
 # check provided files for readability, type and validity
-# come up with 3 lists: image files, audio files, unusable files
-@source_audio = Array.new
+# come up with 3 collections: image files, audio files, unusable files
+#
 if options.dont_check == TRUE ####
   if @source.empty?
     @logger.info( 'No files specified' )
     exit
   end
+
 else # check files
   
   # check type (image/audio)
   no_decode_delegate = Array.new
   drops = FALSE
-  @source_tmp = @source.clone
-  @source.each do |file|
+
+  source_tmp = Marshal.load( Marshal.dump @source )
+
+  @source[ :safe_name ].each_with_index do |file, index|
+
     image_identify = `identify -format '%m' #{ file } 2>/dev/null`.chomp
+
     if image_identify.empty?
       audio_identify = `soxi -V0 -t #{ file }`.chomp
+
       if audio_identify.empty?
-        no_decode_delegate << file
-        @source_tmp.delete( file )
-        @logger.debug( "#{ file }: No decode delegate" )
+        no_decode_delegate << @source[ :orig_name ][ index ] 
+        @logger.debug( "#{ @source[ :orig_name ][ index ] }: No decode delegate" )
       else
-        @source_audio << file
-        @source_tmp.delete( file )
+        @source_audio[ :orig_name ] << @source[ :orig_name ][ index ]
+        @source_audio[ :safe_name ] << file
         audiofile_duration = '(' + `soxi -V0 -d #{ file }`.chomp + ')'
-        @logger.debug( "#{ audio_identify.upcase } #{ audiofile_duration }: #{ file }" )
+        @logger.debug( "#{ audio_identify.upcase } #{ audiofile_duration }: #{ @source[ :orig_name ][ index ] }" )
       end
+      source_tmp[ :orig_name ].delete( @source[ :orig_name ][ index ] )
+      source_tmp[ :safe_name ].delete( file )
+
     # see http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=16398
     # basically IM defers deep analysis of xml to the coder.
     # the lightweight identify ping of xml might return false positives
+    # 
     elsif image_identify == "SVG"
       xml = Nokogiri::XML( File.open( file ) )
       if xml.search( 'svg', 'SVG' ).empty?
-        no_decode_delegate << file
-        @source_tmp.delete( file )
-        @logger.debug( "No <svg> node: #{ file }" )
+        no_decode_delegate << @source[ :orig_name ][ index ]
+        @logger.debug( "No <svg> node: #{ @source[ :orig_name ][ index ] }" )
+
+        source_tmp[ :safe_name ].delete( file )
+        source_tmp[ :orig_name ].delete( @source[ :orig_name ][ index ] )
+
       else # svg maybe useable
-        @logger.debug( "#{ image_identify }: #{ file }" )
+        @logger.debug( "#{ image_identify }: #{ @source[ :orig_name ][ index ] }" )
       end
-    else # file is useable
+    else # file is usable image
       dimensions = `convert #{ file } -format '(%wx%h, 1:%[fx:w/h])' info:`.chomp
-      @logger.debug( "#{ image_identify } #{ dimensions }: #{ file }" )
+      @logger.debug( "#{ image_identify } #{ dimensions }: #{ @source[ :orig_name ][ index ] }" )
     end
   end
+
   not_readable.flatten.compact!
   if not_readable.size > 0
     drops = TRUE
     @logger.debug( "Not readable: #{ not_readable.join( ', ' ) }" )
-  elsif not_readable.size == 0 and @source_tmp.size > 0
+  elsif not_readable.size == 0 and source_tmp[ :orig_name ].size > 0
     @logger.debug( "All files readable" )
   end
   if no_decode_delegate.size > 0
     drops = TRUE
     @logger.debug( "No decode delegates for #{ no_decode_delegate.join( ', ' ) }" )
   end
-  if @source_tmp.length == 0
+  if source_tmp[ :orig_name ].length == 0
     @logger.info( drops == FALSE ? "No image files specified" : "No useable image files")
     exit
   end
@@ -2073,28 +2095,31 @@ else # check files
       @logger.debug( "Dropped some unusable files. Say '--dont-drop' to exit in that case." )
     end
   end
-  @source = @source_tmp.dup
+  @source = Marshal.load( Marshal.dump source_tmp )
 end
 
 if options.dont_check == TRUE
   # quick and dirty version of audio file pickup (which is the whole point of --dont-check)
-  @source_audio = Array.new
-  @source_tmp = @source.clone
-  @source.each do |element|
-    if element =~ /(mp3|MP3|wav|WAV|flac|FLAC|aiff|AIFF|aif|AIF|ogg|OGG)$/
-      @source_audio << element
-      @source_tmp.delete( element )
+  @source_audio = { :orig_name => [], :safe_name => [] } 
+  source_tmp = @source.clone
+  @source[ :safe_name ].each_with_index do |file|
+    if file =~ /(mp3|MP3|wav|WAV|flac|FLAC|aiff|AIFF|aif|AIF|ogg|OGG)$/
+      @source_audio[ :orig_name ] << @source[ :orig_name ][ index ]
+      @source_audio[ :safe_name ] << file
+
+      source_tmp[ :safe_name ].delete( file )
+      source_tmp[ :orig_name ].delete( @source[ :orig_name ][ index ] )
     end
   end
-  @source = @source_tmp.clone
+  @source = Marshal.load( Marshal.dump source_tmp )
 end
 
-@logger.debug( "Images: #{ @source.join( ', ' ) }" )
-@logger.debug( "Audio files: #{ @source_audio.join( ', ' ) }" ) unless @source_audio.empty?
+@logger.debug( "Images: #{ @source[ :orig_name ].map { |e| e }.join( ', ' ) }" )
+@logger.debug( "Audio files: #{ @source_audio[ :orig_name ].map { |e| e }.join( ', ' ) }" ) unless @source_audio.empty?
 if no_decode_delegate.nil?
   @logger.debug( "No decode delegates for: Not checked" )
 else
-  @logger.debug( "No decode delegates for: #{ no_decode_delegate.join( ', ' ) }" ) unless no_decode_delegate.empty?
+  @logger.debug( "No decode delegates for: #{ no_decode_delegate.map { |e| e }.join( ', ' ) }" ) unless no_decode_delegate.empty?
 end
 
 
@@ -2111,8 +2136,8 @@ elsif options.transition_and_timing.first == 'cut' and options.transition_and_ti
 elsif options.transition_and_timing.first == 'crossfade' and options.transition_and_timing.length == 3
   crossfade_time = options.transition_and_timing[1].to_f
   duration = options.transition_and_timing[2].to_f
-  if @source.length == 1
-    @logger.warn( "Can't crossfade 1 image (#{ @source.first })" )
+  if @source[ :orig_name ].length == 1
+    @logger.warn( "Can't crossfade 1 image (#{ @source[ :orig_name ].first })" )
     @logger.info( "Either supply more than 1 image or change transition_and_timing to fade specs ('-x fade,a,b,c')" )
     exit
   end
@@ -2138,9 +2163,9 @@ end
 
 # calculate intended number of frames including black leader and tail, needed in audio conform and final report
 if options.transition_and_timing.first == "fade" or options.transition_and_timing.first == 'cut'
-  sequence_frames = ( ( black_leader + black_tail ) + @source.length * ( fade_in_time + duration + fade_out_time ) ) * fps
+  sequence_frames = ( ( black_leader + black_tail ) + @source[ :orig_name ].length * ( fade_in_time + duration + fade_out_time ) ) * fps
 elsif options.transition_and_timing.first == "crossfade"
-  sequence_frames = ( ( black_leader + black_tail ) + ( ( @source.length - 1 ) * crossfade_time ) + @source.length * duration ) * fps
+  sequence_frames = ( ( black_leader + black_tail ) + ( ( @source[ :orig_name ].length - 1 ) * crossfade_time ) + @source[ :orig_name ].length * duration ) * fps
 end
 # meat of sequence_frames (without black leader/tail) -- where audio will play
 image_sequence_frames = sequence_frames - ( ( black_leader + black_tail ) * fps )
@@ -2155,7 +2180,7 @@ image_sequence_frames = sequence_frames - ( ( black_leader + black_tail ) * fps 
 @assetsdir_audio = File.join( @cinemaslidesdir, 'assets-audio' )
 @keysdir = File.join( @cinemaslidesdir, 'keys' )
 
-unless @source_audio.empty?
+unless @source_audio[ :orig_name ].empty?
   Dir.mkdir( @assetsdir_audio ) unless File.exists?( @assetsdir_audio )
 end
 if options.dcp_user_output_path == nil
@@ -2201,7 +2226,7 @@ y = y.to_i / 6 # ...
 case @output_type
 when "dcp"
   @logger.info( "Creating#{ options.sign == TRUE ? ' signed' : '' }#{ options.dcp_encrypt == TRUE ? ' and encrypted' : '' }#{ @dcp_wrap_stereoscopic == TRUE ? ' 3D' : ' 2D' } #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
-  @logger.info( "Number of images: #{ @source.size }" )
+  @logger.info( "Number of images: #{ @source[ :orig_name ].size }" )
   @logger.info( "Transition specs: #{ options.transition_and_timing.join( ',' ) }" )
   @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
   @logger.info( "Title:            #{ options.dcp_title }" )
@@ -2219,13 +2244,13 @@ when "dcp"
   end
 when "preview", "fullpreview"
   @logger.info( "Creating #{ @output_type } (#{ @aspect } #{ @dimensions } @ #{ fps } fps)" )
-  @logger.info( "Number of images: #{ @source.size }" )
+  @logger.info( "Number of images: #{ @source[ :orig_name ].size }" )
   @logger.info( "Transition specs: #{ options.transition_and_timing.join( ',' ) }" )
   @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
 end
 
 
-### Process audio (asset-audio depot is still a moving target, bugs lurking etc., as of v0.2010.09.07)
+## Process audio (asset-audio depot is still a moving target, bugs lurking etc., as of v0.2010.09.07)
 #
 # user can specify -- alongside with any number of images -- any number of audio files
 # a) cinemaslides makes a list which will be equally long as or longer than the calculated image sequence
@@ -2277,7 +2302,7 @@ def silence( seconds, samplerate, bps, channelcount )
 end
 
 
-unless @source_audio.empty?
+unless @source_audio[ :orig_name ].empty?
   @logger.info( 'Conform audio ...' )
   
   audio_list = Array.new
@@ -2290,9 +2315,9 @@ unless @source_audio.empty?
   
   # a) make a list of audiofiles with sufficient total length (read 'at least as long as image sequence')
   while audio_list_total_length < image_sequence_length_seconds
-    audio_list << @source_audio[ source_audio_index ]
-    audio_list_total_length += `soxi -D #{ @source_audio[ source_audio_index ] }`.chomp.to_f
-    if source_audio_index == @source_audio.size - 1
+    audio_list << @source_audio[ :safe_name ][ source_audio_index ]
+    audio_list_total_length += `soxi -D #{ @source_audio[ :safe_name ][ source_audio_index ] }`.chomp.to_f
+    if source_audio_index == @source_audio[ :orig_name ].size - 1
       source_audio_index = 0 # start over
     else
       source_audio_index += 1
@@ -2347,15 +2372,15 @@ if options.montage == TRUE
   Dir.mkdir( @thumbsdir ) unless File.exists?( @thumbsdir )
   @logger.info( "Create thumbnails" )
   thumbs = Array.new
-  ( 0..( @source.length - 1 ) ).each do |i|
-    thumbfile = File.join( @thumbsdir, digest_over_content( @source[ i ] ) + "_#{ @thumbs_dimensions }_" + ".jpg" )
+  ( 0..( @source[ :orig_name ].length - 1 ) ).each do |i|
+    thumbfile = File.join( @thumbsdir, digest_over_content( @source[ :safe_name ][ i ] ) + "_#{ @thumbs_dimensions }_" + ".jpg" )
     if File.exists?( thumbfile )
       @logger.debug( "Skip: #{ File.basename( thumbfile ) } exists" )
       thumbs << thumbfile
       next
     else
-      @logger.info( "Thumb for #{ @source[ i ] }" )
-      `convert #{ @source[ i ] } \
+      @logger.info( "Thumb for #{ @source[ :orig_name ][ i ] }" )
+      `convert #{ @source[ :orig_name ][ i ] } \
          -type TrueColor \
          -resize #{ @thumbs_dimensions } \
          -background black \
@@ -2367,12 +2392,12 @@ if options.montage == TRUE
      end
   end
   thumbs = thumbs.join(' ')
-  # cache montages, wacky-hacky using string of all thumbnail filenames (md5 hexdigest and some) to match
+  # cache montages, using string of all thumbnail filenames (md5 hexdigest and some) to match
   thumbs_asset = File.join( @thumbsdir, Digest::MD5.hexdigest( thumbs ) + '_montage_.jpg' )
   if File.exists?( thumbs_asset )
     @logger.debug( "Skip: Montage exists (#{ File.basename( thumbs_asset ) })" )
   else
-    tiles_x = Math.sqrt( @source.length ).ceil
+    tiles_x = Math.sqrt( @source[ :orig_name ].length ).ceil
     `montage #{ thumbs } \
        -mode Concatenate \
        -tile #{ tiles_x }x \
@@ -2403,29 +2428,27 @@ end
 
 # Process all images
 keeper = nil # keep a conform for the next crossfade (2nd will be 1st then, don't conform again)
-@source.each_index do |index|
+@source[ :orig_name ].each_index do |index|
   case options.transition_and_timing.first
   when "fade", "cut"
     @imagecount += 1
-    image = conform( @source[ index  ], fps )
+    image = conform( @source[ :safe_name ][ index  ], fps )
     fade_in_hold_fade_out( image, fps, fade_in_time, duration, fade_out_time )
   when "crossfade"
     @imagecount += 1
     case index
     when 0 # first image
-      image1 = conform( @source[ index ], fps )
-      image2 = conform( @source[ index + 1 ], fps )
+      image1 = conform( @source[ :safe_name ][ index ], fps )
+      image2 = conform( @source[ :safe_name ][ index + 1 ], fps )
       keeper = image2
-      #fade_in( image1, fps, crossfade_time )
       full_level( image1, fps, duration )
       crossfade( image1, image2, fps, crossfade_time )
-    when @source.length - 1 # last image
+    when @source[ :safe_name ].length - 1 # last image
       image = keeper
       full_level( image, fps, duration )
-      #fade_out( image, fps, crossfade_time )
     else
       image1 = keeper
-      image2 = conform( @source[ index + 1 ], fps )
+      image2 = conform( @source[ :safe_name ][ index + 1 ], fps )
       keeper = image2
       full_level( image1, fps, duration )
       crossfade( image1, image2, fps, crossfade_time )
@@ -2444,7 +2467,7 @@ end
 case @output_type
 when "preview", "fullpreview"
   sequence = File.join( "#{ @conformdir }", "*.#{ @output_format }" )
-  audio = ( @source_audio.empty? ? '' : '-audiofile ' + @final_audio )
+  audio = ( @source_audio[ :orig_name ].empty? ? '' : '-audiofile ' + @final_audio )
   if ENV[ "DISPLAY" ].nil?
     @logger.warn( "DISPLAY not set. Skipping preview" )
   else
@@ -2514,7 +2537,7 @@ when "dcp"
   # Setup MXF container names
   image_mxf_uuid = `kmuuidgen -n`
   image_mxf = File.join( @dcpdir, "j2c_#{ image_mxf_uuid }_.mxf" )
-  unless @source_audio.empty?
+  unless @source_audio[ :orig_name ].empty?
     audio_mxf_uuid = `kmuuidgen -n`
     audio_mxf = File.join( @dcpdir, "pcm_#{ audio_mxf_uuid }_.mxf" )
   end
@@ -2524,7 +2547,7 @@ when "dcp"
     image_key = `kmrandgen -n -s 16`
     image_key_id = `kmuuidgen -n`
     File.open( File.join( @keysdir, image_key_id ), 'w' ) { |f| f.write( image_key_id + ':MDIK:' + image_key ) }
-    unless @source_audio.empty?
+    unless @source_audio[ :orig_name ].empty?
       audio_key = `kmrandgen -n -s 16`
       audio_key_id = `kmuuidgen -n`
       File.open( File.join( @keysdir, audio_key_id ), 'w' ) { |f| f.write( audio_key_id + ':MDAK:' + audio_key ) }
@@ -2550,7 +2573,7 @@ when "dcp"
   @logger.debug( "Image trackfile UUID: #{ image_mxf_uuid }" )
   
   # Make audio trackfile
-  unless @source_audio.empty?
+  unless @source_audio[ :orig_name ].empty?
     @logger.info( 'Write audio trackfile ...' )
     # FIXME 2.0 sound only here (v0.2010.11.19), hence no label. might be trouble on some servers
     opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + audio_key + ' -j ' + audio_key_id : '-E' } -p #{ fps } -a #{ audio_mxf_uuid } -c #{ audio_mxf } #{ @final_audio }"
@@ -2567,7 +2590,7 @@ when "dcp"
     cpl_uuid,
     options.dcp_encrypt,
     image_mxf.to_a, # reels
-    @source_audio.empty? ? nil : audio_mxf.to_a, # reels
+    @source_audio[ :orig_name ].empty? ? nil : audio_mxf.to_a, # reels
     annotation = options.annotation,
     issue_date = DateTime.now.to_s,
     issuer = options.issuer,
