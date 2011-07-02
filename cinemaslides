@@ -1497,12 +1497,7 @@ end
 
 
 @logger.info( "#{ AppName } #{ AppVersion }" )
-# cinemaslides requires ruby 1.8.7 and will not work with > 1.9, yet.
-# the changes required for 1.9 are subtle. just haven't gotten around to it, yet. coming up
-if RUBY_VERSION < '1.8.7' or RUBY_VERSION >= '1.9'
-  @logger.info( "#{ AppName } requires ruby >= 1.8.7 and < 1.9. Your ruby version: #{ RUBY_VERSION }" )
-  exit
-end
+@logger.debug( "ruby version: #{ RUBY_VERSION }" )
 @logger.debug( commandline )
 
 
@@ -1965,7 +1960,11 @@ end
 
 
 def collect_and_safeguard_real_files( candidates, real_files )
-  candidates.each do |candidate|
+  # ruby 1.9 fixes: String#each_line is present in 1.8 and 1.9 and will return an Enumerator
+  # The bad 1.8 habit String#to_a does not work in 1.9
+  # Calling from sanitize_fileargs() will provide 1 item
+  # Recursive calls from collect_and_safeguard_real_files() might provide lists
+  candidates.each_line do |candidate|
     ftype = File.ftype candidate
     case ftype
     when 'link'
@@ -2589,8 +2588,9 @@ when "dcp"
   cpl = CPL_SMPTE_429_7_2006.new( 
     cpl_uuid,
     options.dcp_encrypt,
-    image_mxf.to_a, # reels
-    @source_audio[ :orig_name ].empty? ? nil : audio_mxf.to_a, # reels
+    # ruby 1.9 fixes: String#each_line is present in 1.8 and 1.9 and will return an Enumerator
+    image_mxf.each_line.to_a, # reels
+    @source_audio[ :orig_name ].empty? ? nil : audio_mxf.each_line.to_a, # reels
     annotation = options.annotation,
     issue_date = DateTime.now.to_s,
     issuer = options.issuer,
