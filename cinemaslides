@@ -1964,7 +1964,8 @@ def collect_and_safeguard_real_files( candidates, real_files )
   # The bad 1.8 habit String#to_a does not work in 1.9
   # Calling from sanitize_fileargs() will provide 1 item
   # Recursive calls from collect_and_safeguard_real_files() might provide lists
-  candidates.each_line do |candidate|
+  candidates = candidates.is_a?( String ) ? candidates.each_line.to_a : candidates
+  candidates.each do |candidate|
     ftype = File.ftype candidate
     case ftype
     when 'link'
