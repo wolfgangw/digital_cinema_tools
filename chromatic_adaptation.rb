@@ -1,21 +1,13 @@
 #!/usr/bin/ruby
-# chromatic_adaptation.rb 
 #
-# latest changes: XYZ_to_xyY (unused), Rec.709 white point (to be confirmed)
-#
+# Wolfgang Woehl 2010
 # Calculate chromatic adaptation transformation matrix
-#
-# Put the result into env variables like 
-#    export D65_to_DCI_Calibration_White="0.976531394318377  -0.0154596619959494 ..."
-# to use with something like ImageMagick's "convert":
-#    $ convert gradient.tiff [more options] -recolor "$D65_to_DCI_Calibration_White" [...] dci-gradient.tiff
-#
 # Math details: see http://www.brucelindbloom.com/
 #
 # Usage: chromatic_adaptation.rb --help
 #        chromatic_adaptation.rb -s d50
-#        chromatic_adaptation.rb -s d65 -d dci
-#        chromatic_adaptation.rb --source d65 --destination dci --method bradford
+#        chromatic_adaptation.rb -s d65 -d dci_calibration_white
+#        chromatic_adaptation.rb --source d65 --destination rec709 --method bradford
 
 require 'optparse'
 require 'ostruct'
@@ -39,7 +31,7 @@ class Optparser
       opts.on( "-d", "--destination k5900 | d50 | d55 | d65 | rec709 | d75 | dci_calibration_white (Default)", "White point reference of destination" ) do |p|
         options.destination = p
       end
-      opts.on( "-m", "--method xyzscaling | bradford | vonkries", "Cone response domain definition" ) do |p|
+      opts.on( "-m", "--method xyzscaling | bradford (Default) | vonkries", "Cone response domain definition" ) do |p|
         options.crd_definition = p
       end
       opts.on( "-o", "--output block | line (Default)", "Format output as a 3x3 block or as a line" ) do |p|
@@ -90,7 +82,7 @@ REC709_X, REC709_Y, REC709_Z = 0.950455927051672, 1.0, 1.08905775075988
 D75_X, D75_Y, D75_Z = 0.94972, 1.00000, 1.22638
                            # DCI Calibration White: x = 0.3140, y = 0.3510, Y=1.0 (48 cd/m**2)
 DCI_Calibration_White_X, DCI_Calibration_White_Y, DCI_Calibration_White_Z = 0.894583, 1.00000, 0.954417
-# The following is (apparently) offered by Adobe CS4 ("DCDM X'Y'Z' (gamma 2.6) 5900K (by Adobe)")
+# Offered by Adobe CS4 ("DCDM X'Y'Z' (gamma 2.6) 5900K (by Adobe)")
 tmp_x, tmp_y, tmp_Y = t_to_xyY( 5900 )            # x = 0.324, y = 0.340
 K5900_X, K5900_Y, K5900_Z = xyY_to_XYZ( tmp_x, tmp_y, tmp_Y )
 
@@ -111,28 +103,28 @@ M_A_Von_Kries = Matrix[
   [0.0000000, 0.0000000, 0.9182200]
 ]
 
-case
-  when options.source == "k5900" then X_WS, Y_WS, Z_WS = K5900_X, K5900_Y, K5900_Z
-  when options.source == "d50" then X_WS, Y_WS, Z_WS = D50_X, D50_Y, D50_Z
-  when options.source == "d55" then X_WS, Y_WS, Z_WS = D55_X, D55_Y, D55_Z
-  when options.source == "d65" then X_WS, Y_WS, Z_WS = D65_X, D65_Y, D65_Z
-  when options.source == "rec709" then X_WS, Y_WS, Z_WS = REC709_X, REC709_Y, REC709_Z
-  when options.source == "d75" then X_WS, Y_WS, Z_WS = D75_X, D75_Y, D75_Z
-  when options.source == "dci_calibration_white" then X_WS, Y_WS, Z_WS = DCI_Calibration_White_X, DCI_Calibration_White_Y, DCI_Calibration_White_Z
+case options.source
+  when "k5900"                : X_WS, Y_WS, Z_WS = K5900_X, K5900_Y, K5900_Z
+  when "d50"                  : X_WS, Y_WS, Z_WS = D50_X, D50_Y, D50_Z
+  when "d55"                  : X_WS, Y_WS, Z_WS = D55_X, D55_Y, D55_Z
+  when "d65"                  : X_WS, Y_WS, Z_WS = D65_X, D65_Y, D65_Z
+  when "rec709"               : X_WS, Y_WS, Z_WS = REC709_X, REC709_Y, REC709_Z
+  when "d75"                  : X_WS, Y_WS, Z_WS = D75_X, D75_Y, D75_Z
+  when "dci_calibration_white": X_WS, Y_WS, Z_WS = DCI_Calibration_White_X, DCI_Calibration_White_Y, DCI_Calibration_White_Z
 end
-case
-  when options.destination == "k5900" then X_WD, Y_WD, Z_WD = K5900_X, K5900_Y, K5900_Z
-  when options.destination == "d50" then X_WD, Y_WD, Z_WD = D50_X, D50_Y, D50_Z
-  when options.destination == "d55" then X_WD, Y_WD, Z_WD = D55_X, D55_Y, D55_Z
-  when options.destination == "d65" then X_WD, Y_WD, Z_WD = D65_X, D65_Y, D65_Z
-  when options.destination == "rec709" then X_WD, Y_WD, Z_WD = REC709_X, REC709_Y, REC709_Z
-  when options.destination == "d75" then X_WD, Y_WD, Z_WD = D75_X, D75_Y, D75_Z
-  when options.destination == "dci_calibration_white" then X_WD, Y_WD, Z_WD = DCI_Calibration_White_X, DCI_Calibration_White_Y, DCI_Calibration_White_Z
+case options.destination
+  when "k5900"                : X_WD, Y_WD, Z_WD = K5900_X, K5900_Y, K5900_Z
+  when "d50"                  : X_WD, Y_WD, Z_WD = D50_X, D50_Y, D50_Z
+  when "d55"                  : X_WD, Y_WD, Z_WD = D55_X, D55_Y, D55_Z
+  when "d65"                  : X_WD, Y_WD, Z_WD = D65_X, D65_Y, D65_Z
+  when "rec709"               : X_WD, Y_WD, Z_WD = REC709_X, REC709_Y, REC709_Z
+  when "d75"                  : X_WD, Y_WD, Z_WD = D75_X, D75_Y, D75_Z
+  when "dci_calibration_white": X_WD, Y_WD, Z_WD = DCI_Calibration_White_X, DCI_Calibration_White_Y, DCI_Calibration_White_Z
 end
-case
-  when options.crd_definition == "xyzscaling" then M_A = M_A_XYZScaling
-  when options.crd_definition == "bradford" then M_A = M_A_Bradford
-  when options.crd_definition == "vonkries" then M_A = M_A_Von_Kries
+case options.crd_definition
+  when "xyzscaling"           : M_A = M_A_XYZScaling
+  when "bradford"             : M_A = M_A_Bradford
+  when "vonkries"             : M_A = M_A_Von_Kries
 end
 
 # CRD, Cone response domain
@@ -145,13 +137,17 @@ rho_D, gamma_D, beta_D = CRD_D.row(0)[0], CRD_D.row(1)[0], CRD_D.row(2)[0]
 CAT = M_A ** -1 * Matrix[ 
                           [rho_D / rho_S, 0, 0],
                           [0, gamma_D / gamma_S, 0],
-                          [0, 0, beta_D / beta_S] ]   * M_A
+                          [0, 0, beta_D / beta_S] ] * M_A
 
-if options.output == 'block'
-  puts "Chromatic adaptation transformation for #{options.source} -> #{options.destination} (CRD definition: #{options.crd_definition}): \n#{CAT.row(0).to_a.join('  ')}\n#{CAT.row(1).to_a.join('  ')}\n#{CAT.row(2).to_a.join('  ')}"
-elsif options.output == 'line'
-  puts "Chromatic adaptation transformation for #{options.source} -> #{options.destination} (CRD definition: #{options.crd_definition}): \n#{CAT.row(0).to_a.join(' ')} #{CAT.row(1).to_a.join(' ')} #{CAT.row(2).to_a.join(' ')}"
+# Print result
+def j(row)
+  row.to_a.join('  ')
+end
+puts "Chromatic adaptation transformation for #{options.source} -> #{options.destination} (CRD definition: #{options.crd_definition}):"
+case options.output
+when 'block'
+  puts [ j( CAT.row(0) ), j( CAT.row(1) ), j( CAT.row(2) ) ].join "\n"
 else
-  puts "Use -o block or -o line (Default)"
+  puts [ j( CAT.row(0) ), j( CAT.row(1) ), j( CAT.row(2) ) ].join "  "
 end
 
