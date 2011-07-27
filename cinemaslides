@@ -2103,7 +2103,7 @@ if options.dont_check == TRUE
   # quick and dirty version of audio file pickup (which is the whole point of --dont-check)
   @source_audio = { :orig_name => [], :safe_name => [] } 
   source_tmp = @source.clone
-  @source[ :safe_name ].each_with_index do |file|
+  @source[ :safe_name ].each_with_index do |file, index|
     if file =~ /(mp3|MP3|wav|WAV|flac|FLAC|aiff|AIFF|aif|AIF|ogg|OGG)$/
       @source_audio[ :orig_name ] << @source[ :orig_name ][ index ]
       @source_audio[ :safe_name ] << file
