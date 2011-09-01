@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 # encoding: UTF-8
-AppVersion = "v0.2011.07.15"
+AppVersion = "v0.2011.09.01"
 AppName = File.basename( $0 )
 #
 # Wolfgang Woehl v0.2010
@@ -80,7 +80,7 @@ class Optparser
     options.size = '2k'
     options.size_choices = [ '2k', '4k' ]
     options.aspect = 'flat'
-    options.aspect_choices = [ 'flat', 'scope', 'hd', Regexp.new( '\d+(\.\d+)?x\d+(\.\d+)?' ) ] # custom aspect ratios: match '<numeric>x<numeric>'
+    options.aspect_choices = [ 'flat', 'scope', 'hd', 'full', Regexp.new( '\d+(\.\d+)?x\d+(\.\d+)?' ) ] # custom aspect ratios: match '<numeric>x<numeric>'
     options.aspect_malformed = FALSE
     options.resize = TRUE # option to _not_ resize images (useful for images which are close to target dimensions and would suffer from scaling/-resize)
     options.fps = 24.0
@@ -92,6 +92,7 @@ class Optparser
     options.black = 0.0
     options.black_leader = NIL
     options.black_tail = NIL
+    options.black_intermediate = NIL
     options.audio_samplerate = 48000
     options.audio_samplerate_choices = [ '48000', '48k', '96000', '96k' ]
     options.audio_bps = 24
@@ -129,7 +130,7 @@ class Optparser
       opts.banner = <<BANNER
 #{ AppName } #{ AppVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" } #{ ENV[ 'CINEMACERTSTORE' ].nil? ? "\nExport CINEMACERTSTORE to point to a directory which holds your digital cinema compliant signing key and certificates" : "\nCINEMACERTSTORE is set (#{ ENV[ 'CINEMACERTSTORE' ] })" }
  
-Usage: #{ File.basename( $0 ) } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [--encrypt] [--kdm] [--cpl <cpl file>] [--start <days from now>] [--end <days from now>] [--target <certificate>] [-v, --verbosity <level>] [--examples] [-h, --help] [ image and audio files ] [ KDM mode parameters ]
+Usage: #{ AppName } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--bi, --black-intermediate <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [--encrypt] [--kdm] [--cpl <cpl file>] [--start <days from now>] [--end <days from now>] [--target <certificate>] [-v, --verbosity <level>] [--examples] [-h, --help] [ image and audio files ] [ KDM mode parameters ]
 
 BANNER
 
@@ -183,6 +184,9 @@ BANNER
       end
       opts.on( '--bt', '--black-tail seconds', Float, 'Length of black tail (Default: 0)' ) do |p|
         options.black_tail = p
+      end
+      opts.on( '--bi', '--black-intermediate seconds', Float, 'Length of black intermediate (Default: 0)' ) do |p|
+        options.black_intermediate = p
       end
       opts.on( '-r', '--samplerate rate', String, "Audio samplerate. Use '48000', '48k', '96000' or '96k' (Default: 48k)" ) do |p|
         if options.audio_samplerate_choices.include?( p.downcase )
@@ -264,7 +268,6 @@ BANNER
       end
 
       opts.on( '--examples', 'Some examples and explanations' ) do
-        app = File.basename( $0 )
         examples = <<EXAMPLES
 #{ AppName } #{ AppVersion }
 
@@ -272,50 +275,50 @@ Specify options in any order. Order of image/audio files matters. Audio is optio
 Audio timing is handled in a first-come, first-served manner -- independently from image timings
 
 In order to use signature and KDM generation you need to have 3 related, digital cinema compliant
-certificates in $CINEMACERTSTORE (#{ app } needs some specific names for now -- #{ AppVersion })
+certificates in $CINEMACERTSTORE (#{ AppName } needs some specific names for now -- #{ AppVersion })
 (Use https://github.com/wolfgangw/digital_cinema_tools/blob/master/make-dc-certificate-chain.rb for that)
 
   Preview slideshow with audio (Half sized preview. Cut transition. Default duration: 5 seconds each):
-$ #{ app } image1.jpg audio.wav image2.tiff
+$ #{ AppName } image1.jpg audio.wav image2.tiff
 
   Preview slideshow with audio (Full sized preview. Transition: crossfades for 1 second, 20 seconds at full level each):
-$ #{ app } --type fullpreview -x crossfade,1,20 image1.tiff image2.ppm audio1.wav audio2.wav
+$ #{ AppName } --type fullpreview -x crossfade,1,20 image1.tiff image2.ppm audio1.wav audio2.wav
 
   Create slideshow DCP, use all image files in directory 'slides' (Resolution: 2K. 5 seconds black leader):
-$ #{ app } --type dcp --size 2k --black-leader 5 slides/*
+$ #{ AppName } --type dcp --size 2k --black-leader 5 slides/*
 
   Create slideshow DCP (Preview thumbnails. Aspect ratio: scope):
-$ #{ app } audio.wav *.tiff --montagepreview --aspect scope -t dcp --title 'Slideshow Test' --issuer 'Facility'
+$ #{ AppName } audio.wav *.tiff --montagepreview --aspect scope -t dcp --title 'Slideshow Test' --issuer 'Facility'
 
   Transition: fade in for 0.5 seconds, hold for 10, fade out for 4
-$ #{ app } -x fade,0.5,10,4 ...
+$ #{ AppName } -x fade,0.5,10,4 ...
 
   Carousel goes berserk (note option --dont-check in order to avoid extensive checks for lots of images)
-$ #{ app } -t dcp --title "Motion sequence" --fps 24 -x cut,0.04167 --dont-check motion_sequence/
+$ #{ AppName } -t dcp --title "Motion sequence" --fps 24 -x cut,0.04167 --dont-check motion_sequence/
 
   Write DCP to custom location
-$ #{ app } --dcp-out /media/usb-disk/slideshow --type dcp image.tiff audio.wav --title "First composition"
+$ #{ AppName } --dcp-out /media/usb-disk/slideshow --type dcp image.tiff audio.wav --title "First composition"
 
   Write another composition to the same custom location (PKL and ASSETMAP will be extended)
-$ #{ app } -o /media/usb-disk/slideshow -t dcp image2.tiff image3.tiff song.wav --title "Another composition"
+$ #{ AppName } -o /media/usb-disk/slideshow -t dcp image2.tiff image3.tiff song.wav --title "Another composition"
 
   Timings are global. Some workaround kind of finer-grained timing control:
-$ #{ app } -x cut,3    title title title 1st_slide 2nd_slide credits credits
+$ #{ AppName } -x cut,3    title title title 1st_slide 2nd_slide credits credits
 
   Slideshow of your truetype fonts:
-$ #{ app } -x crossfade,2,2 `find /usr/share/fonts/truetype/ -name '*ttf' -type f`
+$ #{ AppName } -x crossfade,2,2 `find /usr/share/fonts/truetype/ -name '*ttf' -type f`
 
   Custom aspect ratios (Work fine on a Solo G3, what about other servers?):
-$ #{ app } --aspect 1.33x1 | --aspect 3072x2304 | --aspect 3x1 [...]
+$ #{ AppName } --aspect 1.33x1 | --aspect 3072x2304 | --aspect 3x1 [...]
 
   Encrypt DCP trackfiles and store content keys in $CINEMASLIDESDIR/keys (--encrypt implies signing):
   Go check the final CPL for key IDs and compare to stored content keys
   Using asdcplib you can decrypt and extract essence with
         asdcp-test -x decrypted_ -k '<content key -- 16 bytes in hex>' <encrypted MXF>
-$ #{ app } -t dcp --encrypt --title "Encryption test" -o ENCRYPTION_TST_F_2K_20101231_WOE_OV -x cut,0.04167 demo_sequence/
+$ #{ AppName } -t dcp --encrypt --title "Encryption test" -o ENCRYPTION_TST_F_2K_20101231_WOE_OV -x cut,0.04167 demo_sequence/
 
   Generate KDM for some content, targeting our XDC Solo G3 server certificate with a time window from now to 10 days from now:
-$ #{ app } -v debug --kdm --cpl ENCRYPTION_TST_F_2K_20101231_WOE_OV/cpl_<UUID>_.xml --start 0 --end 10 --target 200100400530_000487.pem
+$ #{ AppName } -v debug --kdm --cpl ENCRYPTION_TST_F_2K_20101231_WOE_OV/cpl_<UUID>_.xml --start 0 --end 10 --target 200100400530_000487.pem
 
 EXAMPLES
         puts examples
@@ -327,14 +330,14 @@ EXAMPLES
       end
 
     end
-    opts.parse!(args)
+    opts.parse!( args )
     options
   end # parse
 end # class
 
 
 # reconstruct original commandline for readme file
-commandline = File.basename( $0 )
+commandline = AppName
 ARGV.each do |arg|
   if arg =~ /.+\s.+/
     commandline += ' ' + '"' + arg + '"'
@@ -343,7 +346,7 @@ ARGV.each do |arg|
   end
 end
 # destructive parse
-options = Optparser.parse(ARGV)
+options = Optparser.parse( ARGV )
 
 
 class Logger
@@ -389,10 +392,10 @@ class Logger
     carriage_return( @color[:info], text ) unless @verbosity == "quiet"
   end
   def carriage_return( color, text )
-    printf "\033[#{ color }m#{ @prefix } #{ text }\033[0m#{ ' ' * 24 }\r"; STDOUT.flush
+    printf "\033[#{ color }m#{ @prefix } #{ text }\033[0m#{ ' ' * 64 }\r"; STDOUT.flush
   end
   def to_console( color, text )
-    printf "\033[#{ color }m#{ @prefix } #{ text }\033[0m#{ ' ' * 24 }\n"
+    printf "\033[#{ color }m#{ @prefix } #{ text }\033[0m#{ ' ' * 64 }\n"
   end
 end
 @logger = Logger.new( prefix = '*', options.verbosity )
@@ -448,7 +451,7 @@ def final_report( sequence_frames, fps, transition_and_timing, keep )
   sequence_duration = sequence_frames / fps
   @logger.debug( "#{ sequence_frames } frames intended by numbers (#{ hours_minutes_seconds_verbose( sequence_duration ) })" )
   @logger.debug( "#{ @framecount -1 } frames written" )
-  @logger.info( "Cinema Slideshow is #{ hours_minutes_seconds_verbose( ( @framecount - 1 ) / fps ) } long (#{ @source.length } image#{ 's' * ( @source.length == 1 ? 0 : 1 )} | #{ transition_and_timing.join(',').gsub(' ', '') } | #{ @framecount - 1 } frames | #{ fps } fps)" )
+  @logger.info( "Cinema Slideshow is #{ hours_minutes_seconds_verbose( ( @framecount - 1 ) / fps ) } long (#{ @source[ :orig_name ].length } image#{ 's' * ( @source[ :orig_name ].length == 1 ? 0 : 1 )} | #{ transition_and_timing.join(',').gsub(' ', '') } | #{ @framecount - 1 } frames | #{ fps } fps)" )
   @logger.info( "Pick up preview files at #{ @workdir }/" ) if ( keep == TRUE and @output_type != 'dcp' )
   @logger.info( "Pick up temporary files at #{ @workdir }/" ) if ( keep == TRUE and @output_type == 'dcp' )
   @logger.info( "Pick up DCP at #{ @dcpdir }" ) if @output_type == 'dcp'
@@ -516,6 +519,8 @@ def width_x_height
     width, height = 1024, 429 # 2.38694638694639
   when 'hd' # 1.77 : 1
     width, height = 960, 540 # 1.77777777777778
+  when 'full' # full container 1.8962962962962964
+    width, height = 1024, 540
   else # Custom aspect ratio
     custom_width, custom_height = @aspect.split( 'Custom aspect ratio:' ).last.split( 'x' )
     width, height = scale_to_fit_container( custom_width.to_f, custom_height.to_f, container_width, container_height )
@@ -584,9 +589,9 @@ end
 
 def fade( image, seconds, fps, initial, final, step )
   if step > 0 # fade in
-    ladder = ( initial .. final ).step( step ).collect
+    ladder = ( initial .. final ).step( step ).to_a
   else # fade out
-    ladder = ( final .. initial ).step( step.abs ).collect
+    ladder = ( final .. initial ).step( step.abs ).to_a
   end
   ladder[ -1 ] = 0 # sic. float implementation, tighten the nut
   levels = ladder.collect { |rung| sigmoid( rung, initial, final, -50, 0.125 ) }
@@ -685,7 +690,7 @@ end
 
 
 def imagecount_info( image )
-  "(#{ @imagecount } of #{ @source.length })"
+  "(#{ @imagecount } of #{ @source[ :orig_name ].length })"
 end
 
 
@@ -991,7 +996,8 @@ module DCTools
   end
   
   def uuid_to_bin( uuid_string )
-    uuid_string.gsub( /[^0-9A-Fa-f]/, '' )[ 0..31 ].to_a.pack 'H*'
+    tmp = Array.new << uuid_string.gsub( /[^0-9A-Fa-f]/, '' )[ 0..31 ]
+    tmp.pack 'H*'
   end
   
   def stripped( pem )
@@ -1833,9 +1839,10 @@ end
 
 
 ### Get options and initialize
-black_leader = black_tail = options.black
+black_leader = black_tail = black_intermediate = options.black # 0.0
 black_leader = options.black_leader.abs unless options.black_leader.nil?
 black_tail = options.black_tail.abs unless options.black_tail.nil?
+black_intermediate = options.black_intermediate.abs unless options.black_intermediate.nil?
 
 @resize = options.resize
 
@@ -1919,8 +1926,14 @@ if @output_type == "dcp"
     end
   end
   if options.output_type == 'dcp' and @dcp_wrap_stereoscopic == TRUE and options.fps != 24
-    @logger.info( "Option '--wrap-stereoscopic' is set -> Setting fps to 24" )
-    options.fps = 24.0
+    asdcplib_version = `asdcp-test -V`.match( /\d+\.\d+\.\d+/ )[0]
+    if asdcplib_version < '1.8.41'
+      @logger.info( "asdcplib versions before 1.8.41 do not allow wrapping of stereoscopic essence for framerates higher than 24" )
+      exit
+    else
+      @logger.info( "While your asdcplib version (#{ asdcplib_version }) allows wrapping of stereoscopic essence with #{ options.fps.to_i } you should be aware that the resulting package is quite likely not field compliant (8/2011)" )
+      exit if agree( 'Continue anyway?' ) == FALSE
+    end
   end
   @logger.debug( "DCP related options ok" )
 end
@@ -2164,9 +2177,9 @@ end
 
 # calculate intended number of frames including black leader and tail, needed in audio conform and final report
 if options.transition_and_timing.first == "fade" or options.transition_and_timing.first == 'cut'
-  sequence_frames = ( ( black_leader + black_tail ) + @source[ :orig_name ].length * ( fade_in_time + duration + fade_out_time ) ) * fps
+  sequence_frames = ( ( black_leader + black_tail ) + black_intermediate * ( @source[ :orig_name ].length - 1 ) + @source[ :orig_name ].length * ( fade_in_time + duration + fade_out_time ) ) * fps
 elsif options.transition_and_timing.first == "crossfade"
-  sequence_frames = ( ( black_leader + black_tail ) + ( ( @source[ :orig_name ].length - 1 ) * crossfade_time ) + @source[ :orig_name ].length * duration ) * fps
+  sequence_frames = ( ( black_leader + black_tail ) + black_intermediate * ( @source[ :orig_name ].length - 1 ) + ( ( @source[ :orig_name ].length - 1 ) * crossfade_time ) + @source[ :orig_name ].length * duration ) * fps
 end
 # meat of sequence_frames (without black leader/tail) -- where audio will play
 image_sequence_frames = sequence_frames - ( ( black_leader + black_tail ) * fps )
@@ -2229,6 +2242,7 @@ when "dcp"
   @logger.info( "Creating#{ options.sign == TRUE ? ' signed' : '' }#{ options.dcp_encrypt == TRUE ? ' and encrypted' : '' }#{ @dcp_wrap_stereoscopic == TRUE ? ' 3D' : ' 2D' } #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
   @logger.info( "Number of images: #{ @source[ :orig_name ].size }" )
   @logger.info( "Transition specs: #{ options.transition_and_timing.join( ',' ) }" )
+  @logger.info( "    Black intermediate: #{ black_intermediate > 0 ? black_intermediate : 'None' }" )
   @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
   @logger.info( "Title:            #{ options.dcp_title }" )
   @logger.info( "Annotation:       #{ options.annotation }" )
@@ -2238,8 +2252,7 @@ when "dcp"
     @logger.info( "Signer:           #{ signer_cert_obj.subject.to_s }" )
   end
   # Check for minimum playback length (1 second) right here
-  # No hoopla required as we're building 1-reelers only
-  if 1 > sequence_frames / fps
+  if 1.0 > sequence_frames / fps
     @logger.info( "Will not build DCP: Projected length < minimum playback length (1 second)" )
     exit
   end
@@ -2247,6 +2260,7 @@ when "preview", "fullpreview"
   @logger.info( "Creating #{ @output_type } (#{ @aspect } #{ @dimensions } @ #{ fps } fps)" )
   @logger.info( "Number of images: #{ @source[ :orig_name ].size }" )
   @logger.info( "Transition specs: #{ options.transition_and_timing.join( ',' ) }" )
+  @logger.info( "    Black intermediate: #{ black_intermediate > 0 ? black_intermediate : 'None' }" )
   @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
 end
 
@@ -2435,6 +2449,14 @@ keeper = nil # keep a conform for the next crossfade (2nd will be 1st then, don'
     @imagecount += 1
     image = conform( @source[ :safe_name ][ index  ], fps )
     fade_in_hold_fade_out( image, fps, fade_in_time, duration, fade_out_time )
+    case index
+    when @source[ :safe_name ].length - 1 # last image
+      #
+    else
+      if black_intermediate > 0
+        make_black_sequence( 'intermediate', black_intermediate, fps )
+      end
+    end
   when "crossfade"
     @imagecount += 1
     case index
@@ -2444,6 +2466,9 @@ keeper = nil # keep a conform for the next crossfade (2nd will be 1st then, don'
       keeper = image2
       full_level( image1, fps, duration )
       crossfade( image1, image2, fps, crossfade_time )
+      if black_intermediate > 0
+        make_black_sequence( 'intermediate', black_intermediate, fps )
+      end
     when @source[ :safe_name ].length - 1 # last image
       image = keeper
       full_level( image, fps, duration )
@@ -2453,6 +2478,9 @@ keeper = nil # keep a conform for the next crossfade (2nd will be 1st then, don'
       keeper = image2
       full_level( image1, fps, duration )
       crossfade( image1, image2, fps, crossfade_time )
+      if black_intermediate > 0
+        make_black_sequence( 'intermediate', black_intermediate, fps )
+      end
     end
   end
 end
