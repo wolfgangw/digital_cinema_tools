@@ -18,7 +18,7 @@ class Optparser
     # defaults
     options = OpenStruct.new
     options.source = "d65"
-    options.destination = "dci_calibration_white"
+    options.destination = "k5900"
     options.crd_definition = "bradford"
     options.output = 'line'
 
@@ -35,9 +35,9 @@ class Optparser
         options.crd_definition = p
       end
       opts.on( "-o", "--output block | line (Default)", "Format output as a 3x3 block or as a line" ) do |p|
-	options.output = p
+        options.output = p
       end
-      
+
       opts.on_tail( '-h', '--help', 'Display this screen' ) do
         puts opts
         exit
