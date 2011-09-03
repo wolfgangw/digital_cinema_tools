@@ -731,7 +731,7 @@ def check_for_asset( filename_s, suffix, fps, level = nil )
     end
     origin = File.basename( filename_s )
   end
-  assetname = File.join( @assetsdir, id + "_#{ @dimensions }_#{ @resize == TRUE ? 'r' : 'nr' }#{ level.nil? ? '' : '_' + level.to_s }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' + ( @dcp_wrap_stereoscopic == TRUE ? '48' : fps.floor.to_s ) : '' : '_pre' }_.#{ suffix }" )
+  assetname = File.join( @assetsdir, id + "_#{ @dimensions }_#{ @resize == TRUE ? 'r' : 'nr' }#{ level.nil? ? '' : '_' + level.to_s }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' : '' : '_pre' }_.#{ suffix }" )
   if File.exists?( assetname )
     @logger.debug( "Skip: Asset exists (#{ origin } -> #{ File.basename( assetname ) })" )
     todo = FALSE
