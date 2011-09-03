@@ -2175,11 +2175,26 @@ else
 end
 
 
-# calculate intended number of frames including black leader and tail, needed in audio conform and final report
+# cast requested durations to frames
+def fr_cast( duration, fps )
+  ( duration / ( 1.0 / fps ) ).to_i
+end
+# calculate total number of frames
 if options.transition_and_timing.first == "fade" or options.transition_and_timing.first == 'cut'
-  sequence_frames = ( ( black_leader + black_tail ) + black_intermediate * ( @source[ :orig_name ].length - 1 ) + @source[ :orig_name ].length * ( fade_in_time + duration + fade_out_time ) ) * fps
+  sequence_frames =
+    (
+      ( fr_cast( black_leader, fps ) + fr_cast( black_tail, fps ) )
+      + fr_cast( black_intermediate, fps ) * ( @source[ :orig_name ].length - 1 )
+      + @source[ :orig_name ].length * ( fr_cast( fade_in_time, fps ) + fr_cast( duration, fps ) + fr_cast( fade_out_time, fps ) )
+    )
 elsif options.transition_and_timing.first == "crossfade"
-  sequence_frames = ( ( black_leader + black_tail ) + black_intermediate * ( @source[ :orig_name ].length - 1 ) + ( ( @source[ :orig_name ].length - 1 ) * crossfade_time ) + @source[ :orig_name ].length * duration ) * fps
+  sequence_frames =
+    (
+      ( fr_cast( black_leader, fps ) + fr_cast( black_tail, fps ) )
+      + fr_cast( black_intermediate, fps ) * ( @source[ :orig_name ].length - 1 )
+      + ( ( @source[ :orig_name ].length - 1 ) * fr_cast( crossfade_time, fps ) )
+      + @source[ :orig_name ].length * fr_cast( duration )
+    )
 end
 # meat of sequence_frames (without black leader/tail) -- where audio will play
 image_sequence_frames = sequence_frames - ( ( black_leader + black_tail ) * fps )
