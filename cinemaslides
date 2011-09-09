@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 # encoding: UTF-8
-AppVersion = "v0.2011.09.01"
+AppVersion = "v0.2011.09.09"
 AppName = File.basename( $0 )
 #
 # Wolfgang Woehl v0.2010
@@ -2193,7 +2193,7 @@ elsif options.transition_and_timing.first == "crossfade"
       ( fr_cast( black_leader, fps ) + fr_cast( black_tail, fps ) )
       + fr_cast( black_intermediate, fps ) * ( @source[ :orig_name ].length - 1 )
       + ( ( @source[ :orig_name ].length - 1 ) * fr_cast( crossfade_time, fps ) )
-      + @source[ :orig_name ].length * fr_cast( duration )
+      + @source[ :orig_name ].length * fr_cast( duration, fps )
     )
 end
 # meat of sequence_frames (without black leader/tail) -- where audio will play
@@ -2302,7 +2302,6 @@ end
 
 
 def check_for_audio_asset( filename, samplerate, bps, channelcount )
-  #hexdigest = Digest::SHA1.hexdigest( File.read( filename ) )
   hexdigest = Digest::MD5.hexdigest( File.read( filename ) )
   assetname = File.join( @assetsdir_audio, "#{ hexdigest }_#{ samplerate }_#{ bps }_#{ channelcount }_.wav" )
   if File.exists?( assetname )
@@ -2315,8 +2314,9 @@ def check_for_audio_asset( filename, samplerate, bps, channelcount )
 end
 
 
-def sox_conform( audiofile, samplerate, bps, channelcount, asset ) # and normalise to -20 dB FS (SMPTE 428-2-2006)
-  `sox #{ audiofile } -r #{ samplerate } -b #{ bps } -c #{ channelcount } -s -t wavpcm #{ asset } gain -n -20`
+# See SMPTE 428-2-2006
+def sox_conform( audiofile, samplerate, bps, channelcount, asset ) # SMPTE 428-2-2006
+  `sox #{ audiofile } -r #{ samplerate } -b #{ bps } -c #{ channelcount } -s -t wavpcm #{ asset } gain -n -1`
 end
 
 
@@ -2365,7 +2365,7 @@ unless @source_audio[ :orig_name ].empty?
   conformed_audio_list.each do |e|
     set << File.basename( e )
   end
-  sequence_audio_asset = File.join( @assetsdir_audio, "#{ Digest::SHA1.hexdigest( set.join ) }_sequence_#{ image_sequence_length_seconds }_.wav" )
+  sequence_audio_asset = File.join( @assetsdir_audio, "#{ Digest::MD5.hexdigest( set.join ) }_sequence_#{ image_sequence_length_seconds }_.wav" )
   
   # c) splice
   sequence_audio_asset_tmp = File.join( @assetsdir_audio, 'tmp-' + File.basename( sequence_audio_asset ) )
@@ -2394,6 +2394,7 @@ unless @source_audio[ :orig_name ].empty?
   @logger.info( '... Conform audio done' )
 end
 ###
+
 
 ### Process all images
 
