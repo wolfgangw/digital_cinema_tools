@@ -37,6 +37,8 @@ e()
   #
   #   kdu_compress -i ${file} -o $(basename ${file}).j2c Sprofile=CINEMA2K Creslengths=1302083 Creslengths:C0=1302083,1041666 Creslengths:C1=1302083,1041666 Creslengths:C2=1302083,1041666 > /dev/null 2>&1
   #
+  #   convert ${file} -set colorspace XYZ -depth 8 -colorspace sRGB srgb.$(basename ${file}).jpg
+  #
 }
  
 # thread function will be called (and backgrounded) THREADS times
