@@ -93,6 +93,7 @@ class Optparser
     options.black_leader = NIL
     options.black_tail = NIL
     options.black_intermediate = NIL
+    options.intermediate_plate = NIL
     options.audio_samplerate = 48000
     options.audio_samplerate_choices = [ '48000', '48k', '96000', '96k' ]
     options.audio_bps = 24
@@ -130,7 +131,7 @@ class Optparser
       opts.banner = <<BANNER
 #{ AppName } #{ AppVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" } #{ ENV[ 'CINEMACERTSTORE' ].nil? ? "\nExport CINEMACERTSTORE to point to a directory which holds your digital cinema compliant signing key and certificates" : "\nCINEMACERTSTORE is set (#{ ENV[ 'CINEMACERTSTORE' ] })" }
  
-Usage: #{ AppName } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--bi, --black-intermediate <seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [--encrypt] [--kdm] [--cpl <cpl file>] [--start <days from now>] [--end <days from now>] [--target <certificate>] [-v, --verbosity <level>] [--examples] [-h, --help] [ image and audio files ] [ KDM mode parameters ]
+Usage: #{ AppName } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--bi, --black-intermediate <seconds>] [--ip, --intermediate-plate <plate>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [--encrypt] [--kdm] [--cpl <cpl file>] [--start <days from now>] [--end <days from now>] [--target <certificate>] [-v, --verbosity <level>] [--examples] [-h, --help] [ image and audio files ] [ KDM mode parameters ]
 
 BANNER
 
@@ -187,6 +188,9 @@ BANNER
       end
       opts.on( '--bi', '--black-intermediate seconds', Float, 'Length of black intermediate (Default: 0)' ) do |p|
         options.black_intermediate = p
+      end
+      opts.on( '--ip', '--intermediate-plate plate', String, 'Plate file to use as intermediate plate. Use with --bi | --black-intermediate' ) do |p|
+        options.intermediate_plate = p
       end
       opts.on( '-r', '--samplerate rate', String, "Audio samplerate. Use '48000', '48k', '96000' or '96k' (Default: 48k)" ) do |p|
         if options.audio_samplerate_choices.include?( p.downcase )
@@ -2183,21 +2187,21 @@ end
 if options.transition_and_timing.first == "fade" or options.transition_and_timing.first == 'cut'
   sequence_frames =
     (
-      ( fr_cast( black_leader, fps ) + fr_cast( black_tail, fps ) )
-      + fr_cast( black_intermediate, fps ) * ( @source[ :orig_name ].length - 1 )
-      + @source[ :orig_name ].length * ( fr_cast( fade_in_time, fps ) + fr_cast( duration, fps ) + fr_cast( fade_out_time, fps ) )
+      ( fr_cast( black_leader, fps ) + fr_cast( black_tail, fps ) ) +
+      fr_cast( black_intermediate, fps ) * ( @source[ :orig_name ].length - 1 ) +
+      @source[ :orig_name ].length * ( fr_cast( fade_in_time, fps ) + fr_cast( duration, fps ) + fr_cast( fade_out_time, fps ) )
     )
 elsif options.transition_and_timing.first == "crossfade"
   sequence_frames =
     (
-      ( fr_cast( black_leader, fps ) + fr_cast( black_tail, fps ) )
-      + fr_cast( black_intermediate, fps ) * ( @source[ :orig_name ].length - 1 )
-      + ( ( @source[ :orig_name ].length - 1 ) * fr_cast( crossfade_time, fps ) )
-      + @source[ :orig_name ].length * fr_cast( duration, fps )
+      ( fr_cast( black_leader, fps ) + fr_cast( black_tail, fps ) ) +
+      fr_cast( black_intermediate, fps ) * ( @source[ :orig_name ].length - 1 ) +
+      ( ( @source[ :orig_name ].length - 1 ) * fr_cast( crossfade_time, fps ) ) +
+      @source[ :orig_name ].length * fr_cast( duration, fps )
     )
 end
 # meat of sequence_frames (without black leader/tail) -- where audio will play
-image_sequence_frames = sequence_frames - ( ( black_leader + black_tail ) * fps )
+image_sequence_frames = sequence_frames - ( fr_cast( black_leader, fps ) + fr_cast( black_tail, fps ) )
 
 
 # set up directories to write output to. These locations are created upon demand only, hence the clustered mkdir's. FIXME
@@ -2258,7 +2262,7 @@ when "dcp"
   @logger.info( "Number of images: #{ @source[ :orig_name ].size }" )
   @logger.info( "Transition specs: #{ options.transition_and_timing.join( ',' ) }" )
   @logger.info( "    Black intermediate: #{ black_intermediate > 0 ? black_intermediate : 'None' }" )
-  @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
+  @logger.info( "Projected length: #{ sequence_frames } frames, #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
   @logger.info( "Title:            #{ options.dcp_title }" )
   @logger.info( "Annotation:       #{ options.annotation }" )
   @logger.info( "Issuer:           #{ options.issuer }" )
@@ -2276,7 +2280,7 @@ when "preview", "fullpreview"
   @logger.info( "Number of images: #{ @source[ :orig_name ].size }" )
   @logger.info( "Transition specs: #{ options.transition_and_timing.join( ',' ) }" )
   @logger.info( "    Black intermediate: #{ black_intermediate > 0 ? black_intermediate : 'None' }" )
-  @logger.info( "Projected length: #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
+  @logger.info( "Projected length: #{ sequence_frames } frames, #{ hours_minutes_seconds_verbose( sequence_frames / fps ) }" )
 end
 
 
@@ -2356,11 +2360,13 @@ unless @source_audio[ :orig_name ].empty?
   
   # b) conform the required audiofiles
   audio_list.each do |audiofile|
-    audio_asset = conform_audio( audiofile, options.audio_samplerate, options.audio_bps, 2 ) # FIXME channelcount
+    channelcount = `soxi -c #{ audiofile }`.chomp.to_i
+    audio_asset = conform_audio( audiofile, options.audio_samplerate, options.audio_bps, channelcount )
     conformed_audio_list << audio_asset
   end
   
-  # match for sequence_audio_asset is based on image sequence length and sha1 digest of conformed_audio_list's elements (assets) joined into 1 string
+  # match for sequence_audio_asset is based on image sequence length
+  # and md5 digest of conformed_audio_list's elements (assets with md5 names) joined into 1 string
   set = Array.new
   conformed_audio_list.each do |e|
     set << File.basename( e )
@@ -2470,7 +2476,11 @@ keeper = nil # keep a conform for the next crossfade (2nd will be 1st then, don'
       #
     else
       if black_intermediate > 0
-        make_black_sequence( 'intermediate', black_intermediate, fps )
+        if ! options.intermediate_plate.nil?
+          fade_in_hold_fade_out( conform( options.intermediate_plate, fps ), fps, 0, black_intermediate, fade_out_time )
+        else
+          make_black_sequence( 'intermediate', black_intermediate, fps )
+        end
       end
     end
   when "crossfade"
@@ -2713,6 +2723,7 @@ end # End Create DCP
 
 TODO = <<TODO
 
+FIXME no channel count conform yet: if you throw audio assets with differing channel counts at us there will be trouble
 FIXME certificate handling and KDM mode, although working, need re-design to allow for more flexibility
 FIXME output some basic help message when app is called without any args. as it is app merely utters 'No image files specified'
 FIXME calculates message digest twice when building an encrypted package (for CPL and PKL)
@@ -2721,7 +2732,6 @@ FIXME generic readme/report output
 FIXME check write completion on slow media (with -o | --dcp-out)
 FIXME cleanup dcpdir after montage summary exit (with -o ...)
 FIXME sox, what's taking you so long? conform_audio()
-FIXME projected length <- frames cast
 FIXME estimate required/check available disk space
 FIXME See $ cinemaslides 01.jpg 02.jpg -x crossfade,1,0 (temporary @framecount fix in full_level())
 FIXME verbosity level "info" -> jpeg 2000 encoder talk
