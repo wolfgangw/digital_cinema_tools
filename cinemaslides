@@ -2358,10 +2358,34 @@ unless @source_audio[ :orig_name ].empty?
     end
   end
   
+  # for dcp output check channel counts of source files and build a smpte audio label
+  channelcounts = []
+  audio_list.each do |audiofile|
+    channelcounts << `soxi -c #{ audiofile }`.chomp.to_i
+  end
+  case options.output_type
+  when 'dcp'
+    if channelcounts.uniq.size == 1
+      case channelcounts.first
+      when 2
+        SMPTE_AUDIO_LABEL = '2.0' # not a valid label. will be fixed with channel count conform
+      when 6
+        SMPTE_AUDIO_LABEL = '5.1'
+      when 8
+        SMPTE_AUDIO_LABEL = '7.1'
+      end
+    else
+      @logger.critical( 'Differing channel counts in audio source. This will not work' )
+      audio_list.each_with_index do |audiofile, index|
+        @logger.critical( "#{ audiofile }: #{ channelcounts[ index ] } channels" )
+      end
+      exit
+    end
+  end
+  
   # b) conform the required audiofiles
   audio_list.each do |audiofile|
-    channelcount = `soxi -c #{ audiofile }`.chomp.to_i
-    audio_asset = conform_audio( audiofile, options.audio_samplerate, options.audio_bps, channelcount )
+    audio_asset = conform_audio( audiofile, options.audio_samplerate, options.audio_bps, channelcounts.first )
     conformed_audio_list << audio_asset
   end
   
@@ -2396,7 +2420,7 @@ unless @source_audio[ :orig_name ].empty?
   else
     @final_audio = sequence_audio_asset
   end
-  
+
   @logger.info( '... Conform audio done' )
 end
 ###
@@ -2631,7 +2655,7 @@ when "dcp"
   unless @source_audio[ :orig_name ].empty?
     @logger.info( 'Write audio trackfile ...' )
     # FIXME 2.0 sound only here (v0.2010.11.19), hence no label. might be trouble on some servers
-    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + audio_key + ' -j ' + audio_key_id : '-E' } -p #{ fps } -a #{ audio_mxf_uuid } -c #{ audio_mxf } #{ @final_audio }"
+    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + audio_key + ' -j ' + audio_key_id : '-E' } -l #{ SMPTE_AUDIO_LABEL } -p #{ fps } -a #{ audio_mxf_uuid } -c #{ audio_mxf } #{ @final_audio }"
     @logger.debug( "Audio trackfile UUID: #{ audio_mxf_uuid }" )
     write_asdcp_track( opts_params_args ) 
   end
