@@ -111,6 +111,9 @@ class Optparser
     options.sign = FALSE
     options.kdm = FALSE
     options.kdm_cpl = NIL
+    options.kdm_cpl_id = NIL
+    options.kdm_cpl_content_title_text = NIL
+    options.kdm_keysdir = NIL
     options.kdm_target = NIL
     options.kdm_start = 0 # time window will start now
     options.kdm_end = 28 # time window will be 4 weeks
@@ -131,7 +134,7 @@ class Optparser
       opts.banner = <<BANNER
 #{ AppName } #{ AppVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" } #{ ENV[ 'CINEMACERTSTORE' ].nil? ? "\nExport CINEMACERTSTORE to point to a directory which holds your digital cinema compliant signing key and certificates" : "\nCINEMACERTSTORE is set (#{ ENV[ 'CINEMACERTSTORE' ] })" }
  
-Usage: #{ AppName } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--bi, --black-intermediate <seconds>] [--ip, --intermediate-plate <plate>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [--encrypt] [--kdm] [--cpl <cpl file>] [--start <days from now>] [--end <days from now>] [--target <certificate>] [-v, --verbosity <level>] [--examples] [-h, --help] [ image and audio files ] [ KDM mode parameters ]
+Usage: #{ AppName } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--bi, --black-intermediate <seconds>] [--ip, --intermediate-plate <plate>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [--encrypt] [--kdm] [--cpl <cpl file>] [--cp-id <CPL UUID>] [ --cpl-content-title <text> ] [--keysdir <directory with referenced keys>] [--start <days from now>] [--end <days from now>] [--target <certificate>] [-v, --verbosity <level>] [--examples] [-h, --help] [ image and audio files ] [ KDM mode parameters ]
 
 BANNER
 
@@ -253,6 +256,15 @@ BANNER
       end
       opts.on( '--cpl <file>', String, 'KDM mode: Specify CPL file' ) do |p|
         options.kdm_cpl = p
+      end
+      opts.on( '--cpl-id <uuid>', String, 'CPL ID. Use as alternative to specifying the CPL file. Resulting KDM will not carry ContentAuthenticator.' ) do |p|
+        options.kdm_cpl_id = p
+      end
+      opts.on( '--cpl-content-title <text>', String, 'Content title text. Use with --cpl-id' ) do |p|
+        options.kdm_cpl_content_title_text = p
+      end
+      opts.on( '--keysdir <keys dir>', String, "Location of the referenced CPL's keys. Use with --cpl-id" ) do |p|
+        options.kdm_keysdir = p
       end
       opts.on( '--start <days>', Integer, 'KDM mode: KDM validity starts <days> from now (Default: Now)' ) do |p|
         options.kdm_start = p
@@ -1573,7 +1585,11 @@ if options.kdm == TRUE
   end
   
   # check for key directory
-  @keysdir = File.join( @cinemaslidesdir, 'keys' )
+  if options.kdm_keysdir
+    @keysdir = options.kdm_keysdir
+  else
+    @keysdir = File.join( @cinemaslidesdir, 'keys' )
+  end
   if ( File.exists?( @keysdir ) and File.ftype( @keysdir ) == 'directory' )
     @logger.debug( "Content keystore at: #{ @keysdir }" )
   else
@@ -1583,12 +1599,38 @@ if options.kdm == TRUE
   end
   
   # check presence and validity of cpl and referenced content keys
-  if options.kdm_cpl == NIL
-    @logger.info( "No CPL specified. Use --cpl <CPL>" )
+  if options.kdm_cpl == NIL and options.kdm_cpl_id == NIL
+    @logger.info( "No CPL specified. Use --cpl <CPL file> or --cpl-id <UUID>" )
     kdm_no_go << 'No CPL'
   else
+    # Handle --cpl-id case, requires --keysdir
+    if options.kdm_cpl_id
+      cpl_content_authenticator = NIL
+      cpl_uuid = options.kdm_cpl_id
+      if options.kdm_cpl_content_title_text
+        cpl_content_title_text = options.kdm_cpl_content_title_text
+      else
+        @logger.info( "No content title text specified. Use --cpl-content-title" )
+        kdm_no_go << 'No content title text'
+      end
+      if options.kdm_keysdir
+        if File.exists?( options.kdm_keysdir ) and File.ftype( options.kdm_keysdir ) == 'directory'
+          keysdir_files = Dir.glob( File.join( options.kdm_keysdir, '*' ) )
+          cpl_key_ids_types = Array.new
+          keysdir_files.each do |kf|
+            kf_id, kf_type = File.read( kf ).chomp.split( /:/ )[ 0, 2 ]
+            cpl_key_ids_types << { kf_id => kf_type }
+          end
+        else
+          @logger.info( "#{ options.kdm_keysdir } is not a directory" )
+          kdm_no_go << 'keysdir is not a directory'
+        end
+      else
+        @logger.info( "No keys location specified. Use --keysdir <dir>" )
+        kdm_no_go << "No keysdir"
+      end
     # Get CPL info
-    if File.exists?( options.kdm_cpl ) and File.ftype( options.kdm_cpl ) == 'file'
+    elsif File.exists?( options.kdm_cpl ) and File.ftype( options.kdm_cpl ) == 'file'
       xml_obj = Nokogiri::XML( File.read( options.kdm_cpl ) )
       if xml_obj.root == NIL
         @logger.info( "#{ options.kdm_cpl } is not XML" )
@@ -1598,43 +1640,6 @@ if options.kdm == TRUE
           @logger.info( "CPL: #{ options.kdm_cpl }" )
           cpl_uuid, cpl_content_title_text, cpl_key_ids_types = kdm_cpl_info( xml_obj )
           cpl_content_authenticator = signer_cert_thumbprint( xml_obj )
-          if cpl_key_ids_types.size == 0
-            @logger.info( "KDM not applicable: #{ options.kdm_cpl } doesn't reference content keys" )
-            kdm_no_go << 'No content keys referenced in CPL'
-          else
-            @logger.info( "CPL references #{ cpl_key_ids_types.size } content key#{ ( cpl_key_ids_types.size != 1 ) ? 's' : '' }" )
-            # check presence and local specs compliance of content keys
-            @logger.info( "Checking content keys ..." )
-            keys = Array.new
-            keys_missing = 0
-            keys_invalid = 0
-            cpl_key_ids_types.each do |kit|
-              if File.exists?( File.join( @keysdir, kit.keys.first ) )
-                candidate_key = File.read( File.join( @keysdir, kit.keys.first ) )
-                if key_spec_valid?( candidate_key )
-                  @logger.debug( "   Found: #{ kit.keys.first }" )
-                  keys << candidate_key
-                else
-                  @logger.info( "Key file #{ kit.keys.first } doesn't fit specs: <UUID>:<Key type>:<Key>" )
-                  keys_invalid += 1
-                end
-              else
-                @logger.info( "   Not found: #{ kit.keys.first }" )
-                keys_missing += 1
-              end
-            end
-            if keys_missing > 0
-              @logger.info( "Keys not found: #{ keys_missing }/#{ cpl_key_ids_types.size }" )
-              kdm_no_go << 'Content key(s) missing'
-            end
-            if keys_invalid > 0
-              @logger.info( "Key specs invalid: #{ keys_invalid }/#{ cpl_key_ids_types.size }" )
-              kdm_no_go << 'Content key(s) not valid'
-            end
-            if keys_missing + keys_invalid == 0
-              @logger.info( "All content keys present" )
-            end
-          end
         else
           @logger.info( "#{ options.kdm_cpl } is not a composition playlist" )
           kdm_no_go << 'No CPL'
@@ -1643,6 +1648,49 @@ if options.kdm == TRUE
     else
       @logger.info( 'Specify a valid XML file' )
       kdm_no_go << 'No CPL'
+    end
+  end
+          
+  if cpl_key_ids_types.size == 0
+    if options.kdm_cpl
+      @logger.info( "KDM not applicable: #{ options.kdm_cpl } doesn't reference content keys" )
+      kdm_no_go << 'No content keys referenced in CPL'
+    elsif options.kdm_cpl_id
+      @logger.info( "KDM not applicable: Could not retrieve key info for CPL #{ options.kdm_cpl_id }" )
+      kdm_no_go << 'No content keys retrievable'
+    end
+  else
+    @logger.info( "References #{ cpl_key_ids_types.size } content key#{ ( cpl_key_ids_types.size != 1 ) ? 's' : '' }" )
+    # check presence and local specs compliance of content keys
+    @logger.info( "Checking content keys ..." )
+    keys = Array.new
+    keys_missing = 0
+    keys_invalid = 0
+    cpl_key_ids_types.each do |kit|
+      if File.exists?( File.join( @keysdir, kit.keys.first ) )
+        candidate_key = File.read( File.join( @keysdir, kit.keys.first ) )
+        if key_spec_valid?( candidate_key )
+          @logger.debug( "   Found: #{ kit.keys.first }" )
+          keys << candidate_key
+        else
+          @logger.info( "Key file #{ kit.keys.first } doesn't fit specs: <UUID>:<Key type>:<Key>" )
+          keys_invalid += 1
+        end
+      else
+        @logger.info( "   Not found: #{ kit.keys.first }" )
+        keys_missing += 1
+      end
+    end
+    if keys_missing > 0
+      @logger.info( "Keys not found: #{ keys_missing }/#{ cpl_key_ids_types.size }" )
+      kdm_no_go << 'Content key(s) missing'
+    end
+    if keys_invalid > 0
+      @logger.info( "Key specs invalid: #{ keys_invalid }/#{ cpl_key_ids_types.size }" )
+      kdm_no_go << 'Content key(s) not valid'
+    end
+    if keys_missing + keys_invalid == 0
+      @logger.info( "All content keys present" )
     end
   end
   
