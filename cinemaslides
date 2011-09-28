@@ -1008,7 +1008,7 @@ module DCTools
     cpl_id_bin = uuid_to_bin( cpl_id )
     key_id_bin = uuid_to_bin( key_id )
     key_bin = key.split( /(\w\w)/ ).delete_if { |e| e == '' }.pack( 'H2H2H2H2H2H2H2H2H2H2H2H2H2H2H2H2' )
-    binary_package = structure_id_bin + signer_cert_thumbprint_bin + cpl_id_bin + key_type + key_id_bin + kdm_not_valid_before + kdm_not_valid_after + key_bin
+    binary_package = structure_id_bin.force_encoding("BINARY") + signer_cert_thumbprint_bin.force_encoding("BINARY") + cpl_id_bin.force_encoding("BINARY") + key_type + key_id_bin.force_encoding("BINARY") + kdm_not_valid_before + kdm_not_valid_after + key_bin.force_encoding("BINARY")
   end
   
   def uuid_to_bin( uuid_string )
@@ -1735,7 +1735,7 @@ if options.kdm == TRUE
           kdm_no_go << 'Signer certificate validity'
         end
         # target cert valid during requested time window?
-        # FIXME UTC time > jan 19th 2038 broken in ruby 1.8.7
+        # FIXME UTC time > jan 19th 2038 broken in ruby 1.8.7 (on 32bit systems?)
         if time_to_datetime( recipient_cert_obj.not_before ) < kdm_not_valid_before and time_to_datetime( recipient_cert_obj.not_after ) > kdm_not_valid_after
           @logger.info( "Target certificate is valid during requested KDM time window" )
         else
