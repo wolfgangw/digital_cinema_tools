@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 # encoding: UTF-8
-AppVersion = "v0.2011.09.19"
+AppVersion = "v0.2011.09.29"
 AppName = File.basename( $0 )
 #
 # Wolfgang Woehl 2010-2011
