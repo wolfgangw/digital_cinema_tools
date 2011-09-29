@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema targetNamespace="http://www.smpte-ra.org/schemas/430-1/2006/KDM" xmlns:kdm="http://www.smpte-ra.org/schemas/430-1/2006/KDM" xmlns:etm="http://www.smpte-ra.org/schemas/430-3/2006/ETM" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+<xs:schema
+  targetNamespace="http://www.smpte-ra.org/schemas/430-1/2006/KDM"
+  xmlns:kdm="http://www.smpte-ra.org/schemas/430-1/2006/KDM"
+  xmlns:etm="http://www.smpte-ra.org/schemas/430-3/2006/ETM"
+  xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  elementFormDefault="qualified" attributeFormDefault="unqualified">
 
-  <xs:import namespace="http://www.smpte-ra.org/schemas/430-3/2006/ETM" schemaLocation="./etm.xsd"/>
+  <xs:import namespace="http://www.smpte-ra.org/schemas/430-3/2006/ETM" schemaLocation="./SMPTE-430-3-2008-ETM.xsd"/>
   <xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="http://www.w3.org/TR/2002/REC-xmldsig-core-20020212/xmldsig-core-schema.xsd"/>
   <xs:element name="KDMRequiredExtensions" type="kdm:KDMRequiredExtensionsType"/>
 
