@@ -1060,7 +1060,8 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
               } # Recipient
               xml.CompositionPlaylistId_ "urn:uuid:#{ cpl_uuid }"
               xml.ContentTitleText_ cpl_content_title_text
-              xml.ContentAuthenticator_ cpl_content_authenticator
+              # Workaround to prevent empty tag. Needs better Nokogiri fu
+              xml<< "#{ cpl_content_authenticator == NIL ? '' : '<ContentAuthenticator>' + cpl_content_authenticator + '</ContentAuthenticator>' }" # xml.ContentAuthenticator_ cpl_content_authenticator
               xml.ContentKeysNotValidBefore_ kdm_not_valid_before
               xml.ContentKeysNotValidAfter_ kdm_not_valid_after
               xml.AuthorizedDeviceInfo_ {
@@ -1078,7 +1079,8 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
                   key_type = key.split( ':' )[ 1 ]
                   xml.TypedKeyId_ {
                     # Nokogiri workaround for tags with attributes and content
-                    xml.KeyType_( key_type, :scope => 'http://www.smpte-ra.org/430-1/2006/KDM#kdm-key-type' )
+                    # xml.KeyType_( key_type, :scope => 'http://www.smpte-ra.org/430-1/2006/KDM#kdm-key-type' )
+                    xml.KeyType_( key_type )
                     xml.KeyId_ "urn:uuid:#{ key_id }"
                   } # TypedKeyId
                 end
@@ -1480,13 +1482,19 @@ end
 def signer_cert_thumbprint( doc )
   doc.remove_namespaces!
   certs = doc.xpath( '//CompositionPlaylist/Signature/KeyInfo/X509Data/X509Certificate' )
-  @logger.debug( "CPL carries #{ certs.size } certificates" )
-  signer_cert = "-----BEGIN CERTIFICATE-----\n" + certs.first.text + "\n-----END CERTIFICATE-----\n"
-  tmp = Tempfile.new( 'cinemaslides-' )
-  tmpfile = File.open( tmp.path, 'w' ) { |f| f.write signer_cert; f.close }
-  thumbprint = dc_thumbprint( tmp.path )
-  @logger.debug( "CPL signer certificate thumbprint: #{ thumbprint }" )
-  return thumbprint
+  @logger.critical( "CERTS in signer_cert_thumbprint: #{ certs.inspect } (#{ certs.class })" )
+  if certs.size > 0
+    @logger.debug( "CPL carries #{ certs.size } certificates" )
+    signer_cert = "-----BEGIN CERTIFICATE-----\n" + certs.first.text + "\n-----END CERTIFICATE-----\n"
+    tmp = Tempfile.new( 'cinemaslides-' )
+    tmpfile = File.open( tmp.path, 'w' ) { |f| f.write signer_cert; f.close }
+    thumbprint = dc_thumbprint( tmp.path )
+    @logger.debug( "CPL signer certificate thumbprint: #{ thumbprint }" )
+    return thumbprint
+  else
+    @logger.debug( "Not signed" )
+    return NIL
+  end
 end
 
 
@@ -1695,7 +1703,7 @@ if options.kdm == TRUE
   end
   
   # check KDM time window
-  kdm_not_valid_before = ( DateTime.now + options.kdm_start ) # check for valid window
+  kdm_not_valid_before = ( DateTime.now - 0.1 + options.kdm_start ) # check for valid window
   kdm_not_valid_after = ( DateTime.now + options.kdm_end )
   if kdm_not_valid_before > kdm_not_valid_after
     @logger.info( "KDM time window out of order" )
