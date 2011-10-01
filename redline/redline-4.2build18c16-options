@@ -1,6 +1,3 @@
-wine redline.exe > redline-326-options
-REDline Build 326
-
 File Settings:
 --i <filename>        - input file (required)
 --o <filename>        - output basename
@@ -8,6 +5,7 @@ File Settings:
 --outDir <path>       - output directory path
 --makeSubDir          - Make a subdirectory for each output
 --exportPreset <name> - Load settings from an export preset: [default = none]
+				"2048x1024catmulrom"
 				"redline_export"
 --presetFile <filename> - The file to load export presets from: [default = C:/users/wolfgang/Local Settings/Application Data/Red/RedCineX/Presets/UserExportPresets.xml]
 --advLutRender <int>  - Write out lut information to a file in the output directory. Then procede to render the Clip with the pass through gammaCurve
@@ -18,16 +16,16 @@ File Settings:
 
 3D Settings:
 --i3d <leftEyeFilename> <rightEyeFilename> - Left eye and right eye input files (required instead of --i for 3D export)
---3dmode <int>        - 3d Export Mode: [default = PixelInterleave]						   
-				 1=PixelInterleave						   
-				 2=Side By Side						   
-				 3=Right Top, Left Bottom						   
-				 4=Left Top, Right Bottom						   
+--3dmode <int>        - 3d Export Mode: [default = PixelInterleave]                                                   
+				 1=PixelInterleave                                                   
+				 2=Side By Side                                                   
+				 3=Right Top, Left Bottom                                                   
+				 4=Left Top, Right Bottom                                                   
 				 5=Row Interleave                           
 --3doffset <int>      - Offset in frames of the left eye from the right (or right eye from the left if negative) [default = 0]
 
 Format Settings:
---format <int>        - output formats, DPX=0, Tiff=1, OpenEXR=2, QT wrappers=10, QT transcode=11, R3D Trim=102, [default = DPX]
+--format <int>        - output formats, DPX=0, Tiff=1, OpenEXR=2, SGI=4, QT wrappers=10, QT transcode=11, R3D Trim=102, [default = DPX]
 -w <int>              - See format
 --res <int>           - Render resolution: full=1, half high=2, half normal=3, qtr/fast=4, eighth=8 [default = 1]
 -R <int>              - See res
@@ -57,15 +55,17 @@ Crop and Scale Settings:
 --cropY <int>         - crop demosaiced source before resize using origin Y  [default = no crop]
 --cropW <int>         - crop demosaiced source before resize using Width [default = no crop]
 --cropH <int>         - crop demosaiced source before resize using Height [default = no crop]
---filter <int>        - filter using: [default = 5 (CatmulRom)]						   
-				 1=Bell (smoother)						   
-				 2=Lanczos3 (sharper)						   
-				 3=Quadratic (smoother)						   
-				 4=Cubic-bspline (smoother)						   
-				 5=CatmulRom (sharper)						   
-				 6=Mitchell (smoother)						   
-				 7=Gauss (smoother)						   
-				 8=WideGuass (smoothest)
+--filter <int>        - filter using: [default = 5 (CatmulRom)]                                                   
+				 1=Bell (smoother)                                                   
+				 2=Lanczos3 (sharper)                                                   
+				 3=Quadratic (smoother)                                                   
+				 4=Cubic-bspline (smoother)                                                   
+				 5=CatmulRom (sharper)                                                   
+				 6=Mitchell (smoother)                                                   
+				 7=Gauss (smoother)                                                   
+				 8=WideGauss (smoothest)                                                   
+				 9=Sinc (sharpest)                                                   
+				 10=Keys (sharper)
 --forceFlipHorizontal <int> - 0 = Disables any horizontal flip setting in metadata.
 	1 = Forces the image to be flipped horizontally
 --forceFlipVertical <int> - 0 = Disables any vertical flip setting in metadata.
@@ -75,12 +75,14 @@ Crop and Scale Settings:
 Metadata Settings:
 --useMeta             - Use look metadata in R3D as defaults (overridden for each value explicitly set)
 --loadRSX <filename>  - Use look metadata in RedAlert RSX file.
+--loadRMD <filename>  - See loadRSX
 --useRSX <int>        - Use RMD for defaults (falls back to RSX if no RMD exists):
 				1=color+in/out,
 				2=color only (overridden for each
 						value explicitly set. If both useMeta and useRSX are selected,
 						RMD/RSX takes priority. In/out doesn't impact QT wrappers)
 --useRMD <int>        - See useRSX
+--masterRMDFolder <directory> - Specify a master RMD folder where RMDs should be loaded from.
 --printMeta <int>     - Print out metadata settings, 0=header, 1=normal, 2=csv, 3=header+csv
 --ALE <filename>      - Saves an ale file with given filename.
 --reelID <int>        - 0=full name, 1=FCP 8 Character
@@ -89,36 +91,36 @@ Quicktime Settings:
 --noClobber           - Do not clobber an existing QT file. Add an _Sxxx for each new file.[default = clobber]
 
 Quicktime Transcode Settings:
---QTcodec <int>       - QT codec to output [default = ProRes HQ]						   
-				 0=Apple ProRes 422 HQ						   
-				 1=Apple ProRes SQ						   
-				 2=H264						   
-				 3=MJpegA						   
-				 4=MJpegB						   
-				 5=ComponentVideo						   
-				 6=H263						   
-				 7=RawCodec						   
-				 8=Pixlet						   
-				 9=DVCPROHD720P						   
-				 10=JPEG						   
-				 11=Animation/RLE						   
-				 12=Uncompressed 8-bit 4:2:2						   
-				 13=Uncompressed 10-bit 4:2:2						   
-				 15=Black Magic RGB 10bit						   
-				 17=AJA Kona 10bit Log RGB						   
-				 18=AJA Kona 10-bit RGB						   
-				 20=AVID 1080P DNxHD 36 8-bit      (23.98, 24, 25)						   
-				 21=AVID 1080P DNxHD 115/120 8-bit (23.98, 24, 25)						   
-				 22=AVID 1080P DNxHD 175/185 8-bit (23.98, 24, 25)						   
-				 23=AVID 1080P DNxHD 175/185 10-bit(23.98, 24, 25)						   
-				 24=AVID  720P DNxHD 60/75 8-bit   (23.98, 25, 29.97)						   
-				 25=AVID  720P DNxHD 90/110 8-bit  (23.98, 29.97)						   
-				 26=AVID  720P DNxHD 90/110 10-bit (23.98, 29.97)						   
-				 27=AVID  720P DNxHD 120/145 8-bit (50, 59.94)						   
-				 28=AVID  720P DNxHD 185/220 8-bit (50, 59.94)						   
-				 29=AVID  720P DNxHD 185/220 10-bit(50, 59.94)						   
-				 30=Apple ProRes 4444						   
-				 31=Apple ProRes 422 LT						   
+--QTcodec <int>       - QT codec to output [default = ProRes HQ]                                                   
+				 0=Apple ProRes 422 HQ                                                   
+				 1=Apple ProRes SQ                                                   
+				 2=H264                                                   
+				 3=MJpegA                                                   
+				 4=MJpegB                                                   
+				 5=ComponentVideo                                                   
+				 6=H263                                                   
+				 7=RawCodec                                                   
+				 8=Pixlet                                                   
+				 9=DVCPROHD720P                                                   
+				 10=JPEG                                                   
+				 11=Animation/RLE                                                   
+				 12=Uncompressed 8-bit 4:2:2                                                   
+				 13=Uncompressed 10-bit 4:2:2                                                   
+				 15=Black Magic RGB 10bit                                                   
+				 17=AJA Kona 10bit Log RGB                                                   
+				 18=AJA Kona 10-bit RGB                                                   
+				 20=AVID 1080P DNxHD 36 8-bit      (23.98, 24, 25)                                                   
+				 21=AVID 1080P DNxHD 115/120 8-bit (23.98, 24, 25)                                                   
+				 22=AVID 1080P DNxHD 175/185 8-bit (23.98, 24, 25)                                                   
+				 23=AVID 1080P DNxHD 175/185 10-bit(23.98, 24, 25)                                                   
+				 24=AVID  720P DNxHD 60/75 8-bit   (23.98, 25, 29.97)                                                   
+				 25=AVID  720P DNxHD 90/110 8-bit  (23.98, 29.97)                                                   
+				 26=AVID  720P DNxHD 90/110 10-bit (23.98, 29.97)                                                   
+				 27=AVID  720P DNxHD 120/145 8-bit (50, 59.94)                                                   
+				 28=AVID  720P DNxHD 185/220 8-bit (50, 59.94)                                                   
+				 29=AVID  720P DNxHD 185/220 10-bit(50, 59.94)                                                   
+				 30=Apple ProRes 4444                                                   
+				 31=Apple ProRes 422 LT                                                   
 				 32=Apple ProRes 422 Proxy
 
 Text Burn-In Settings:
@@ -153,11 +155,11 @@ Watermark Settings:
 
 Color/Gamma Space Settings:
 --gammaCurve <int>    - gamma curve: lin=-1, rec709=1, sRGB=2, REDlog=3, 
-			PDLog985=4, PDLog685=5, PDLogCustom=6, REDspace=14, REDgamma=15, REDLogFilm=27  [default = 14]
+			PDLog985=4, PDLog685=5, PDLogCustom=6, REDspace=14, REDgamma=15, REDLogFilm=27, REDgamma2=28  [default = 14]
 -G <int>              - See gammaCurve
 --gammaCustom <float> - custom gamma value [default off]
 -v <float>            - See gammaCustom
---colorSpace <int>    - color space: REDspace= 2 or 11, CameraRGB= 0 or 12, rec709= 1 or 13, REDcolor=14, sRGB=15, Adobe1998=5  [default = 2]
+--colorSpace <int>    - color space: REDspace= 2 or 11, CameraRGB= 0 or 12, rec709= 1 or 13, REDcolor=14, sRGB=15, Adobe1998=5, REDcolor2=18  [default = 2]
 -c <int>              - See colorSpace
 --detail <int>        - detail: leadingLady = 1, medium = 4, high = 8 [default = 8]
 -d <int>              - See detail
@@ -222,17 +224,26 @@ DPX Settings:
 --maxWriters <int>    - DPX Max Simultaneous Writers [default = 10, range = 1 - 16]
 
 OpenEXR Settings:
---exrCompression <int> - OpenEXR Compression: PIZ=1, NONE=0 [default = 0]
+--exrCompression <int> - OpenEXR Compression: NONE=0, RLE=1, ZIPS=2, ZIP=3, PIZ=4 [default = 0]
 --exrMultiView <int>  - OpenEXR MultiView: Dual Channel=1, Single Channel=0 [default=0]
 --exrMaxWriters <int> - OpenEXR Max Simultaneous Writers [default = 10, range = 1 - 16]
+--exrACES <int>       - OpenEXR ACES: On=1, Off=0 [default=0]
+
+R3D Trim Settings:
+--trimRMDSidecar      - Include RMD Sidercar
+--trimQTWrappers      - Include QT Wrappers
+--trimFCPXml <int>    - Include FCP XML: Full=1, Half=2, Quarter=3, Eighth=4 [default = 0 (No FCP XML)]
 
 Misc Settings:
 --help [ <command> ]  - Retrieve information about commands.
 -? [ <command> ]      - See help
---verbose [ <arg0> ]  - Enables verbose output.
---errorsOnly [ <arg0> ]- Only displays errors.
---silent [ <arg0> ]   - Disables all output except the most vital.
+--verbose             - Enables verbose output.
+--errorsOnly          - Only displays errors.
+--silent              - Disables all output except the most vital.
 --logFile <filename>  - File to log output into.
 --noRocket            - Turn rocket support off even if it's available.
+--singleRocket        - Limit REDline to a maximum of one Rocket.
+--forceRocket         - Forces the use of Red Rocket.  If NO rockets are available the export will abort.
 --noRender            - Forces redline to abort before any rendering occurs
-
+REDline Build 1 Beta Windows 32bit Public Release
+Using R3DSDK version 4.2 build 18C16 dated 20110830
