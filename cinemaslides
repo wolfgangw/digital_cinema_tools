@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 # encoding: UTF-8
-AppVersion = "v0.2011.09.29"
+AppVersion = "v0.2011.10.01"
 AppName = File.basename( $0 )
 #
 # Wolfgang Woehl 2010-2011
@@ -213,7 +213,7 @@ BANNER
       opts.on( '--title title', String, 'DCP content title' ) do |p|
         options.dcp_title = p
       end
-      opts.on( '--issuer issuer', String, 'DCP/KDM issuer. In KDM mode the first 3 letters will be used to signify the KDM creation facility, following KDM naming conventions.' ) do |p|
+      opts.on( '--issuer issuer', String, 'DCP/KDM issuer. In KDM mode the first 3 letters will be used to signify the KDM creation facility.' ) do |p|
         options.issuer = p
       end
       opts.on( '--annotation annotation', String, 'DCP/KDM annotation' ) do |p|
@@ -227,7 +227,7 @@ BANNER
       opts.on( '--wrap-stereoscopic', 'Wrap images as stereoscopic essence (Useful when a monoscopic slideshow needs to run on a 3D projector preset)' ) do
         options.dcp_wrap_stereoscopic = TRUE
       end
-      opts.on( '-o', '--dcp-out path', String, 'DCP location and folder name (Full path. Default: Write to working directory)' ) do |p|
+      opts.on( '-o', '--dcp-out path', String, "DCP location and folder name (Full path. Default: Write to #{ AppName }'s working directory)" ) do |p|
         options.dcp_user_output_path = p
       end
       opts.on( '-m', '--montagepreview', 'Display a montage of the images before processing' ) do
@@ -251,19 +251,19 @@ BANNER
       opts.on( '--encrypt', 'Encrypt trackfiles. Implies signature. Stores content keys in CINEMASLIDESDIR/keys' ) do
         options.dcp_encrypt = TRUE
       end
-      opts.on( '--kdm', 'KDM mode: Generate key delivery message. Use with --cpl, --start, --end, --issuer and --target' ) do
+      opts.on( '--kdm', 'KDM mode: Generate key delivery message. Use with --cpl or --cpl-id, --start, --end, --issuer and --target' ) do
         options.kdm = TRUE
       end
-      opts.on( '--cpl <file>', String, 'KDM mode: Specify CPL file' ) do |p|
+      opts.on( '--cpl <file>', String, 'KDM mode: Specify target CPL file' ) do |p|
         options.kdm_cpl = p
       end
-      opts.on( '--cpl-id <uuid>', String, 'CPL ID. Use as alternative to specifying the CPL file. Resulting KDM will not carry ContentAuthenticator.' ) do |p|
+      opts.on( '--cpl-id <uuid>', String, 'KDM mode: Use as alternative to specifying the CPL file.' ) do |p|
         options.kdm_cpl_id = p
       end
-      opts.on( '--cpl-content-title <text>', String, 'Content title text. Use with --cpl-id' ) do |p|
+      opts.on( '--cpl-content-title <text>', String, 'KDM mode: Content title text. Use when there is no direct access to the CPL' ) do |p|
         options.kdm_cpl_content_title_text = p
       end
-      opts.on( '--keysdir <keys dir>', String, "Location of the referenced CPL's keys. Use with --cpl-id" ) do |p|
+      opts.on( '--keysdir <keys dir>', String, "KDM mode: Location of the referenced CPL's keys. Use with --cpl-id" ) do |p|
         options.kdm_keysdir = p
       end
       opts.on( '--start <days>', Integer, 'KDM mode: KDM validity starts <days> from now (Default: Now)' ) do |p|
