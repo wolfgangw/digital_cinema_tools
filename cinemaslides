@@ -2376,7 +2376,7 @@ end
 
 # See SMPTE 428-2-2006
 def sox_conform( audiofile, samplerate, bps, channelcount, asset ) # SMPTE 428-2-2006
-  `sox #{ audiofile } -r #{ samplerate } -b #{ bps } -c #{ channelcount } -s -t wavpcm #{ asset } gain -n -1`
+  `sox #{ audiofile } -r #{ samplerate } -b #{ bps } -c #{ channelcount } -s -t wavpcm #{ asset }`
 end
 
 
