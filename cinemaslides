@@ -2340,7 +2340,7 @@ when "preview", "fullpreview"
 end
 
 
-## Process audio (asset-audio depot is still a moving target, bugs lurking etc., as of v0.2010.09.07)
+## Process audio (still a moving target, bugs lurking etc., as of v0.2011.10.01)
 #
 # user can specify -- alongside with any number of images -- any number of audio files
 # a) cinemaslides makes a list which will be equally long as or longer than the calculated image sequence
@@ -2467,8 +2467,8 @@ unless @source_audio[ :orig_name ].empty?
   File.delete( sequence_audio_asset_tmp )
   
   # e) pad with silence for black leader/tail
-  audio_leader = ( black_leader > 0 ? silence( black_leader, options.audio_samplerate, options.audio_bps, 2 ) : '' )
-  audio_tail = ( black_tail > 0 ? silence( black_tail, options.audio_samplerate, options.audio_bps, 2 ) : '' )
+  audio_leader = ( black_leader > 0 ? silence( black_leader, options.audio_samplerate, options.audio_bps, channelcounts.first ) : '' )
+  audio_tail = ( black_tail > 0 ? silence( black_tail, options.audio_samplerate, options.audio_bps, channelcounts.first ) : '' )
   if black_leader + black_tail > 0
     @logger.debug( 'Pad audio with leader/tail silence' )
     @final_audio = File.join( @assetsdir_audio, 'padded_' + File.basename( sequence_audio_asset ) )
