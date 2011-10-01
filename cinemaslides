@@ -1482,7 +1482,6 @@ end
 def signer_cert_thumbprint( doc )
   doc.remove_namespaces!
   certs = doc.xpath( '//CompositionPlaylist/Signature/KeyInfo/X509Data/X509Certificate' )
-  @logger.critical( "CERTS in signer_cert_thumbprint: #{ certs.inspect } (#{ certs.class })" )
   if certs.size > 0
     @logger.debug( "CPL carries #{ certs.size } certificates" )
     signer_cert = "-----BEGIN CERTIFICATE-----\n" + certs.first.text + "\n-----END CERTIFICATE-----\n"
