@@ -1,0 +1,61 @@
+---
+- :prefix: 01-center-tone
+  :type: tone
+  :vals:
+  - 200
+  :sets_of_channels:
+  - - Center
+  :length: 1
+  :fade_samples: 1000
+  :gain: -9
+
+- :prefix: 02-left-tone
+  :type: tone
+  :vals:
+  - 400
+  :sets_of_channels:
+  - - Left
+  :length: 1
+  :fade_samples: 1000
+  :gain: -9
+
+- :prefix: 03-right-tone
+  :type: tone
+  :vals:
+  - 800
+  :sets_of_channels:
+  - - Right
+  :length: 1
+  :fade_samples: 1000
+  :gain: -9
+
+- :prefix: 04-left-surround-tone
+  :type: tone
+  :vals:
+  - 400
+  :sets_of_channels:
+  - - Left Surround
+  :length: 1
+  :fade_samples: 1000
+  :gain: -9
+
+- :prefix: 05-right-surround-tone
+  :type: tone
+  :vals:
+  - 200
+  :sets_of_channels:
+  - - Right Surround
+  :length: 1
+  :fade_samples: 1000
+  :gain: -9
+
+- :prefix: 06-lfe-tone
+  :type: tone
+  :vals:
+  - 100
+  :sets_of_channels:
+  - - LFE
+  :length: 1
+  :fade_samples: 1000
+  :gain: -9
+

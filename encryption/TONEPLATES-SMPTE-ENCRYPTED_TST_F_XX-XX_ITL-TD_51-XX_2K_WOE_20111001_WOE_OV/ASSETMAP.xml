@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AssetMap xmlns="http://www.smpte-ra.org/schemas/429-9/2007/AM">
+  <!-- cinemaslides v0.2011.10.01 smpte am -->
+  <Id>urn:uuid:a0fe0f16-7c53-4fce-983b-1f277752bcac</Id>
+  <Creator>cinemaslides v0.2011.10.01 smpte am</Creator>
+  <VolumeCount>1</VolumeCount>
+  <IssueDate>2011-10-01T17:00:48+02:00</IssueDate>
+  <Issuer>WOE</Issuer>
+  <AssetList>
+    <Asset>
+      <Id>urn:uuid:eece17de-77e8-4a55-9347-b6bab5724b9f</Id>
+      <ChunkList>
+        <Chunk>
+          <Path>cpl_eece17de-77e8-4a55-9347-b6bab5724b9f_.xml</Path>
+        </Chunk>
+      </ChunkList>
+    </Asset>
+    <Asset>
+      <Id>urn:uuid:6196fa54-cb27-45f0-a3a9-c0130b2f698e</Id>
+      <ChunkList>
+        <Chunk>
+          <Path>j2c_6196fa54-cb27-45f0-a3a9-c0130b2f698e_.mxf</Path>
+        </Chunk>
+      </ChunkList>
+    </Asset>
+    <Asset>
+      <Id>urn:uuid:5c851c7b-79fd-411d-86ad-dd78e0e8f31a</Id>
+      <ChunkList>
+        <Chunk>
+          <Path>pcm_5c851c7b-79fd-411d-86ad-dd78e0e8f31a_.mxf</Path>
+        </Chunk>
+      </ChunkList>
+    </Asset>
+    <Asset>
+      <Id>urn:uuid:d66c7ef0-07e3-4fc0-8bcc-80a48a1a0353</Id>
+      <PackingList>true</PackingList>
+      <ChunkList>
+        <Chunk>
+          <Path>pkl_d66c7ef0-07e3-4fc0-8bcc-80a48a1a0353_.xml</Path>
+        </Chunk>
+      </ChunkList>
+    </Asset>
+  </AssetList>
+</AssetMap>
