@@ -1856,7 +1856,8 @@ if options.kdm == TRUE
   
   kdm_cpl_content_title = cpl_content_title_text.upcase.gsub( ' ', '-' )[0..19]
   kdm_creation_facility_code = options.issuer.upcase.gsub( ' ', '' )[0..2]
-  kdm_file = "k_#{ kdm_cpl_content_title }_#{ recipient_cn_name }_#{ yyyymmdd( kdm_not_valid_before ) }_#{ yyyymmdd( kdm_not_valid_after ) }_#{ kdm_creation_facility_code }_OV_#{ kdm_message_uuid[0..7] }.xml"
+  kdm_formulation_acronym = options.kdm_formulation.split( '-' ).map { |e| e[ 0 ] }.join
+  kdm_file = "k_#{ kdm_formulation_acronym }_#{ kdm_cpl_content_title }_#{ recipient_cn_name }_#{ yyyymmdd( kdm_not_valid_before ) }_#{ yyyymmdd( kdm_not_valid_after ) }_#{ kdm_creation_facility_code }_OV_#{ kdm_message_uuid[0..7] }.xml"
   if File.exists?( kdm_file )
     @logger.info( "KDM exists: #{ kdm_file }" )
     @logger.info( "4 bytes UUID collision: #{ kdm_message_uuid }. Not overwriting" )
