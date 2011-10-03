@@ -110,6 +110,8 @@ class Optparser
     options.dcp_encrypt = FALSE
     options.sign = FALSE
     options.kdm = FALSE
+    options.kdm_formulation = 'dci-specific'
+    options.kdm_formulation_choices = [ 'dci-specific', 'dci-any', 'modified-transitional-1', 'transitional-1' ]
     options.kdm_cpl = NIL
     options.kdm_cpl_id = NIL
     options.kdm_cpl_content_title_text = NIL
@@ -134,7 +136,7 @@ class Optparser
       opts.banner = <<BANNER
 #{ AppName } #{ AppVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" } #{ ENV[ 'CINEMACERTSTORE' ].nil? ? "\nExport CINEMACERTSTORE to point to a directory which holds your digital cinema compliant signing key and certificates" : "\nCINEMACERTSTORE is set (#{ ENV[ 'CINEMACERTSTORE' ] })" }
  
-Usage: #{ AppName } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--bi, --black-intermediate <seconds>] [--ip, --intermediate-plate <plate>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [--encrypt] [--kdm] [--cpl <cpl file>] [--cp-id <CPL UUID>] [ --cpl-content-title <text> ] [--keysdir <directory with referenced keys>] [--start <days from now>] [--end <days from now>] [--target <certificate>] [-v, --verbosity <level>] [--examples] [-h, --help] [ image and audio files ] [ KDM mode parameters ]
+Usage: #{ AppName } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--bi, --black-intermediate <seconds>] [--ip, --intermediate-plate <plate>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [--encrypt] [--kdm] [--formulation <KDM formulation>] [--cpl <cpl file>] [--cp-id <CPL UUID>] [ --cpl-content-title <text> ] [--keysdir <directory with referenced keys>] [--start <days from now>] [--end <days from now>] [--target <certificate>] [-v, --verbosity <level>] [--examples] [-h, --help] [ image and audio files ] [ KDM mode parameters ]
 
 BANNER
 
@@ -227,7 +229,7 @@ BANNER
       opts.on( '--wrap-stereoscopic', 'Wrap images as stereoscopic essence (Useful when a monoscopic slideshow needs to run on a 3D projector preset)' ) do
         options.dcp_wrap_stereoscopic = TRUE
       end
-      opts.on( '-o', '--dcp-out path', String, "DCP location and folder name (Full path. Default: Write to #{ AppName }'s working directory)" ) do |p|
+      opts.on( '-o', '--dcp-out path', String, "DCP location and folder name (Default: Write to #{ AppName }'s working directory)" ) do |p|
         options.dcp_user_output_path = p
       end
       opts.on( '-m', '--montagepreview', 'Display a montage of the images before processing' ) do
@@ -254,25 +256,30 @@ BANNER
       opts.on( '--kdm', 'KDM mode: Generate key delivery message. Use with --cpl or --cpl-id, --start, --end, --issuer and --target' ) do
         options.kdm = TRUE
       end
-      opts.on( '--cpl <file>', String, 'KDM mode: Specify target CPL file' ) do |p|
+      opts.on( '--formulation formulation', String, "Use dci-specific, dci-any, modified-transitional-1 or transitional-1 (Default: dci-specific)" ) do |p|
+        if options.kdm_formulation_choices.include?( p.downcase )
+          options.kdm_formulation = p.downcase
+        end
+      end
+      opts.on( '--cpl file', String, 'KDM mode: Specify target CPL file' ) do |p|
         options.kdm_cpl = p
       end
-      opts.on( '--cpl-id <uuid>', String, 'KDM mode: Use as alternative to specifying the CPL file.' ) do |p|
+      opts.on( '--cpl-id uuid', String, 'KDM mode: Use as alternative to specifying the CPL file.' ) do |p|
         options.kdm_cpl_id = p
       end
-      opts.on( '--cpl-content-title <text>', String, 'KDM mode: Content title text. Use when there is no direct access to the CPL' ) do |p|
+      opts.on( '--cpl-content-title title', String, 'KDM mode: Content title text. Use when there is no direct access to the CPL' ) do |p|
         options.kdm_cpl_content_title_text = p
       end
-      opts.on( '--keysdir <keys dir>', String, "KDM mode: Location of the referenced CPL's keys. Use with --cpl-id" ) do |p|
+      opts.on( '--keysdir keys dir', String, "KDM mode: Location of the referenced CPL's keys. Use with --cpl-id" ) do |p|
         options.kdm_keysdir = p
       end
-      opts.on( '--start <days>', Integer, 'KDM mode: KDM validity starts <days> from now (Default: Now)' ) do |p|
+      opts.on( '--start days', Integer, 'KDM mode: KDM validity starts <days> from now (Default: Now)' ) do |p|
         options.kdm_start = p
       end
-      opts.on( '--end <days>', Integer, 'KDM mode: KDM validity ends <days> from now (Default: 4 weeks from now)' ) do |p|
+      opts.on( '--end days', Integer, 'KDM mode: KDM validity ends <days> from now (Default: 4 weeks from now)' ) do |p|
         options.kdm_end = p
       end
-      opts.on( '--target <certificate>', String, 'KDM mode: Path to the recipient device certificate' ) do |p|
+      opts.on( '--target certificate', String, 'KDM mode: Path to the recipient device certificate' ) do |p|
         options.kdm_target = p
       end
       opts.on( '-v', '--verbosity level', String, "Use 'quiet', 'info' or 'debug' (Default: info)" ) do |p|
@@ -1028,11 +1035,11 @@ include DCTools
 # FIXME when all we need for KeyIdList is type and id.
 # FIXME will merge with cipher_data_payloads to pass in a list of all those.
 class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
-  def initialize( message_uuid, message_annotation, issue_date, signing_cert, recipient_cert, cpl_uuid, cpl_content_title_text, cpl_content_authenticator, kdm_not_valid_before, kdm_not_valid_after, device_list_identifier, device_list_description, device_cert_thumbprint, keys, cipher_data_payloads )
+  def initialize( options, message_uuid, message_annotation, issue_date, signing_cert, recipient_cert, cpl_uuid, cpl_content_title_text, cpl_content_authenticator, kdm_not_valid_before, kdm_not_valid_after, device_list_identifier, device_list_description, device_cert_thumbprint, keys, cipher_data_payloads )
     # FIXME Nokogiri does not support :standalone
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
       xml.DCinemaSecurityMessage_( 'xmlns' => 'http://www.smpte-ra.org/schemas/430-3/2006/ETM', 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#', 'xmlns:enc' => 'http://www.w3.org/2001/04/xmlenc#' ) {
-        xml<< "<!-- #{ AppName } #{ AppVersion } smpte kdm -->"
+        xml<< "<!-- #{ AppName } #{ AppVersion } smpte kdm #{ options.kdm_formulation } -->"
         xml.AuthenticatedPublic_( 'Id' => 'ID_AuthenticatedPublic' ) {
           xml.MessageId_ "urn:uuid:#{ message_uuid }"
           # see SMPTE 430-1-Am1-2009 (D-Cinema Operations - Key delivery message - Amendment 1)
@@ -1061,7 +1068,11 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
               xml.CompositionPlaylistId_ "urn:uuid:#{ cpl_uuid }"
               xml.ContentTitleText_ cpl_content_title_text
               # Workaround to prevent empty tag. Needs better Nokogiri fu
-              xml<< "#{ cpl_content_authenticator == NIL ? '' : '<ContentAuthenticator>' + cpl_content_authenticator + '</ContentAuthenticator>' }" # xml.ContentAuthenticator_ cpl_content_authenticator
+              #xml<< "#{ options.kdm_formulation == ( 'dci-specific' || 'dci-any' ) ? '<ContentAuthenticator>' + cpl_content_authenticator + '</ContentAuthenticator>' : '' }"
+              case options.kdm_formulation
+              when 'dci-specific', 'dci-any'
+                xml.ContentAuthenticator_ cpl_content_authenticator
+              end
               xml.ContentKeysNotValidBefore_ kdm_not_valid_before
               xml.ContentKeysNotValidAfter_ kdm_not_valid_after
               xml.AuthorizedDeviceInfo_ {
@@ -1069,7 +1080,12 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
                 xml.DeviceListIdentifier_ "urn:uuid:#{ device_list_identifier }"
                 xml.DeviceListDescription_ device_list_description
                 xml.DeviceList_ {
-                  xml.CertificateThumbprint_ device_cert_thumbprint
+                  case options.kdm_formulation
+                  when 'dci-any', 'modified-transitional-1'
+                    xml.CertificateThumbprint_ '2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+                  else
+                    xml.CertificateThumbprint_ device_cert_thumbprint
+                  end
                 } # DeviceList
               } # AuthorizedDeviceInfo
               xml.KeyIdList_ {
@@ -1576,7 +1592,6 @@ if options.kdm == TRUE
   if ENV[ 'CINEMACERTSTORE' ].nil?
     @logger.info( "Expecting certificates at $CINEMACERTSTORE. Set this environment variable with 'export CINEMACERTSTORE=<path>'" )
     @logger.info( "Run make-dc-certificate-chain.rb in that directory to create the required certificates." )
-    @logger.info( "Sorry for the inconvenience. Work in progress" )
     kdm_no_go << 'CINEMACERTSTORE not set'
   else
     CINEMACERTSTORE = ENV[ 'CINEMACERTSTORE' ]
@@ -1610,7 +1625,7 @@ if options.kdm == TRUE
     @logger.info( "No CPL specified. Use --cpl <CPL file> or --cpl-id <UUID>" )
     kdm_no_go << 'No CPL'
   else
-    # Handle --cpl-id case, requires --keysdir
+    # Use --cpl-id (requires --keysdir) for the odd experiment to generate a KDM without access to the targeted CPL document
     if options.kdm_cpl_id
       cpl_content_authenticator = NIL
       cpl_uuid = options.kdm_cpl_id
@@ -1764,6 +1779,12 @@ if options.kdm == TRUE
       kdm_no_go << 'No target'
     end
   end
+
+  # Check requested KDM formulation
+  case options.kdm_formulation
+  when 'dci-specific', 'dci-any'
+    kdm_no_go << 'No content authenticator available (CPL signer cert thumbprint)' unless cpl_content_authenticator
+  end
   
   ### exit now if any of the requirements for KDM generation are not met
   if kdm_no_go.size > 0
@@ -1806,6 +1827,7 @@ if options.kdm == TRUE
   # KDM data and template for signature
   @logger.debug( 'Prepare KDM XML for signature' )
   kdm_xml = KDM_SMPTE_430_1_2006.new(
+    options,
     kdm_message_uuid,
     kdm_message_annotation,
     kdm_issue_date.to_s,
