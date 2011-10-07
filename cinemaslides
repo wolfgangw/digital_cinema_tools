@@ -111,7 +111,7 @@ class Optparser
     options.sign = FALSE
     options.kdm = FALSE
     options.kdm_formulation = 'dci-specific'
-    options.kdm_formulation_choices = [ 'dci-specific', 'dci-any', 'modified-transitional-1', 'transitional-1' ]
+    options.kdm_formulation_choices = [ 'dci-specific', 'dci-any', 'modified-transitional-1', 'transitional-1', 'ds', 'da', 'mt1', 't1' ]
     options.kdm_cpl = NIL
     options.kdm_cpl_id = NIL
     options.kdm_cpl_content_title_text = NIL
@@ -136,7 +136,7 @@ class Optparser
       opts.banner = <<BANNER
 #{ AppName } #{ AppVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" } #{ ENV[ 'CINEMACERTSTORE' ].nil? ? "\nExport CINEMACERTSTORE to point to a directory which holds your digital cinema compliant signing key and certificates" : "\nCINEMACERTSTORE is set (#{ ENV[ 'CINEMACERTSTORE' ] })" }
  
-Usage: #{ AppName } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [-f, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--bi, --black-intermediate <seconds>] [--ip, --intermediate-plate <plate>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [--encrypt] [--kdm] [--formulation <KDM formulation>] [--cpl <cpl file>] [--cp-id <CPL UUID>] [ --cpl-content-title <text> ] [--keysdir <directory with referenced keys>] [--start <days from now>] [--end <days from now>] [--target <certificate>] [-v, --verbosity <level>] [--examples] [-h, --help] [ image and audio files ] [ KDM mode parameters ]
+Usage: #{ AppName } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [--of, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--bi, --black-intermediate <seconds>] [--ip, --intermediate-plate <plate>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [--encrypt] [--kdm] [--formulation <KDM formulation>] [--cpl <cpl file>] [--cp-id <CPL UUID>] [ --cpl-content-title <text> ] [--keysdir <directory with referenced keys>] [--start <days from now>] [--end <days from now>] [--target <certificate>] [-v, --verbosity <level>] [--examples] [-h, --help] [ image and audio files ] [ KDM mode parameters ]
 
 BANNER
 
@@ -179,7 +179,7 @@ BANNER
       opts.on( '-j', '--encoder codec', String, "Use 'openjpeg' or 'kakadu' for JPEG 2000 encoding (Default: openjpeg)" ) do |p|
         options.encoder = p.downcase
       end
-      opts.on( '-f', '--output-format suffix', String, "Use 'jpg' or any other image related suffix (Default: jpg for previews, tiff for DCPs)" ) do |p|
+      opts.on( '--of', '--output-format suffix', String, "Use 'jpg' or any other image related suffix (Default: jpg for previews, tiff for DCPs)" ) do |p|
         options.output_format = p
       end
       opts.on( '-b', '--black seconds', Float, 'Length of black leader and tail (Default: 0)' ) do |p|
@@ -256,7 +256,7 @@ BANNER
       opts.on( '--kdm', 'KDM mode: Generate key delivery message. Use with --cpl or --cpl-id, --start, --end, --issuer and --target' ) do
         options.kdm = TRUE
       end
-      opts.on( '--formulation formulation', String, "Use dci-specific, dci-any, modified-transitional-1 or transitional-1 (Default: dci-specific)" ) do |p|
+      opts.on( '-f', '--formulation formulation', String, "Use dci-specific, dci-any, modified-transitional-1, transitional-1 or the respective acronyms (Default: dci-specific | ds)" ) do |p|
         if options.kdm_formulation_choices.include?( p.downcase )
           options.kdm_formulation = p.downcase
         end
@@ -1068,7 +1068,7 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
               xml.CompositionPlaylistId_ "urn:uuid:#{ cpl_uuid }"
               xml.ContentTitleText_ cpl_content_title_text
               case options.kdm_formulation
-              when 'dci-specific', 'dci-any'
+              when 'dci-specific', 'dci-any', 'ds', 'da'
                 xml.ContentAuthenticator_ cpl_content_authenticator
               end
               xml.ContentKeysNotValidBefore_ kdm_not_valid_before
@@ -1079,7 +1079,7 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
                 xml.DeviceListDescription_ device_list_description
                 xml.DeviceList_ {
                   case options.kdm_formulation
-                  when 'dci-any', 'modified-transitional-1'
+                  when 'dci-any', 'modified-transitional-1', 'da', 'mt1'
                     xml.CertificateThumbprint_ '2jmj7l5rSw0yVb/vlWAYkK/YBwk='
                   else
                     xml.CertificateThumbprint_ device_cert_thumbprint
@@ -1795,6 +1795,8 @@ if options.kdm == TRUE
     @logger.info( "KDM requirements all met" )
   end
   
+  @logger.info( "KDM formulation requested: #{ options.kdm_formulation }" )
+
   kdm_message_uuid = `kmuuidgen -n`
   kdm_message_annotation = options.annotation
   device_list_identifier = `kmuuidgen -n` # FIXME
@@ -1856,7 +1858,12 @@ if options.kdm == TRUE
   
   kdm_cpl_content_title = cpl_content_title_text.upcase.gsub( ' ', '-' )[0..19]
   kdm_creation_facility_code = options.issuer.upcase.gsub( ' ', '' )[0..2]
-  kdm_formulation_acronym = options.kdm_formulation.split( '-' ).map { |e| e[ 0 ] }.join
+  case options.kdm_formulation
+  when 'ds', 'da', 'mt1','t1'
+    kdm_formulation_acronym = options.kdm_formulation
+  else
+    kdm_formulation_acronym = options.kdm_formulation.split( '-' ).map { |e| e[ 0 ] }.join
+  end
   kdm_file = "k_#{ kdm_formulation_acronym }_#{ kdm_cpl_content_title }_#{ recipient_cn_name }_#{ yyyymmdd( kdm_not_valid_before ) }_#{ yyyymmdd( kdm_not_valid_after ) }_#{ kdm_creation_facility_code }_OV_#{ kdm_message_uuid[0..7] }.xml"
   if File.exists?( kdm_file )
     @logger.info( "KDM exists: #{ kdm_file }" )
