@@ -1,1 +1,2 @@
+# cqj2k 0.2.0
 cqj2k -i source.ppm -o v0.2.0.rate_bounds-precincts.j2k -Nres 6 -tol 0/-500 -Sprec 128,128:256,256 -Scblk 32,32 -depth 12 -mct -prog CPRL -part auto -tlm -prof 3 -rate 1302083 -bound 0,1,0,6,0,1,1041652 -bound 0,1,0,6,1,2,1041652 -bound 0,1,0,6,2,3,1041652
