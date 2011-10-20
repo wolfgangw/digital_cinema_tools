@@ -106,16 +106,19 @@ codecs = {
   :cqj2k => {
     :cli => 'cqj2k',
     :suffix => 'j2k',
+    :required_input_type => :ppm,
     :parameters => '-Nres 6 -tol 0/-500 -Sprec 128,128:256,256 -Scblk 32,32 -depth 12 -mct -prog CPRL -part auto -tlm -prof 3 -rate 1302083 -bound 0,1,0,6,0,1,1041652 -bound 0,1,0,6,1,2,1041652 -bound 0,1,0,6,2,3,1041652 -v 3'
   },
   :openjpeg => {
     :cli => 'image_to_j2k',
     :suffix => 'j2k',
+    :required_input_type => :tif,
     :parameters => '-cinema2K 24'
   },
   :kakadu => {
     :cli => 'kdu_compress',
     :suffix => 'j2k',
+    :required_input_type => :tif,
     :parameters => 'Sprofile=CINEMA2K Creslengths=1302083 -num_threads 0'
   }
 }
@@ -126,10 +129,10 @@ codecs.keys.each do |codec|
   
   # encode to jpeg2000
   j2k_file = output( codec.to_s, codecs[ codec ][ :suffix ] )
-  case codec
-  when :cqj2k, :openjpeg
+  case codecs[ codec ][ :required_input_type ]
+  when :ppm
     source = source_ppm
-  when :kakadu
+  when :tif
     source = source_tif
   end
   encoder( codecs[ codec ][ :cli ], source, j2k_file, codecs[ codec ][ :parameters ] )
