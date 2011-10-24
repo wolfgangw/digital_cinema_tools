@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 # encoding: UTF-8
-AppVersion = "v0.2011.10.01"
+AppVersion = "v0.2011.10.24"
 AppName = File.basename( $0 )
 #
 # Wolfgang Woehl 2010-2011
@@ -101,6 +101,8 @@ class Optparser
     options.dcp_title = 'Cinemaslides test'
     options.issuer = ENV[ 'USER' ] + '@' + `hostname`.chomp
     options.annotation = "#{ AppName } " + DateTime.now.to_s
+    options.dcp_package_type = 'OV'
+    options.dcp_package_type_choices = [ 'ov', 'vf', Regexp.new( /vf\d+/i ) ] # keep regexp choices at the end of these lists
     options.dcp_kind = 'test'
     options.dcp_kind_choices = [ 'feature', 'trailer', 'test', 'teaser', 'rating', 'advertisement', 'short', 'transitional', 'psa', 'policy' ]
     options.dcp_wrap_stereoscopic = FALSE
@@ -135,8 +137,19 @@ class Optparser
     opts = OptionParser.new do |opts|
       opts.banner = <<BANNER
 #{ AppName } #{ AppVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" } #{ ENV[ 'CINEMACERTSTORE' ].nil? ? "\nExport CINEMACERTSTORE to point to a directory which holds your digital cinema compliant signing key and certificates" : "\nCINEMACERTSTORE is set (#{ ENV[ 'CINEMACERTSTORE' ] })" }
- 
-Usage: #{ AppName } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>] [-j, --encoder <encoder>] [--of, --output-format <image suffix>] [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--bi, --black-intermediate <seconds>] [--ip, --intermediate-plate <plate>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>] [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--kind <DCP kind>] [--wrap-stereoscopic] [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>] [--keep] [--dont-check] [--dont-drop] [--sign] [--encrypt] [--kdm] [--formulation <KDM formulation>] [--cpl <cpl file>] [--cp-id <CPL UUID>] [ --cpl-content-title <text> ] [--keysdir <directory with referenced keys>] [--start <days from now>] [--end <days from now>] [--target <certificate>] [-v, --verbosity <level>] [--examples] [-h, --help] [ image and audio files ] [ KDM mode parameters ]
+Usage:
+#{ AppName } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>]
+             [-j, --encoder <encoder>] [--of, --output-format <image suffix>]
+             [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--bi, --black-intermediate <seconds>] [--ip, --intermediate-plate <plate>]
+             [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>]
+             [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--package-type <type>] [--kind <DCP kind>] [--wrap-stereoscopic]
+             [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>]
+             [--keep] [--dont-check] [--dont-drop]
+             [--sign] [--encrypt]
+             [--kdm] [--formulation <KDM formulation>] [--cpl <cpl file>] [--cp-id <CPL UUID>] [ --cpl-content-title <text> ] [--keysdir <directory with referenced keys>]
+               [--start <days from now>] [--end <days from now>] [--target <certificate>]
+             [-v, --verbosity <level>] [--examples] [-h, --help]
+             [ image and audio files ] [ KDM mode parameters ]
 
 BANNER
 
@@ -215,11 +228,16 @@ BANNER
       opts.on( '--title title', String, 'DCP content title' ) do |p|
         options.dcp_title = p
       end
-      opts.on( '--issuer issuer', String, 'DCP/KDM issuer. In KDM mode the first 3 letters will be used to signify the KDM creation facility.' ) do |p|
+      opts.on( '--issuer issuer', String, 'DCP/KDM issuer. In KDM mode the first 3 letters will be used to signify the KDM creation facility' ) do |p|
         options.issuer = p
       end
       opts.on( '--annotation annotation', String, 'DCP/KDM annotation' ) do |p|
         options.annotation = p
+      end
+      opts.on( '--package-type type', String, "DCP package type. Use 'OV', 'VF' or 'VF#' (# is a number) (Default: OV). For now this is used for KDMs only" ) do |p|
+        if options.dcp_package_type_choices.include?( p.downcase ) or p.match( options.dcp_package_type_choices.last )
+          options.dcp_package_type = p.upcase
+        end
       end
       opts.on( '--kind kind', "DCP content kind. Use 'feature', 'trailer, 'test', 'teaser', 'rating', 'advertisement', 'short', 'transitional', 'psa' or 'policy' (Default: test)" ) do |p|
         if options.dcp_kind_choices.include?( p.downcase )
@@ -1624,7 +1642,7 @@ if options.kdm == TRUE
     kdm_no_go << 'No CPL'
   else
     # Use --cpl-id (requires --keysdir) for the odd experiment to generate a KDM without access to the targeted CPL document
-    if options.kdm_cpl_id
+    if options.kdm_cpl_id and options.kdm_cpl == NIL
       cpl_content_authenticator = NIL
       cpl_uuid = options.kdm_cpl_id
       if options.kdm_cpl_content_title_text
@@ -1780,8 +1798,8 @@ if options.kdm == TRUE
 
   # Check requested KDM formulation
   case options.kdm_formulation
-  when 'dci-specific', 'dci-any'
-    kdm_no_go << 'No content authenticator available (CPL signer cert thumbprint)' unless cpl_content_authenticator
+  when 'dci-specific', 'dci-any', 'ds', 'da'
+    kdm_no_go << "KDM formulation requested: '#{ options.kdm_formulation }' but no content authenticator available (CPL is not signed)" unless cpl_content_authenticator
   end
   
   ### exit now if any of the requirements for KDM generation are not met
@@ -1795,7 +1813,7 @@ if options.kdm == TRUE
     @logger.info( "KDM requirements all met" )
   end
   
-  @logger.info( "KDM formulation requested: #{ options.kdm_formulation }" )
+  @logger.info( "KDM formulation requested: '#{ options.kdm_formulation }'" )
 
   kdm_message_uuid = `kmuuidgen -n`
   kdm_message_annotation = options.annotation
@@ -1864,7 +1882,7 @@ if options.kdm == TRUE
   else
     kdm_formulation_acronym = options.kdm_formulation.split( '-' ).map { |e| e[ 0 ] }.join
   end
-  kdm_file = "k_#{ kdm_formulation_acronym }_#{ kdm_cpl_content_title }_#{ recipient_cn_name }_#{ yyyymmdd( kdm_not_valid_before ) }_#{ yyyymmdd( kdm_not_valid_after ) }_#{ kdm_creation_facility_code }_OV_#{ kdm_message_uuid[0..7] }.xml"
+  kdm_file = "k_#{ kdm_cpl_content_title }_#{ recipient_cn_name }_#{ yyyymmdd( kdm_not_valid_before ) }_#{ yyyymmdd( kdm_not_valid_after ) }_#{ kdm_creation_facility_code }_#{ options.dcp_package_type }_#{ kdm_formulation_acronym }_#{ kdm_message_uuid[0..7] }.xml"
   if File.exists?( kdm_file )
     @logger.info( "KDM exists: #{ kdm_file }" )
     @logger.info( "4 bytes UUID collision: #{ kdm_message_uuid }. Not overwriting" )
