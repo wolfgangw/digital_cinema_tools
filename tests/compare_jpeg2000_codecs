@@ -1,21 +1,37 @@
 #!/usr/bin/env ruby
+AppName = File.basename( $0 )
+AppVersion = 'v0.2011.10.25'
 #
 # This script runs jpeg2000 encodes and comparisons for
-#   source <-> j2c codestream
-#   and
-#   source <-> decoded tif
+# source image < (JPEG2000 encoding) > decoded tif
+# Decoding to tif is done via openjpeg's 'j2k_to_image'.
 #
-# It will generate files in the current directory so you 
-# might want to cd to an appropriate location first.
+# Actual comparisons are done with ImageMagick's 'compare'
+# utility. IM is using Jasper to handle JPEG2000 and
+# interestingly enough Jasper will decode to slightly
+# different results. If you're interested in the difference
+# provide the
+#   -d | --jpeg2000-decoder convert
+# option to override the openjpeg default ('convert' is
+# ImageMagick's general purpose tool which will decode
+# JPEG2000 via Jasper).
 #
-# run_tests.rb -s <path to image file>
-# run_tests.rb --help
+# This script will generate files in the current directory.
+# You might want to cd to an appropriate location first.
+#
+# See compare-cqj2k-openjpeg-kakadu.conf for a test
+# configuration example.
+#
+# Requirements:
+#   openjpeg: j2k_to_image
+#   ImageMagick: convert and compare
+#   plus any JPEG2000 codec system to be tested
+#
+# $ run_tests.rb -s <path to image file> -c <path to test configuration file>
+# $ run_tests.rb --help
 #
 # Wolfgang Woehl 2011
 #
-AppName = File.basename( $0 )
-AppVersion = 'v0.2011.10.19'
-
 require 'optparse'
 require 'ostruct'
 
@@ -24,7 +40,9 @@ class Optparser
     # defaults
     options = OpenStruct.new
     options.source_image_file = nil
+    options.config_file = nil
     options.decoder_cli = 'j2k_to_image'
+    options.decoder_cli_choices = [ 'j2k_to_image', 'convert' ]
     options.compare_cli = `which compare`.chomp
     options.decode_suffix = 'tif'
     options.metric = 'psnr'
@@ -35,8 +53,7 @@ class Optparser
       # Banner and usage
       opts.banner = <<BANNER
 #{ AppName } #{ AppVersion }
-runs jpeg2000 codec comparisons (and implicitly comparisons of ImageMagick's jpeg2000 decoding)
-Usage: #{ AppName } -s, --source-image <file> [-m, --metric <metric>] [-d, --jpeg2000-decoder <cli name>] [-c, --compare <cli name>] [--decode-suffix <suffix>] [--diff-suffix <suffix>]
+Usage: #{ AppName } -s, --source-image <file> -c, --config <config file> [-m, --metric <metric>] [-d, --jpeg2000-decoder <cli name>] [--compare <cli name>] [--decode-suffix <suffix>] [--diff-suffix <suffix>]
 
 BANNER
 
@@ -44,13 +61,16 @@ BANNER
       opts.on( '-s', '--source-image file', String, 'Specify source image to run the test series with' ) do |p|
         options.source_image_file = p
       end
+      opts.on( '-c', '--config file', String, 'Configuration file with codecs list and required parameters' ) do |p|
+        options.config_file = p
+      end
       opts.on( '-m', '--metric metric', String, 'Comparison metric (Default: psnr)' ) do |p|
         options.metric = p
       end
       opts.on( '-d', '--jpeg2000-decoder cli_name', String, 'JPEG2000 decoder (Default: image_to_j2k)'  ) do |p|
         options.decoder_cli = p
       end
-      opts.on( '-c', '--compare cli_name', String, 'Path to IMs compare utility (Default: `which compare`)' ) do |p|
+      opts.on( '--compare cli_name', String, 'Path to IMs compare utility (Default: `which compare`)' ) do |p|
         options.compare_cli = p
       end
       opts.on( '--decode-suffix suffix', String, 'Suffix for (and implicit type of) JPEG2000 decoding output (Default: tif)' ) do |p|
@@ -72,7 +92,10 @@ end
 options = Optparser.parse( ARGV )
 
 if options.source_image_file.nil?
-  puts "Need a source image file. Use '-s file'"
+  puts "Need a source image file. Use -s or --source-image file"
+  exit
+elsif options.config_file.nil?
+  puts "Need a configuration file. Use -c or --config file"
   exit
 end
 
@@ -85,50 +108,57 @@ source_tif = 'source.tif'
 `convert #{ source_link } -depth 12 #{ source_ppm }`
 `convert #{ source_link } -depth 12 #{ source_tif }`
 
+#
 def encoder( encoder_cli, input, output, parameters )
-  `#{ encoder_cli } #{ parameters } -i #{ input } -o #{ output } > /dev/null 2>&1`
+  `time #{ encoder_cli } #{ parameters } -i #{ input } -o #{ output } > /dev/null`# 2>&1`
 end
-def output( name, suffix )
-  "#{ name }.#{ suffix }"
+def counter_string( count )
+  count[ :counter_prefix ] % count[ :counter ]
+end
+def output( count, name, suffix )
+  "#{ counter_string count }#{ name }.#{ suffix }"
 end
 def decoder( decoder_cli, input, output )
-  `#{ decoder_cli } -i #{ input } -o #{ output } > /dev/null 2>&1`
+  case decoder_cli
+  when 'convert'
+    `#{ decoder_cli } #{ input } #{ output } > /dev/null 2>&1`
+  else
+    `#{ decoder_cli } -i #{ input } -o #{ output } > /dev/null 2>&1`
+  end
 end
-def diff_name( codec_name, a_type, b_type, target_suffix )
-  "diff--#{ codec_name }--#{ a_type }__#{ b_type }--.#{ target_suffix }"
+def diff_name( count, codec_name, a_type, b_type, target_suffix )
+  "#{ counter_string count }diff--#{ codec_name }--#{ a_type }__#{ b_type }--.#{ target_suffix }"
 end
 def compare( cli, metric, a, b, diff_name )
   `#{ cli } -metric #{ metric } #{ a } #{ b } #{ diff_name }`.chomp
 end
 
-# Codec name with cli name, required output suffix and parameter list
-codecs = {
-  :cqj2k => {
-    :cli => 'cqj2k',
-    :suffix => 'j2k',
-    :required_input_type => :ppm,
-    :parameters => '-Nres 6 -tol 0/-500 -Sprec 128,128:256,256 -Scblk 32,32 -depth 12 -mct -prog CPRL -part auto -tlm -prof 3 -rate 1302083 -bound 0,1,0,6,0,1,1041652 -bound 0,1,0,6,1,2,1041652 -bound 0,1,0,6,2,3,1041652 -v 3'
-  },
-  :openjpeg => {
-    :cli => 'image_to_j2k',
-    :suffix => 'j2k',
-    :required_input_type => :tif,
-    :parameters => '-cinema2K 24'
-  },
-  :kakadu => {
-    :cli => 'kdu_compress',
-    :suffix => 'j2k',
-    :required_input_type => :tif,
-    :parameters => 'Sprofile=CINEMA2K Creslengths=1302083 -num_threads 0'
-  }
+# Read from configuration file:
+# Codec name with cli name, required input type, desired output suffix and parameter list
+if File.exists?( options.config_file ) and File.ftype( options.config_file ) == 'file'
+  codecs = eval File.read( options.config_file )
+else
+  puts "Configuration file not found (#{ options.config_file })"
+  exit
+end
+
+# Set up a counter for output file prefixes
+count =
+{
+  :counter_prefix => "%0#{ codecs.size.to_s.size }d-",
+  :counter => 1
 }
+
+# Using this JPEG2000 decoder
+puts "JPEG2000 decoder used in this test series: #{ options.decoder_cli }"
 
 # Run tests for all codecs
 codecs.keys.each do |codec|
   puts "#{ codec.to_s }:"
+  puts "Parameters: #{ codecs[ codec ][ :parameters ] }"
   
-  # encode to jpeg2000
-  j2k_file = output( codec.to_s, codecs[ codec ][ :suffix ] )
+  # Encode to jpeg2000
+  j2k_file = output( count, codec.to_s, codecs[ codec ][ :suffix ] )
   case codecs[ codec ][ :required_input_type ]
   when :ppm
     source = source_ppm
@@ -137,15 +167,16 @@ codecs.keys.each do |codec|
   end
   encoder( codecs[ codec ][ :cli ], source, j2k_file, codecs[ codec ][ :parameters ] )
   
-  # decode the jpeg2000 codestream
-  decoded_file = output( codec.to_s, options.decode_suffix )
+  # Decode the jpeg2000 codestream
+  decoded_file = output( count, codec.to_s, options.decode_suffix )
   decoder( options.decoder_cli, j2k_file, decoded_file )
 
-  # comparisons, point being to compare IM's jpeg2000 decoding with options.decoder_cli output
-  [ decoded_file, j2k_file ].each do |b|
+  # Compare source image to decoded JPEG2000 result
+  [ decoded_file ].each do |b|
     puts "#{ options.metric }: #{ source } <> #{ b }:"
-    compare( File.expand_path( options.compare_cli ), options.metric, source, b, diff_name( codec.to_s, File.basename( source ), File.basename( b ), options.diff_suffix )  )
+    compare( File.expand_path( options.compare_cli ), options.metric, source, b, diff_name( count, codec.to_s, File.basename( source ), File.basename( b ), options.diff_suffix )  )
   end
   puts
+  count[ :counter ] += 1
 end
 
