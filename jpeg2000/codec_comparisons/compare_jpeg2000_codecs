@@ -1,12 +1,12 @@
 #!/usr/bin/env ruby
 AppName = File.basename( $0 )
-AppVersion = 'v0.2011.10.25'
+AppVersion = 'v0.2011.10.27'
 #
 # This script runs jpeg2000 encodes and comparisons for
 # source image < (JPEG2000 encoding) > decoded tif
-# Decoding to tif is done via openjpeg's 'j2k_to_image'.
+# Decoding to tif via openjpeg's 'j2k_to_image'.
 #
-# Actual comparisons are done with ImageMagick's 'compare'
+# Actual comparisons with ImageMagick's 'compare'
 # utility. IM is using Jasper to handle JPEG2000 and
 # interestingly enough Jasper will decode to slightly
 # different results. If you're interested in the difference
@@ -99,7 +99,8 @@ elsif options.config_file.nil?
   exit
 end
 
-# Conform source_image_file
+# Conform source_image_file to 12bpc
+# No resizing, provide images with DC compliant dimensions.
 # Will need ppm and tif versions
 source_link = 'source'
 File.symlink( options.source_image_file, source_link )
@@ -155,6 +156,8 @@ puts "JPEG2000 decoder used in this test series: #{ options.decoder_cli }"
 # Run tests for all codecs
 codecs.keys.each do |codec|
   puts "#{ codec.to_s }:"
+  # Codec version if available
+  system( "#{ codecs[ codec ][ :cli ] } #{ codecs[ codec ][ :version_switch ] }" ) if codecs[ codec ][ :version_switch ]
   puts "Parameters: #{ codecs[ codec ][ :parameters ] }"
   
   # Encode to jpeg2000
