@@ -1,13 +1,26 @@
 #!/usr/bin/env ruby
 # encoding: UTF-8
-AppVersion = "v0.2011.10.24"
-AppName = File.basename( $0 )
-#
-# Wolfgang Woehl 2010-2011
 #
 # Cinemaslides is a glue tool to create slideshows for digital cinema (DCPs)
+# Copyright 2010-2011 Wolfgang Woehl
 #
-# It offers preview modes, a basic set of transition types and a basic set of DCP authoring options.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+AppVersion = "v0.2011.10.28"
+#
+# Cinemaslides offers preview modes, a basic set of transition types 
+# and a basic set of DCP authoring options.
 # It will conform images to cinema-compliant specs and transform to X'Y'Z'.
 # Additional proof-of-concept features:
 #   + plaintext/encrypted DCPs
@@ -17,37 +30,42 @@ AppName = File.basename( $0 )
 # Run "cinemaslides -h" to see options
 # Run "cinemaslides --examples" to see a couple of example invocations
 #
-# Export CINEMASLIDESDIR to point at the desired location for temporary files, asset depot etc.
-#   (or use the default location HOME/cinemaslidesdir)
-# Export CINEMACERTSTORE to point at a directory that holds your signing key and validating certificate chain
-# Use "make-dc-certificate-cain.rb (https://github.com/wolfgangw/digital_cinema_tools/blob/master/make-dc-certificate-chain.rb)
-#   to create a proof-of-concept, digital cinema compliant X.509 certificate chain that will work out of the box with current cinemaslides.
+# Export CINEMASLIDESDIR to point at the desired location for temporary 
+# files, asset depot etc. or use the default location HOME/cinemaslidesdir.
+#
+# Export CINEMACERTSTORE to point at a directory that holds your signing 
+# key and validating certificate chain. Use "make-dc-certificate-cain.rb 
+# (https://github.com/wolfgangw/digital_cinema_tools/blob/master/make-dc-certificate-chain.rb)
+# to create a proof-of-concept, digital cinema compliant X.509 certificate 
+# chain that will work out of the box with current cinemaslides.
 #
 # Requires:
-#   ruby (1.8.7), gem, bash (install your distribution's packages)
+#   ruby (1.8.7 or later), gem, bash (install your distribution's packages)
 #   asdcplib (including asdcp-test and kmuuidgen, http://www.cinecert.com/asdcplib/)
 #   ImageMagick, MPlayer, SoX (install your distribution's packages)
-#   OpenJPEG (http://code.google.com/p/openjpeg/downloads/list) or Kakadu (see the note on Kakadu's terms of use below)
+#   OpenJPEG (http://code.google.com/p/openjpeg/downloads/list) or Kakadu
+#     (see the note on Kakadu's terms of use below)
 #   highline (gem install highline)
 #   nokogiri (gem install nokogiri, requires ruby-dev, libxml2-dev)
-# In addition for encrypted essence DCPs:
+# For encrypted essence DCPs:
 #   asdcplib's kmrandgen
 # For signed DCPs and KDM mode (KDM mode is work in progress, expect bugs and flying saucers):
 #   xmlsec1 (http://www.aleksey.com/xmlsec/)
 #   openssl (standard cli interface, install your distribution's package)
-#   asdcplib's kmuuidgen
 #
-###
-#   Kakadu (http://www.kakadusoftware.com/index.php) is a proprietary JPEG 2000 implementation, written by Dr. Taubman
-#   Kakadu Copyright is owned by NewSouth Innovations Proprietary Ltd, commercial arm of the University of New South Wales, Sydney, Australia
-#   Its feature set and performance are quite impressive. It is significantly faster than OpenJPEG's implementation.
+#
+#   Kakadu (http://www.kakadusoftware.com/index.php) is a proprietary
+#   JPEG 2000 implementation, written by Dr. Taubman.
+#   Kakadu Copyright is owned by NewSouth Innovations Proprietary Ltd,
+#   commercial arm of the University of New South Wales, Sydney, Australia.
+#
 #   Kakadu is available for demonstration purposes (Windows, Mac, Linux).
-#   Please see "Downloadable Executables Copyright and Disclaimer" at 
+#   Please see "Downloadable Executables Copyright and Disclaimer" at
 #   http://www.kakadusoftware.com/index.php?option=com_content&task=view&id=26&Itemid=22
-#   and make sure you respect these terms of use. Thank you.
-###
+#   and make sure to respect these terms of use.
 #
-# Ruby geeks: If you value your sanity don't read beyond this line. I'm working on it ...
+AppName = File.basename( $0 )
+
 
 require 'fileutils'
 if RUBY_VERSION <= '1.9'
