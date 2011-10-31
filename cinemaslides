@@ -164,7 +164,7 @@ Usage:
              [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>]
              [--keep] [--dont-check] [--dont-drop]
              [--sign] [--encrypt]
-             [--kdm] [--formulation <KDM formulation>] [--cpl <cpl file>] [--cp-id <CPL UUID>] [ --cpl-content-title <text> ] [--keysdir <directory with referenced keys>]
+             [--kdm] [--formulation <KDM formulation>] [--cpl <cpl file>] [--cpl-id <CPL UUID>] [ --cpl-content-title <text> ] [--keysdir <directory with referenced keys>]
                [--start <days from now>] [--end <days from now>] [--target <certificate>]
              [-v, --verbosity <level>] [--examples] [-h, --help]
              [ image and audio files ] [ KDM mode parameters ]
