@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 AppName = File.basename( $0 )
-AppVersion = 'v0.2011.10.27'
+AppVersion = 'v0.2011.11.06'
 #
 # This script runs jpeg2000 encodes and comparisons for
 # source image < (JPEG2000 encoding) > decoded tif
@@ -46,6 +46,7 @@ class Optparser
     options.compare_cli = `which compare`.chomp
     options.decode_suffix = 'tif'
     options.metric = 'psnr'
+    options.quality_comparison = TRUE
     options.diff_suffix = 'tif'
 
     opts = OptionParser.new do |opts|
@@ -53,7 +54,7 @@ class Optparser
       # Banner and usage
       opts.banner = <<BANNER
 #{ AppName } #{ AppVersion }
-Usage: #{ AppName } -s, --source-image <file> -c, --config <config file> [-m, --metric <metric>] [-d, --jpeg2000-decoder <cli name>] [--compare <cli name>] [--decode-suffix <suffix>] [--diff-suffix <suffix>]
+Usage: #{ AppName } -s, --source-image <file> -c, --config <config file> [-m, --metric <metric>] [--no-q, --no-quality-comparison] [-d, --jpeg2000-decoder <cli name>] [--compare <cli name>] [--decode-suffix <suffix>] [--diff-suffix <suffix>]
 
 BANNER
 
@@ -66,6 +67,9 @@ BANNER
       end
       opts.on( '-m', '--metric metric', String, 'Comparison metric (Default: psnr)' ) do |p|
         options.metric = p
+      end
+      opts.on( '--no-q', '--no-quality-comparison', "Don't perform quality comparisons" ) do
+        options.quality_comparison = FALSE
       end
       opts.on( '-d', '--jpeg2000-decoder cli_name', String, 'JPEG2000 decoder (Default: image_to_j2k)'  ) do |p|
         options.decoder_cli = p
@@ -99,15 +103,31 @@ elsif options.config_file.nil?
   exit
 end
 
+# Read from configuration file:
+# Codec name with cli name, required input type, desired output suffix and parameter list
+if File.exists?( options.config_file ) and File.ftype( options.config_file ) == 'file'
+  codecs = eval File.read( options.config_file )
+else
+  puts "Configuration file not found (#{ options.config_file })"
+  exit
+end
+
 # Conform source_image_file to 12bpc
 # No resizing, provide images with DC compliant dimensions.
 # Will need ppm and tif versions
 source_link = 'source'
 File.symlink( options.source_image_file, source_link )
-source_ppm = 'source.ppm'
-source_tif = 'source.tif'
-`convert #{ source_link } -depth 12 #{ source_ppm }`
-`convert #{ source_link } -depth 12 #{ source_tif }`
+requested_source_types = Array.new
+codecs.keys.each do |codec|
+  requested_source_types << codecs[ codec ][ :required_input_type ]
+end
+required_source_types = Hash.new
+requested_source_types.uniq.each do |type|
+  required_source_types[ type ] = "source.#{ type.to_s }"
+end
+required_source_types.keys.each do |type|
+  `convert #{ source_link } -depth 12 #{ required_source_types[ type ] }`
+end
 
 #
 def encoder( encoder_cli, input, output, parameters )
@@ -131,16 +151,7 @@ def diff_name( count, codec_name, a_type, b_type, target_suffix )
   "#{ counter_string count }diff--#{ codec_name }--#{ a_type }__#{ b_type }--.#{ target_suffix }"
 end
 def compare( cli, metric, a, b, diff_name )
-  `#{ cli } -metric #{ metric } #{ a } #{ b } #{ diff_name }`.chomp
-end
-
-# Read from configuration file:
-# Codec name with cli name, required input type, desired output suffix and parameter list
-if File.exists?( options.config_file ) and File.ftype( options.config_file ) == 'file'
-  codecs = eval File.read( options.config_file )
-else
-  puts "Configuration file not found (#{ options.config_file })"
-  exit
+  `#{ cli } -metric #{ metric } #{ a } #{ b } #{ diff_name } 2>&1`.chomp
 end
 
 # Set up a counter for output file prefixes
@@ -152,6 +163,7 @@ count =
 
 # Using this JPEG2000 decoder
 puts "JPEG2000 decoder used in this test series: #{ options.decoder_cli }"
+puts
 
 # Run tests for all codecs
 codecs.keys.each do |codec|
@@ -161,12 +173,13 @@ codecs.keys.each do |codec|
   
   # Encode to jpeg2000
   j2k_file = output( count, codec.to_s, codecs[ codec ][ :suffix ] )
-  case codecs[ codec ][ :required_input_type ]
-  when :ppm
-    source = source_ppm
-  when :tif
-    source = source_tif
-  end
+  source = required_source_types[ codecs[ codec ][ :required_input_type ] ]
+  #case codecs[ codec ][ :required_input_type ]
+  #when :ppm
+  #  source = source_ppm
+  #when :tif
+  #  source = source_tif
+  #end
   encoder( codecs[ codec ][ :cli ], source, j2k_file, codecs[ codec ][ :parameters ] )
   
   # Decode the jpeg2000 codestream
@@ -174,9 +187,10 @@ codecs.keys.each do |codec|
   decoder( options.decoder_cli, j2k_file, decoded_file )
 
   # Compare source image to decoded JPEG2000 result
-  [ decoded_file ].each do |b|
-    puts "#{ options.metric }: #{ source } <> #{ b }:"
-    compare( File.expand_path( options.compare_cli ), options.metric, source, b, diff_name( count, codec.to_s, File.basename( source ), File.basename( b ), options.diff_suffix )  )
+  if options.quality_comparison
+    [ decoded_file ].each do |b|
+      puts "#{ options.metric.upcase } #{ compare( File.expand_path( options.compare_cli ), options.metric, source, b, diff_name( count, codec.to_s, File.basename( source ), File.basename( b ), options.diff_suffix ) ) } (#{ source } -- #{ b })"
+    end
   end
   puts
   count[ :counter ] += 1
