@@ -1630,7 +1630,7 @@ if options.kdm == TRUE
   else
     CINEMACERTSTORE = ENV[ 'CINEMACERTSTORE' ]
     @logger.debug( "CINEMACERTSTORE is set to #{ CINEMACERTSTORE }" )
-    if File.exists?( CINEMACERTSTORE ) and File.ftype( CINEMACERTSTORE ) == 'directory'
+    if File.exists?( CINEMACERTSTORE ) and File.ftype( Pathname.new( CINEMACERTSTORE ).realpath ) == 'directory'
       signer_key_file, signer_cert_file, signer_cert_obj, ca_cert_file, intermediate_cert_file, certchain_text, certchain_objs = signature_context
       signer_cert_thumbprint = dc_thumbprint( signer_cert_file )
       @logger.info( "KDM signer: #{ signer_cert_obj.subject.to_s }" )
@@ -1646,7 +1646,7 @@ if options.kdm == TRUE
   else
     @keysdir = File.join( @cinemaslidesdir, 'keys' )
   end
-  if ( File.exists?( @keysdir ) and File.ftype( @keysdir ) == 'directory' )
+  if ( File.exists?( @keysdir ) and File.ftype( Pathname.new( @keysdir ).realpath ) == 'directory' )
     @logger.debug( "Content keystore at: #{ @keysdir }" )
   else
     @logger.info( "No content keystore found (Looking for #{ @keysdir })" )
@@ -1670,7 +1670,7 @@ if options.kdm == TRUE
         kdm_no_go << 'No content title text'
       end
       if options.kdm_keysdir
-        if File.exists?( options.kdm_keysdir ) and File.ftype( options.kdm_keysdir ) == 'directory'
+        if File.exists?( options.kdm_keysdir ) and File.ftype( Pathname.new( options.kdm_keysdir ).realpath ) == 'directory'
           keysdir_files = Dir.glob( File.join( options.kdm_keysdir, '*' ) )
           cpl_key_ids_types = Array.new
           keysdir_files.each do |kf|
@@ -1686,7 +1686,7 @@ if options.kdm == TRUE
         kdm_no_go << "No keysdir"
       end
     # Get CPL info
-    elsif File.exists?( options.kdm_cpl ) and File.ftype( options.kdm_cpl ) == 'file'
+    elsif File.exists?( options.kdm_cpl ) and File.ftype( Pathname.new( options.kdm_cpl ).realpath ) == 'file'
       xml_obj = Nokogiri::XML( File.read( options.kdm_cpl ) )
       if xml_obj.root == NIL
         @logger.info( "#{ options.kdm_cpl } is not XML" )
