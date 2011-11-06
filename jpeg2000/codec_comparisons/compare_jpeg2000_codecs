@@ -111,7 +111,7 @@ source_tif = 'source.tif'
 
 #
 def encoder( encoder_cli, input, output, parameters )
-  `time #{ encoder_cli } #{ parameters } -i #{ input } -o #{ output } > /dev/null`# 2>&1`
+  `time --format '%C\n%E real\t%U user\t%S sys\t%P cpu time' #{ encoder_cli } #{ parameters } -i #{ input } -o #{ output }`
 end
 def counter_string( count )
   count[ :counter_prefix ] % count[ :counter ]
@@ -158,7 +158,6 @@ codecs.keys.each do |codec|
   puts "#{ codec.to_s }:"
   # Codec version if available
   system( "#{ codecs[ codec ][ :cli ] } #{ codecs[ codec ][ :version_switch ] }" ) if codecs[ codec ][ :version_switch ]
-  puts "Parameters: #{ codecs[ codec ][ :parameters ] }"
   
   # Encode to jpeg2000
   j2k_file = output( count, codec.to_s, codecs[ codec ][ :suffix ] )
