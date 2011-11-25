@@ -1,35 +1,75 @@
 #!/usr/bin/env ruby
-
-# Check a number of XML documents against 1 Schema file, quick and dirty. Thank you, nokogiri!
 #
-# xsd-check.rb <Schema file> <XML document> (order doesn't matter)
-# xsd-check.rb SMPTE-429-7-2006-CPL.xsd cpl_2f1eb7bc-28ec-4590-a71c-cf564df4ecad_.xml
+# Wolfgang Woehl v0.2011.11.25
 #
-# In the good tradition of schema validators: No messages means no errors
+# Validate XML document against XSD.
+# Quick and dirty. Thank you, libxml and nokogiri!
+#
+# xsd-check.rb <Schema file> <XML document>
+# xsd-check.rb SMPTE-429-7-2006-CPL.xsd cpl.xml
+#
 
 require 'rubygems'
 require 'nokogiri'
 
-args = ARGV
-docs = Array.new
-schema = ''
-args.each do |arg|
-  if arg =~ /.xsd$/
-    schema = arg
-  elsif arg =~ /.xml$/
-    docs << arg
+if ARGV.size == 2
+  args = ARGV
+  if args.first == args.last
+    puts "Identical files provided"
+    exit
   end
+else
+  puts "2 arguments required: 1 XML file, 1 XSD file (Order doesn't matter)"
+  exit
 end
 
-puts "Schema: #{ File.basename( schema ) }"
-puts "XML docs: #{ docs.inspect }"
+if ENV[ 'XML_CATALOG_FILES' ].nil?
+  puts 'Consider using XML Catalogs and set env XML_CATALOG_FILES to point at your catalog'
+end
 
-unless schema == '' or docs.empty?
-  xsd = Nokogiri::XML::Schema( File.open( schema ) )
-  docs.each do |doc|
-    puts "Validating #{ doc } ..."
-    xsd.validate( doc ).each do |error|
-      puts "Error: #{ error.message }"
+errors = Array.new
+schema = ''
+doc = ''
+
+args.each do |arg|
+  begin
+    xml = Nokogiri::XML( open arg )
+  rescue Exception => e
+    puts e.message
+    exit
+  end
+  unless xml.errors.empty?
+    xml.errors.each do |e|
+      puts "Syntax error: #{ arg }: #{ e }"
+      errors << e
     end
   end
+  case xml.root.node_name
+  when 'schema'
+    schema = arg
+  else
+    doc = arg
+  end
 end
+exit if ! errors.empty?
+
+xsd = Nokogiri::XML::Schema( open schema )
+schema_errors = xsd.validate( doc )
+if ! schema_errors.empty?
+  schema_errors.each do |error|
+    errors << error
+    puts "Validation: #{ doc }: #{ error.message }"
+  end
+else
+  puts "XML document is valid"
+end
+
+if ! errors.empty?
+  errors.each do |e|
+    if e.message.match /Element.*No matching global declaration available/
+      puts 'Wrong XSD file?'
+    end
+  end
+  puts "XML document is not valid"
+end
+
