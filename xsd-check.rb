@@ -8,6 +8,8 @@
 # xsd-check.rb <Schema file> <XML document>
 # xsd-check.rb SMPTE-429-7-2006-CPL.xsd cpl.xml
 #
+# For XML Catalog operation see env XML_CATALOG_FILES and XML_DEBUG_CATALOG
+#
 
 require 'rubygems'
 require 'nokogiri'
@@ -53,7 +55,13 @@ args.each do |arg|
 end
 exit if ! errors.empty?
 
-xsd = Nokogiri::XML::Schema( open schema )
+begin
+  xsd = Nokogiri::XML::Schema( open schema )
+rescue Exception => e
+  puts e.message
+  exit
+end
+
 schema_errors = xsd.validate( doc )
 if ! schema_errors.empty?
   schema_errors.each do |error|
