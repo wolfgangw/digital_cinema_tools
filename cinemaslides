@@ -1047,7 +1047,7 @@ module DCTools
   def cipher_data_payload_binary_package( signer_cert_thumbprint, cpl_id, key_type, key_id, kdm_not_valid_before, kdm_not_valid_after, key )
     # see SMPTE 430-1-2006 section 6.1.2 Cipher Data
     structure_id_bin = %w( f1 dc 12 44 60 16 9a 0e 85 bc 30 06 42 f8 66 ab ).pack( 'H2H2H2H2H2H2H2H2H2H2H2H2H2H2H2H2' )
-    signer_cert_thumbprint_bin = `echo '#{ signer_cert_thumbprint }' | openssl base64 -d`
+    signer_cert_thumbprint_bin = Base64.decode64 signer_cert_thumbprint
     cpl_id_bin = uuid_to_bin( cpl_id )
     key_id_bin = uuid_to_bin( key_id )
     key_bin = key.split( /(\w\w)/ ).delete_if { |e| e == '' }.pack( 'H2H2H2H2H2H2H2H2H2H2H2H2H2H2H2H2' )
