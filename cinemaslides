@@ -1765,7 +1765,7 @@ if options.kdm == TRUE
     @logger.info( "No target certificate specified. Use --target <certificate>" )
     kdm_no_go << 'No target'
   else
-    if File.exists?( options.kdm_target ) and File.ftype( options.kdm_target ) != 'directory'
+    if File.exists?( options.kdm_target ) and File.ftype( Pathname.new( options.kdm_target ).realpath ) == 'file'
       begin
         recipient_cert_obj = OpenSSL::X509::Certificate.new( File.read( options.kdm_target ) )
         recipient_cert_thumbprint = dc_thumbprint( options.kdm_target )
