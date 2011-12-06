@@ -94,12 +94,11 @@ class DC_Crypto_Context
           #   context << { :x509 => OpenSSL::X509::Certificate.new( part ), :cert_file => File.expand_path( file ) }
           # end
         else
-          # Brute-force try and rescue here, not exactly elegant
           cert_obj = OpenSSL::X509::Certificate.new( raw )
           context << { :x509 => cert_obj, :cert_file => File.expand_path( file ) }
         end
-      rescue OpenSSL::X509::CertificateError => e
-        # move on (e.message)
+      rescue
+        # catch all (scan or Certificate) and move on
       end
     end
     
