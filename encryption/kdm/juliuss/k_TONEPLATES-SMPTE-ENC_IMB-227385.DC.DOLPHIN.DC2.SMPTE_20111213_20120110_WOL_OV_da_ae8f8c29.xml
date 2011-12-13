@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DCinemaSecurityMessage xmlns="http://www.smpte-ra.org/schemas/430-3/2006/ETM" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:enc="http://www.w3.org/2001/04/xmlenc#">
+  <!-- cinemaslides v0.2011.10.28 smpte kdm da -->
+  <AuthenticatedPublic Id="ID_AuthenticatedPublic">
+    <MessageId>urn:uuid:ae8f8c29-e9c2-48f2-98cb-05b73c208cc4</MessageId>
+    <MessageType>http://www.smpte-ra.org/430-1/2006/KDM#kdm-key-type</MessageType>
+    <AnnotationText>cinemaslides 2011-12-13T10:47:48+01:00</AnnotationText>
+    <IssueDate>2011-12-13T10:47:48+01:00</IssueDate>
+    <Signer>
+      <ds:X509IssuerName>dnQualifier=tFRIKbZGHS41l8izvl2bUdVyXBQ=,CN=.wolfgangw.smpte-430-2.intermediate,OU=ca.wolfgangw.github.com,O=wolfgangw.github.com</ds:X509IssuerName>
+      <ds:X509SerialNumber>8</ds:X509SerialNumber>
+    </Signer>
+    <RequiredExtensions>
+      <KDMRequiredExtensions xmlns="http://www.smpte-ra.org/schemas/430-1/2006/KDM">
+        <Recipient>
+          <X509IssuerSerial>
+            <ds:X509IssuerName>dnQualifier=BnB0iDJLgyqiWUjn1uqrOy2/DEE=,CN=.US1.DCS.DOLPHIN.DC2.SMPTE,OU=DC.DOREMILABS.COM,O=DC2.SMPTE.DOREMILABS.COM</ds:X509IssuerName>
+            <ds:X509SerialNumber>87683373722677549</ds:X509SerialNumber>
+          </X509IssuerSerial>
+          <X509SubjectName>dnQualifier=jvPHrhZ8C1lPD0dThNo2C6zb\+uQ=,CN=LE SPB MD FM SM.IMB-227385.DC.DOLPHIN.DC2.SMPTE,OU=DC.DOREMILABS.COM,O=DC2.SMPTE.DOREMILABS.COM</X509SubjectName>
+        </Recipient>
+        <CompositionPlaylistId>urn:uuid:eece17de-77e8-4a55-9347-b6bab5724b9f</CompositionPlaylistId>
+        <ContentTitleText>TONEPLATES-SMPTE-ENCRYPTED_TST_F_XX-XX_ITL-TD_51-XX_2K_WOE_20111001_WOE_OV</ContentTitleText>
+        <ContentAuthenticator>m7CDgpBxgjoxA0RJhm2IIJZbBs4=</ContentAuthenticator>
+        <ContentKeysNotValidBefore>2011-12-13T08:23:48+01:00</ContentKeysNotValidBefore>
+        <ContentKeysNotValidAfter>2012-01-10T10:47:48+01:00</ContentKeysNotValidAfter>
+        <AuthorizedDeviceInfo>
+          <DeviceListIdentifier>urn:uuid:b60c3584-e98a-49c8-aca5-0b333f7fa8e4</DeviceListIdentifier>
+          <DeviceListDescription>IMB-227385.DC.DOLPHIN.DC2.SMPTE</DeviceListDescription>
+          <DeviceList>
+            <CertificateThumbprint>2jmj7l5rSw0yVb/vlWAYkK/YBwk=</CertificateThumbprint>
+          </DeviceList>
+        </AuthorizedDeviceInfo>
+        <KeyIdList>
+          <TypedKeyId>
+            <KeyType>MDIK</KeyType>
+            <KeyId>urn:uuid:4ac4f922-8239-4831-b23b-31426d0542c4</KeyId>
+          </TypedKeyId>
+          <TypedKeyId>
+            <KeyType>MDAK</KeyType>
+            <KeyId>urn:uuid:73baf5de-e195-4542-ab28-8a465f7d4079</KeyId>
+          </TypedKeyId>
+        </KeyIdList>
+        <ForensicMarkFlagList>
+          <ForensicMarkFlag>http://www.smpte-ra.org/430-1/2006/KDM#mrkflg-picture-disable</ForensicMarkFlag>
+          <ForensicMarkFlag>http://www.smpte-ra.org/430-1/2006/KDM#mrkflg-audio-disable</ForensicMarkFlag>
+        </ForensicMarkFlagList>
+      </KDMRequiredExtensions>
+    </RequiredExtensions>
+    <NonCriticalExtensions/>
+  </AuthenticatedPublic>
+  <AuthenticatedPrivate Id="ID_AuthenticatedPrivate">
+    <enc:EncryptedKey>
+      <enc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p">
+        <ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+      </enc:EncryptionMethod>
+      <enc:CipherData>
+        <enc:CipherValue>NoYNNHS7sz56zO2IK1PrvoGrnWxivB67gebwj0JHaxvZoYG0dJ5HNNt8/jQH0cGd
+jMGr1PqS/74TXXLpAfYcRqbNmxuyvx9gUiZcWHbLdRitx9qE14qwTT8Gp8Sgtl1u
+1JbetK0uYPe92epT/ePosx6mNVYbQGd1jqCU5aJMpXel2sJvmThmF/CqkjcLdsZv
+IXa5Yozsn7xNg0WHZvlDDhfSzM4jxA7PP3xTDG9pSROEEhUXCz58IA2slzbjR9H8
+A93iXwYHOYOa1B2Grikl2Ov9Mf516yuoFrDGIpjHhtrtqUNltkrNi2oODoNoQKbL
+oOWt1p3/DiKYAkVXAiSLrQ==</enc:CipherValue>
+      </enc:CipherData>
+    </enc:EncryptedKey>
+    <enc:EncryptedKey>
+      <enc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p">
+        <ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+      </enc:EncryptionMethod>
+      <enc:CipherData>
+        <enc:CipherValue>fuji1o23O9Imr0WXywcMCv0G+ofiVPWmRzqfC5YmtyH9xIHBipGf32uA+CtMNPB0
+60ynsbi/J2tjd+0MnKzLs7ujPSYmfIvbZdB6lrkDyPZEhAHepqjVEBtKihrdRY59
+sx1qLTUNkInUkUGy5U14/Fc1dx6d/vuz/YgxJOxmCi6+6/zibwk0jgiBNSz2Uejo
+g6H6XibKJB0pC29SL0SLaJEHw2DkGyeHs7AmXEEamWmHLg9L5HklweDc10TqiLUm
+GdHzPQ6EReROmJ/VXBT7xGnoKJwumeHpyw/xIUrFt/KJ9vM/j57X8QJPiZkaSkxi
+Da3Noe3dodOjJj8BI83Ixg==</enc:CipherValue>
+      </enc:CipherData>
+    </enc:EncryptedKey>
+  </AuthenticatedPrivate>
+  <ds:Signature>
+    <ds:SignedInfo>
+      <ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments"/>
+      <ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+      <ds:Reference URI="#ID_AuthenticatedPublic">
+        <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+        <ds:DigestValue>0qDTsIdQtAbCYIYtIJ+1bIWxUYM/H7AUpmP41IC9bkE=</ds:DigestValue>
+      </ds:Reference>
+      <ds:Reference URI="#ID_AuthenticatedPrivate">
+        <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+        <ds:DigestValue>N34TPK2cZG4cb4oO/OuSKqsVCvqy88dfUzRyHej7WQA=</ds:DigestValue>
+      </ds:Reference>
+    </ds:SignedInfo>
+    <ds:SignatureValue>rJjUQ449N1RSb0TcReN99bCgPgYhwmFT4TNU24yIyWuyKW/Zn+mqzWkQbkunbQ54
+l2p2UrMeaTpkmCbdK2K0fLOFocCwFK+QiMbBq8WzTNSVaQKcbJco0VZvbnrdd+zP
+bY56K26KoIROZofU6CKn/sAxJiN4f6MY7SpOW7eulRxG6kIBbUpyB2JllB/dd7Ph
+KNfgUFd4Lgw8rScRHUt/9G12EoLK6olAlAwmJzbqqRy9L5geZGv5COE3+EtuaMzj
+GoczUoiUfaofh0L0D2hl2EWNh3kN7l8//duhIl7NVafh1z6nQawSPoT/gGHQVIe9
+yIgTR4Bumnmm4ZuHXQEweA==</ds:SignatureValue>
+    <ds:KeyInfo>
+      <ds:X509Data>
+        <ds:X509IssuerSerial>
+          <ds:X509IssuerName>dnQualifier=tFRIKbZGHS41l8izvl2bUdVyXBQ=,CN=.wolfgangw.smpte-430-2.intermediate,OU=ca.wolfgangw.github.com,O=wolfgangw.github.com</ds:X509IssuerName>
+          <ds:X509SerialNumber>8</ds:X509SerialNumber>
+        </ds:X509IssuerSerial>
+        <ds:X509Certificate>MIIEnzCCA4egAwIBAgIBCDANBgkqhkiG9w0BAQsFADCBljEdMBsGA1UEChMUd29s
+Zmdhbmd3LmdpdGh1Yi5jb20xIDAeBgNVBAsTF2NhLndvbGZnYW5ndy5naXRodWIu
+Y29tMSwwKgYDVQQDEyMud29sZmdhbmd3LnNtcHRlLTQzMC0yLmludGVybWVkaWF0
+ZTElMCMGA1UELhMcdEZSSUtiWkdIUzQxbDhpenZsMmJVZFZ5WEJRPTAeFw0xMTA5
+MDcyMDMyMDVaFw0yMTA4MzAyMDMyMDVaMIGQMR0wGwYDVQQKExR3b2xmZ2FuZ3cu
+Z2l0aHViLmNvbTEgMB4GA1UECxMXY2Eud29sZmdhbmd3LmdpdGh1Yi5jb20xJjAk
+BgNVBAMTHUNTLndvbGZnYW5ndy5zbXB0ZS00MzAtMi5sZWFmMSUwIwYDVQQuExxP
+eGZqV2tndjJlSmRBb2U2aCtNV1UrYkpwWlE9MIIBIjANBgkqhkiG9w0BAQEFAAOC
+AQ8AMIIBCgKCAQEArsmqsveK/VuobF4FZxcDlAPhjhM/q0IxNFKtrDwLEL0JSXl9
+II9leByT+RubHplUalTOrQGvWOCAsqHfBO7KHhFc5tclNlO+YDJem5ITI2GoCKC2
+h/SngPPuQxAfvBCUUQ5RKHsSjSQ52BGFAiiVQX9kTBF8hkljNQ96Hlyzx0fr665D
+wRqDtzHJ9ukGm9iswf3MW8193A3Utsd1kYGoFwppX8FCwnGvnmybc6CO7tz1F7wb
+/tUvgjy23N+N2cRjYG90LA+TbAfYNS+rsaTEzw5hWK92L34zXbgNb0U4DWEnjQc+
+jRNVyPGevTUwpRRoXkYoISbperZKEacp8q+M6wIDAQABo4H7MIH4MAwGA1UdEwEB
+/wQCMAAwCwYDVR0PBAQDAgWgMB0GA1UdDgQWBBQ7F+NaSC/Z4l0Ch7qH4xZT5sml
+lDCBuwYDVR0jBIGzMIGwgBS0VEgptkYdLjWXyLO+XZtR1XJcFKGBlKSBkTCBjjEd
+MBsGA1UEChMUd29sZmdhbmd3LmdpdGh1Yi5jb20xIDAeBgNVBAsTF2NhLndvbGZn
+YW5ndy5naXRodWIuY29tMSQwIgYDVQQDExsud29sZmdhbmd3LnNtcHRlLTQzMC0y
+LnJvb3QxJTAjBgNVBC4THDJtd0Nrc3lBUXlVY2JqSGUrS0JLRHF2dXFlST2CAQYw
+DQYJKoZIhvcNAQELBQADggEBAAuIYjNhf4LLlqu9JU5IAwuX3ov+pTNHL9ivjZr4
+e7AeV6i2ZlkEJr0+YotQuonAmBia0PSUEEGtIyaa/uN1cW1vBuZELSZvXbl9hVN6
+3rqMgRF7nj+yOB5d5Z3DFiZnKKuZEE5PxyE1unql/lZEOyUE6rwhWGc2ZiD+IAr7
+fw41gHmGzsgejqZLS1HuTPdTb6eoguAnHN2C+OMApu+EqtQ1LErb8T7VEC5KPaQZ
+Y4S4NdpSsv/Vm2tQAf4zrwhXXv48gvOEK6xyWnAj7rVYoC39PQUR5mA1afnPz+jS
+hXe3Rn6I4NCcAsfMCMZ3KmcdBqc82AG1U8oGG7egterYQzc=</ds:X509Certificate>
+      </ds:X509Data>
+      <ds:X509Data>
+        <ds:X509IssuerSerial>
+          <ds:X509IssuerName>dnQualifier=2mwCksyAQyUcbjHe\+KBKDqvuqeI=,CN=.wolfgangw.smpte-430-2.root,OU=ca.wolfgangw.github.com,O=wolfgangw.github.com</ds:X509IssuerName>
+          <ds:X509SerialNumber>6</ds:X509SerialNumber>
+        </ds:X509IssuerSerial>
+        <ds:X509Certificate>MIIEpDCCA4ygAwIBAgIBBjANBgkqhkiG9w0BAQsFADCBjjEdMBsGA1UEChMUd29s
+Zmdhbmd3LmdpdGh1Yi5jb20xIDAeBgNVBAsTF2NhLndvbGZnYW5ndy5naXRodWIu
+Y29tMSQwIgYDVQQDExsud29sZmdhbmd3LnNtcHRlLTQzMC0yLnJvb3QxJTAjBgNV
+BC4THDJtd0Nrc3lBUXlVY2JqSGUrS0JLRHF2dXFlST0wHhcNMTEwOTA1MTEwOTMw
+WhcNMjEwOTAxMTEwOTMwWjCBljEdMBsGA1UEChMUd29sZmdhbmd3LmdpdGh1Yi5j
+b20xIDAeBgNVBAsTF2NhLndvbGZnYW5ndy5naXRodWIuY29tMSwwKgYDVQQDEyMu
+d29sZmdhbmd3LnNtcHRlLTQzMC0yLmludGVybWVkaWF0ZTElMCMGA1UELhMcdEZS
+SUtiWkdIUzQxbDhpenZsMmJVZFZ5WEJRPTCCASIwDQYJKoZIhvcNAQEBBQADggEP
+ADCCAQoCggEBAMFMaW82pgmpN1UX5wrqRerLh7cBTPA/jyaj2cPGCrBNecB2Vg4k
+8eibrok7PEqKSjVZrXmBJNjltRIDBd/b1x5ZoiJ3DnGHjv/fuhfw/LSKdUa5Nf+G
+SbEJcqsE5m+KZsvVboaRseWSom1Gy9NdT3lw4JRGT0WKdSRctFu9sJxkPt/TFE1p
+kXBmINp3E5TY2HLH7VpyNxFLGAEP+9L/RD2/V3bFUkcivzeetlhePK63f3aVVbeJ
+MS1V8EMfev0wQWiZZrOP5kyyJ2PhGAPOKkeYH+16uzPkEqtlK8Iod/qwqEm+pS4G
+zLhm46oQuT5yOKy1en3TRNlBps0DWzDUoeMCAwEAAaOCAQEwgf4wEgYDVR0TAQH/
+BAgwBgEB/wIBAjALBgNVHQ8EBAMCAQYwHQYDVR0OBBYEFLRUSCm2Rh0uNZfIs75d
+m1HVclwUMIG7BgNVHSMEgbMwgbCAFNpsApLMgEMlHG4x3vigSg6r7qnioYGUpIGR
+MIGOMR0wGwYDVQQKExR3b2xmZ2FuZ3cuZ2l0aHViLmNvbTEgMB4GA1UECxMXY2Eu
+d29sZmdhbmd3LmdpdGh1Yi5jb20xJDAiBgNVBAMTGy53b2xmZ2FuZ3cuc21wdGUt
+NDMwLTIucm9vdDElMCMGA1UELhMcMm13Q2tzeUFReVVjYmpIZStLQktEcXZ1cWVJ
+PYIBBTANBgkqhkiG9w0BAQsFAAOCAQEAcMum68zvMDGRWcUN2B6iWb0Yvp4SsM12
+i4+pJZcvAPofdwnjbu8sGSmwxfvZ9WD1ATKp+0zXXwWWpH/KhCtcRWDSeiiZLlH8
+MLPwUGOC3s/2UzUDkvoiGYOicIZAKZCR4ARzryVyJ0QzaTSilafsL85lM1W+vpDT
+ScWsh3ovOPzvQWu75XYQB4+5QA1LRt4ZCfanZ4sC2IagLig8RiFh6xMA73ZkEyGr
+IvOoRzhOfsUicVniz2fO7STYZNEkLE4FJ8nt0P6GEbvuRTgxk9ICzVGe2FSCwGxq
+zeeN4h8jLvCvWRSiACLzemJ4qV4Gi4pJMX2lLm7oROBX/YNz0zsB1Q==</ds:X509Certificate>
+      </ds:X509Data>
+      <ds:X509Data>
+        <ds:X509IssuerSerial>
+          <ds:X509IssuerName>dnQualifier=2mwCksyAQyUcbjHe\+KBKDqvuqeI=,CN=.wolfgangw.smpte-430-2.root,OU=ca.wolfgangw.github.com,O=wolfgangw.github.com</ds:X509IssuerName>
+          <ds:X509SerialNumber>5</ds:X509SerialNumber>
+        </ds:X509IssuerSerial>
+        <ds:X509Certificate>MIIEnDCCA4SgAwIBAgIBBTANBgkqhkiG9w0BAQsFADCBjjEdMBsGA1UEChMUd29s
+Zmdhbmd3LmdpdGh1Yi5jb20xIDAeBgNVBAsTF2NhLndvbGZnYW5ndy5naXRodWIu
+Y29tMSQwIgYDVQQDExsud29sZmdhbmd3LnNtcHRlLTQzMC0yLnJvb3QxJTAjBgNV
+BC4THDJtd0Nrc3lBUXlVY2JqSGUrS0JLRHF2dXFlST0wHhcNMTEwOTA1MTEwOTMw
+WhcNMjEwOTAyMTEwOTMwWjCBjjEdMBsGA1UEChMUd29sZmdhbmd3LmdpdGh1Yi5j
+b20xIDAeBgNVBAsTF2NhLndvbGZnYW5ndy5naXRodWIuY29tMSQwIgYDVQQDExsu
+d29sZmdhbmd3LnNtcHRlLTQzMC0yLnJvb3QxJTAjBgNVBC4THDJtd0Nrc3lBUXlV
+Y2JqSGUrS0JLRHF2dXFlST0wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB
+AQDlPCtFj/DGx1SruRJE/ntb5pHx32sxrtHsssIhoQArvK+7qFfy/ewmFW9/4GY6
+Dz96fqC0wFWNESlKatMRCcAa+0+mxH63lFLy1worygQUPjBjr3WAfOY9QJqB7C68
+gTZey5axr3SZEF/np6Mj36/f393mw6HjXIsgCLGPLWiPM1AmiuWMfAuqUbX/ZiN4
+UTW1h/KWt2v+/Ka+ECkbwiVM/maZstfnlEMoy2FMeZAmpvsRvr2KxQENyiWEuKHO
+uS9yKxXMP3/8uaPItxoxtHw+PN1NIYkKQPC/Lzof86keK7+0hFkxpQNP6CUabv6j
+F+ErPgAKATRlTYPxEFrZ2QSNAgMBAAGjggEBMIH+MBIGA1UdEwEB/wQIMAYBAf8C
+AQMwCwYDVR0PBAQDAgEGMB0GA1UdDgQWBBTabAKSzIBDJRxuMd74oEoOq+6p4jCB
+uwYDVR0jBIGzMIGwgBTabAKSzIBDJRxuMd74oEoOq+6p4qGBlKSBkTCBjjEdMBsG
+A1UEChMUd29sZmdhbmd3LmdpdGh1Yi5jb20xIDAeBgNVBAsTF2NhLndvbGZnYW5n
+dy5naXRodWIuY29tMSQwIgYDVQQDExsud29sZmdhbmd3LnNtcHRlLTQzMC0yLnJv
+b3QxJTAjBgNVBC4THDJtd0Nrc3lBUXlVY2JqSGUrS0JLRHF2dXFlST2CAQUwDQYJ
+KoZIhvcNAQELBQADggEBAGXr9h4kK4pyaUDbtLyzQZcuZ+0q2o4XhNpmfJj25C26
+X/S6E0oZVUFM3QysJBzgbSqxuD/Ej++HdCiF3z3dKtXlt8+TH6PsIe7uRchYbutJ
+Um9UVRgUOGRfZ9/RavzhehHDh+h2EfF66Vfs3Wrl1HUKwZfR7zMJ2jWUBixw+hW/
+Rwv1BXEfCaTefLh6+fhvcXEZkHNAUp9o/FVpXGC6a6wTKsteeANIbO2esBp6qIcx
+lWEcIf+muAYndOQ//oZ6XasusWN2cTCEscdApXXUj1gewnvJTbuCyY2MOocMVAxu
+QcK4BBJ3Dt59zusLmdQYJ+p4px0BPF5Hj0sgQ5G9dTo=</ds:X509Certificate>
+      </ds:X509Data>
+    </ds:KeyInfo>
+  </ds:Signature>
+</DCinemaSecurityMessage>
