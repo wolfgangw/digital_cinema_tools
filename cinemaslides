@@ -925,43 +925,6 @@ def confirm_or_create( location )
 end
 
 
-# Prototype. Text-only
-class DCST_SMPTE_428_7_2007
-  def initialize( subtitle_reel_id, content_title_text, annotation_text, issue_date, reel_number, language, edit_rate, time_code_rate, start_time, fonts, default_font_color_code, default_font_name, default_font_size, default_font_weight, subtitles )
-    @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
-      xml.SubtitleReel_( 'xmlns:dcst' => "http://www.smpte-ra.org/schemas/428-7/2007/DCST", 'xmlns:xs' => "http://www.w3.org/2001/XMLSchema", 'targetNamespace' => "http://www.smpte-ra.org/schemas/428-7/2007/DCST", 'elementFormDefault' => "qualified", 'attributeFormDefault' => "unqualified" ) {
-        xml<< "<!-- #{ AppName } #{ AppVersion } smpte dcst -->"
-        xml.Id_ "urn:uuid:#{ subtitle_reel_id }"
-        xml.ContentTitleText_ content_title_text
-        xml.AnnotationText_ annotation_text
-        xml.IssueDate_ issue_date
-        xml.ReelNumber_ reel_number
-        xml.Language_ language
-        xml.EditRate_ edit_rate
-        xml.TimeCodeRate_ time_code_rate
-        xml.StartTime_ start_time
-        # fonts = [ [font, id], [font, id], ... ]
-        fonts.each do |font|
-          xml.LoadFont_( "urn:uuid:#{ font[ 1 ] }", 'ID' => font[ 0 ] )
-        end # fonts.each
-        xml.SubtitleList_ {
-          xml.Font_( 'Color' => default_font_color_code, 'ID' => default_font_name, 'Size' => default_font_size, 'Weight' => default_font_weight ) {
-            # subtitles = [ [tc_in, tc_out, fade_up, fade_down, text], [...] ]
-            subtitles.each_with_index do |subtitle, index|
-              xml.Subtitle_( 'SpotNumber' => index + 1, 'TimeIn' => subtitle[ 0 ], 'TimeOut' => subtitle[ 1 ], 'FadeUpTime' => subtitle[ 2 ], 'FadeDownTime' => subtitle[ 3 ] )
-            end # subtitles.each
-          } # Font
-        } # SubtitleList
-      } # SubtitleReel
-    end # @builder
-  end # initialize
-  
-  def xml
-    @builder.to_xml( :indent => 2 )
-  end
-end # DCST_SMPTE_428_7_2007
-
-
 class MXF_Metadata < Hash
   def initialize( mxf )
     asdcp_info = `asdcp-test -v -i #{ mxf }`.chomp
