@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Wolfgang Woehl v0.2011.11.25
+# Wolfgang Woehl v0.2011.12.29
 #
 # Validate XML document against XSD.
 # Quick and dirty. Thank you, libxml and nokogiri!
