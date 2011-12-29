@@ -29,6 +29,13 @@ if ENV[ 'XML_CATALOG_FILES' ].nil?
   puts 'Consider using XML Catalogs and set env XML_CATALOG_FILES to point at your catalog'
 end
 
+def abort_on_errors( errors )
+  if ! errors.empty?
+    errors.map { |e| puts e }
+    abort
+  end
+end
+
 errors = Array.new
 schema = ''
 doc = ''
@@ -37,29 +44,32 @@ args.each do |arg|
   begin
     xml = Nokogiri::XML( open arg )
   rescue Exception => e
-    puts e.message
-    exit
+    errors << e
+    abort_on_errors( errors )
   end
   unless xml.errors.empty?
     xml.errors.each do |e|
-      puts "Syntax error: #{ arg }: #{ e }"
       errors << e
     end
   end
-  case xml.root.node_name
-  when 'schema'
-    schema = arg
+  if xml.root
+    case xml.root.node_name
+    when 'schema'
+      schema = arg
+    else
+      doc = arg
+    end
   else
-    doc = arg
+    errors << "Not XML"
   end
 end
-exit if ! errors.empty?
+abort_on_errors( errors )
 
 begin
   xsd = Nokogiri::XML::Schema( open schema )
 rescue Exception => e
-  puts e.message
-  exit
+  errors << e
+  abort_on_errors( errors )
 end
 
 schema_errors = xsd.validate( doc )
