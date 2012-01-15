@@ -1,1 +1,1 @@
-for i in t1 mt1 da ds; do cinemaslides --kdm --formulation $i --cpl TONEPLATES-SMPTE/TONEPLATES-SMPTE-ENCRYPTED_TST_F_XX-XX_ITL-TD_51-XX_2K_WOE_20111001_WOE_OV/cpl_eece17de-77e8-4a55-9347-b6bab5724b9f_.xml --target imb-227385.cert.sha256.pem ; done
+for i in t1 mt1 da ds; do cinemaslides --kdm --formulation $i --cpl TONEPLATES-SMPTE/TONEPLATES-SMPTE-ENCRYPTED_TST_F_XX-XX_ITL-TD_51-XX_2K_WOE_20111001_WOE_OV/cpl_eece17de-77e8-4a55-9347-b6bab5724b9f_.xml --target imb-227577.cert.sha256.pem ; done

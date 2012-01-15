@@ -2,10 +2,10 @@
 <DCinemaSecurityMessage xmlns="http://www.smpte-ra.org/schemas/430-3/2006/ETM" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:enc="http://www.w3.org/2001/04/xmlenc#">
   <!-- cinemaslides v0.2011.10.28 smpte kdm t1 -->
   <AuthenticatedPublic Id="ID_AuthenticatedPublic">
-    <MessageId>urn:uuid:6047b2bc-1757-4962-ab35-bc67b67ca9ff</MessageId>
+    <MessageId>urn:uuid:53052eb7-e569-49b4-bf14-6015d73b0bfe</MessageId>
     <MessageType>http://www.smpte-ra.org/430-1/2006/KDM#kdm-key-type</MessageType>
-    <AnnotationText>cinemaslides 2011-12-13T10:47:47+01:00</AnnotationText>
-    <IssueDate>2011-12-13T10:47:47+01:00</IssueDate>
+    <AnnotationText>cinemaslides 2012-01-15T13:50:14+01:00</AnnotationText>
+    <IssueDate>2012-01-15T13:50:14+01:00</IssueDate>
     <Signer>
       <ds:X509IssuerName>dnQualifier=tFRIKbZGHS41l8izvl2bUdVyXBQ=,CN=.wolfgangw.smpte-430-2.intermediate,OU=ca.wolfgangw.github.com,O=wolfgangw.github.com</ds:X509IssuerName>
       <ds:X509SerialNumber>8</ds:X509SerialNumber>
@@ -15,19 +15,19 @@
         <Recipient>
           <X509IssuerSerial>
             <ds:X509IssuerName>dnQualifier=BnB0iDJLgyqiWUjn1uqrOy2/DEE=,CN=.US1.DCS.DOLPHIN.DC2.SMPTE,OU=DC.DOREMILABS.COM,O=DC2.SMPTE.DOREMILABS.COM</ds:X509IssuerName>
-            <ds:X509SerialNumber>87683373722677549</ds:X509SerialNumber>
+            <ds:X509SerialNumber>87696567839882416</ds:X509SerialNumber>
           </X509IssuerSerial>
-          <X509SubjectName>dnQualifier=jvPHrhZ8C1lPD0dThNo2C6zb\+uQ=,CN=LE SPB MD FM SM.IMB-227385.DC.DOLPHIN.DC2.SMPTE,OU=DC.DOREMILABS.COM,O=DC2.SMPTE.DOREMILABS.COM</X509SubjectName>
+          <X509SubjectName>dnQualifier=dUsGkBgVHURva/kNS\+EHaCrg87M=,CN=LE SPB MD FM SM.IMB-227577.DC.DOLPHIN.DC2.SMPTE,OU=DC.DOREMILABS.COM,O=DC2.SMPTE.DOREMILABS.COM</X509SubjectName>
         </Recipient>
         <CompositionPlaylistId>urn:uuid:eece17de-77e8-4a55-9347-b6bab5724b9f</CompositionPlaylistId>
         <ContentTitleText>TONEPLATES-SMPTE-ENCRYPTED_TST_F_XX-XX_ITL-TD_51-XX_2K_WOE_20111001_WOE_OV</ContentTitleText>
-        <ContentKeysNotValidBefore>2011-12-13T08:23:47+01:00</ContentKeysNotValidBefore>
-        <ContentKeysNotValidAfter>2012-01-10T10:47:47+01:00</ContentKeysNotValidAfter>
+        <ContentKeysNotValidBefore>2012-01-15T11:26:14+01:00</ContentKeysNotValidBefore>
+        <ContentKeysNotValidAfter>2012-02-12T13:50:14+01:00</ContentKeysNotValidAfter>
         <AuthorizedDeviceInfo>
-          <DeviceListIdentifier>urn:uuid:0ad3e7ab-7d43-45d3-ab49-1811c23446bf</DeviceListIdentifier>
-          <DeviceListDescription>IMB-227385.DC.DOLPHIN.DC2.SMPTE</DeviceListDescription>
+          <DeviceListIdentifier>urn:uuid:327a2be4-ee9c-4e84-900f-0f5612f44757</DeviceListIdentifier>
+          <DeviceListDescription>IMB-227577.DC.DOLPHIN.DC2.SMPTE</DeviceListDescription>
           <DeviceList>
-            <CertificateThumbprint>lctID/rhRI8VAVMI2QPl6JiNu0w=</CertificateThumbprint>
+            <CertificateThumbprint>IkDg473t+eX7tJAsiD5ucs1EnME=</CertificateThumbprint>
           </DeviceList>
         </AuthorizedDeviceInfo>
         <KeyIdList>
@@ -54,12 +54,12 @@
         <ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
       </enc:EncryptionMethod>
       <enc:CipherData>
-        <enc:CipherValue>ohU+7zBjRAfgDPs1eru623gzpcN98gpKq9Ac7vesZhvkxMR225IqUVLYIjqPt6uy
-oyzkYpP+qcSRlSRv1NpUn9taSWH0W7Qg46FJtbX/Q8f2hC6boJXFR5c205bgX/CK
-A2TGiRfKuhzO5rMPPCQlMfZIcfVyPVwfgiKtujnbtze7JFNe//dkaSwzRHCig85e
-nemK6/SenOomkG4iwmQIV8/gh8cF8DpAhxLxK99lIGu8qazb3y+u90QY5i12bGoy
-f2sIbEaAwDOCSIBiL4aUSHj8hGUHn+xTcbMppFJ39T/qh/wEQWTbUn81edFZ01Tf
-qAG0kXdcrEvsIr7pSPfa7Q==</enc:CipherValue>
+        <enc:CipherValue>AEaMCtMjkUcshTXuBoh8zHK2bRQzQcGKxd1XIFZdaXepbeEDqToS3oG4fg7eVSpt
+UvVGq0MWyqQUP+/HH5gjeMxXEmi8Z6QLUBnVsAF3di9sGeMPc7sBghHRso1LMRKx
+RC1yivv8nIjB7/VG+qYVvxc6vhBICfYL6hWjC6m/+a8K4zaFhKXdWaR/o1083WQs
+Qja6tCW54I+aGHRrCS8LVOX6REXA7WbNrHiX8/lciE3VZcNmI4iY2m3s6aGCtMZL
++Wu2MbCZaMrAu9a0vLXFcw+ErMu5GC/nEEFrpasf/aM6QvM/P9f7Psy4tH3xxygh
+r62sMGbNmSXjpjnPKNR/tQ==</enc:CipherValue>
       </enc:CipherData>
     </enc:EncryptedKey>
     <enc:EncryptedKey>
@@ -67,12 +67,12 @@ qAG0kXdcrEvsIr7pSPfa7Q==</enc:CipherValue>
         <ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
       </enc:EncryptionMethod>
       <enc:CipherData>
-        <enc:CipherValue>TGu0TucBv8q5WKs3zcbrMj8e9AvwHY9KwrtJUWKR9FaEVHbBjGmLrrjZqEHrL+Xr
-mtKxOTKMdhvIPYEdOfzKPKMbLy0GugMvkeh2eDSx6vE3oWEltuE5AKRWog6rCpoI
-XMGNXjw0dOa0y5RsnkYPdPTcm6b0908O/2wCUVKzclbRQiAzJNBNZznig16nv/7J
-TfQAW/OGPPoEVdKQla+1l3uaYJtCMop2/alZiyZ7nPHwHKcrYLm6MGVVr1RrCmd3
-A6G82KdU2gczXV98nee8jjER8KxqnWxmU8wTMG5qV+WXkx+ZLQy8Fc+PNC7pS2We
-vxZVZJsghdSlHRnsK1jZiQ==</enc:CipherValue>
+        <enc:CipherValue>NQvPhnLJaBEIx8/aCoKOVAsP5s/A1tt0w35hjgfVcPQ3v0IriyOcEtQU0x7JtDeA
+vMwpDWd8ij98B8o44rPRGbOVeSJhdwGRoWJix2lPNl4bTPa4I9MuOWcEMM8taBpk
+cCwxOxpFhmp28kz+OpH9NObUndZlR9HVg19O11C8g2SrUiAn7AyuZd/28XINVByk
+Cr/fF+G/vXDqRj9buai5DrzH5LyKyOv0ECUS9/nuw5aN8wjEEQlPLbIEifpR9XeV
+jrs5u6Lj+jKtlsA/2iRZg4pd/nKAtDjpOXiivwFp5mI6b7f7EVHDIJafSNyZyOLc
+OslZzWlj2ik8+cdyrrkJfQ==</enc:CipherValue>
       </enc:CipherData>
     </enc:EncryptedKey>
   </AuthenticatedPrivate>
@@ -82,19 +82,19 @@ vxZVZJsghdSlHRnsK1jZiQ==</enc:CipherValue>
       <ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
       <ds:Reference URI="#ID_AuthenticatedPublic">
         <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-        <ds:DigestValue>wvK+WOIOnL5b0pY8wm3V9wdnti1iNN9/gXTaaxDz0AU=</ds:DigestValue>
+        <ds:DigestValue>AWZXFMJMLaNW5kp06RujMVBFIpqwUf9m+Hqd2nCykGI=</ds:DigestValue>
       </ds:Reference>
       <ds:Reference URI="#ID_AuthenticatedPrivate">
         <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-        <ds:DigestValue>rDx6LZ6usTMHJ7F6VFLx6TrJkHSYLlVtXiHL8+BP3yw=</ds:DigestValue>
+        <ds:DigestValue>qpSsvxd28/vvtvT4hk8J6OGMt6Hmu+wkYFfIm1Ye9ag=</ds:DigestValue>
       </ds:Reference>
     </ds:SignedInfo>
-    <ds:SignatureValue>Lssbc2EFLNXSCrWjZ+URglFzHpps2LoNHFYKn2GzkqyQN1aJG2eb7X7rGSe607iZ
-E0x2PBbAS4z2E8DoASo0axJG7pZwCY+isRgSg+bozR228BIFt/l4MxQwRk4Dh5PV
-b/FAqoCz3l1cVMeYCq72ReVr+BF/7F0v5wvQre9BSY9qGp7oyWB6De0IUOImJaqp
-zaSf4tjG7nR9+aoPPQyOvRXuc8eePypNvBs0kF7jtIjHiL5OyoEwo5EJVF7hgCkN
-ovJEz0s+0onwyKA2yb+2wGqb9WbbaZzjpRcdlWwWzJoM8vc778wS4TnbEanHdYpL
-s0RQIUjHHr2+b2FzaIxbXg==</ds:SignatureValue>
+    <ds:SignatureValue>rZXl1uyr9ULmUt5PaE3UuRh0E2i+Lck6XwzGYfIaIXblwFWX1jktw01rSQk6XQ60
+E69IKALQq49qRWnzQzQXIKq1UlfwxBjEsqwfhFw4EvUax5D12fqB+RDjanlV3u4d
+9sAoKF3aVOYM5F6ciNXWRzkafUoso8Vr/WUsFZ5gyL9SjG+qXEbYrfxMfvHvrlg8
+rM7xF4Y5YbUsPwaQCtGoUu7Qu3tzDLHW52Kj2NTMMIIO694CtG4knZl8uEJJNG1s
+gZ/1p8YE38SJEXAZ1hwzbKTGajKL1/iXYB27KEqASXMRlXp0sRDhai29K6j5fxBx
+ijUDXQZxFXCI9z3s9YjwVg==</ds:SignatureValue>
     <ds:KeyInfo>
       <ds:X509Data>
         <ds:X509IssuerSerial>
