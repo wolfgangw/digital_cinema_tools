@@ -84,7 +84,7 @@ end
 
 if ! errors.empty?
   errors.each do |e|
-    if e.message.match /Element.*No matching global declaration available/
+    if e.message.match /Element.*No matching global.*declaration available/
       puts 'Wrong XSD file?'
     end
   end
