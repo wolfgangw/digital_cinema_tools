@@ -261,9 +261,8 @@ class DC_Crypto_Context
       errors << "Extensions #{ required_oids.join( ', ' ) } missing" unless required_oids.empty?
       
       # 2.1.11 Public key thumbprint dnQualifier
-      dnq_calc= `openssl x509 -pubkey -noout -in #{ cert_file } | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
-      # equiv. dnq_calc = `echo #{ cert.public_key.to_pem } | openssl base64 -d | dd bs=1 skip=24 2>/dev/null | openssl sha1 -binary | openssl base64`.chomp
-      # equiv. dnq_calc = Base64.encode64( OpenSSL::Digest::SHA1.digest( Base64.decode64( cert.public_key.to_pem )[24..-1] ) ).chomp
+      asn1 = Base64.decode64( cert.public_key.to_pem.split( "\n" )[ 1 .. -2 ].join )
+      dnq_calc = Base64.encode64( OpenSSL::Digest.new( 'sha1', asn1 ).digest ).chomp
       field_dnq = find_field( 'dnQualifier', cert.subject )
       if field_dnq.empty?
         errors << 'dnQualifier field missing in subject name'
