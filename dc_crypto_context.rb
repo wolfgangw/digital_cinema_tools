@@ -398,7 +398,7 @@ class DC_Crypto_Context
     # beginning at the exact same time are valid.
     @context.each_with_index do |member, index|
       break if index == @context.size - 1 # root ca
-      if ! ( member[ :x509 ].not_before >= @context[ index + 1 ][ :x509 ].not_before and member[ :x509 ].not_after < @context[ index + 1 ][ :x509 ].not_after )
+      if ! ( member[ :x509 ].not_before >= @context[ index + 1 ][ :x509 ].not_before and member[ :x509 ].not_after <= @context[ index + 1 ][ :x509 ].not_after )
         context_errors[ member[ :cert_file ] ] << "Validity period not contained within parent certificate's validity period"
       end
     end
