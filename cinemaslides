@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2011.10.28"
+AppVersion = "v0.2012.02.07"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -85,6 +85,7 @@ require 'tempfile'
 require 'nokogiri'
 require 'highline/import'
 require 'pathname'
+require 'shellwords'
 
 
 # FIXME catch missing parameters, false options, typos etc.
@@ -603,12 +604,13 @@ end
 def make_black_frame( filename, fps )
   black_asset = File.join( @assetsdir, 'black.' + @output_format )
   asset, todo = check_for_asset( black_asset, @output_format, fps )
+  asset_esc = Shellwords.escape asset
   if todo == TRUE
     case @output_type
     when 'preview', 'fullpreview'
-      `convert -type TrueColor -size #{ @dimensions } xc:black -depth 8 #{ asset }`
+      `convert -type TrueColor -size #{ @dimensions } xc:black -depth 8 #{ asset_esc }`
     when 'dcp'
-      `convert -type TrueColor -size #{ @dimensions } xc:black -depth 12 #{ asset }`
+      `convert -type TrueColor -size #{ @dimensions } xc:black -depth 12 #{ asset_esc }`
     end
   end
   File.symlink( asset, filename )
@@ -816,7 +818,7 @@ end
 def convert_resize_extent_color_specs( image, filename )
   case @output_type
   when "preview", "fullpreview"
-    `convert #{image} \
+    `convert #{ Shellwords.escape image } \
         -type TrueColor \
         -alpha Off \
         -gamma 0.454545454545455 \
@@ -828,10 +830,10 @@ def convert_resize_extent_color_specs( image, filename )
         -depth 8 \
         -strip \
         -sampling-factor 2x2 \
-      #{ filename }`
+      #{ Shellwords.escape filename }`
   # kakadu needs uncompressed 12bpc files # FIXME dep compress on options.encoder
   when "dcp"
-    `convert #{image} \
+    `convert #{ Shellwords.escape image } \
         -type TrueColor \
         -alpha Off \
         -gamma 0.454545454545455 \
@@ -843,7 +845,7 @@ def convert_resize_extent_color_specs( image, filename )
         -gamma 2.6 \
         -depth 12 \
         -compress none \
-      #{ filename }`
+      #{ Shellwords.escape filename }`
   else # hello typo
     puts "Use '-t preview' (half size) or '-t fullpreview' (full size) or '-t dcp'.\nDefaults to 'preview'."
     exit
@@ -855,21 +857,21 @@ end
 def convert_apply_level( image, level, filename )
   case @output_type
   when "preview", "fullpreview"
-    `convert #{image} \
+    `convert #{ Shellwords.escape image } \
         -type TrueColor \
         -gamma 0.454545454545455 \
         #{ fadetype( level ) } \
         -gamma 2.2 \
-      #{ filename }`
+      #{ Shellwords.escape filename }`
   when "dcp" # -compress none for kakadu
-    `convert #{image} \
+    `convert #{ Shellwords.escape image } \
         -type TrueColor \
         -gamma 0.38461538461538458 \
         #{ fadetype( level ) } \
         -gamma 2.6 \
         -depth 12 \
         -compress none \
-      #{ filename }`
+      #{ Shellwords.escape filename }`
   end
 end
 
@@ -906,9 +908,10 @@ def confirm_or_create( location )
 # it might not exist and be either writeable (read 'can be created') or not.
 # since we want to be able to specify a "deep" path (topdir/with/children/...) File.writable?() wouldn't work.
   testfile = File.join( location, `kmuuidgen -n` )
+  testfile_esc = Shellwords.escape testfile
   if File.exists?( location )
     begin
-      result = `touch #{ testfile } > /dev/null 2>&1`
+      result = `touch #{ testfile_esc } > /dev/null 2>&1`
       File.delete( testfile )
       return TRUE # location exists and we can write to it
     rescue Exception => result
@@ -2292,6 +2295,7 @@ image_sequence_frames = sequence_frames - ( fr_cast( black_leader, fps ) + fr_ca
 @workdir = File.join( @cinemaslidesdir, "#{ File.basename( $0 ) }_#{ timestamp }_#{ @output_type }" )
 @conformdir = File.join( @workdir, "conform" )
 @j2cdir = File.join( @workdir, "j2c" )
+@j2cdir_esc = Shellwords.escape @j2cdir
 @thumbsdir = File.join( @cinemaslidesdir, "thumbs" )
 @assetsdir_audio = File.join( @cinemaslidesdir, 'assets-audio' )
 @keysdir = File.join( @cinemaslidesdir, 'keys' )
@@ -2403,17 +2407,20 @@ end
 
 # See SMPTE 428-2-2006
 def sox_conform( audiofile, samplerate, bps, channelcount, asset ) # SMPTE 428-2-2006
-  `sox #{ audiofile } -r #{ samplerate } -b #{ bps } -c #{ channelcount } -s -t wavpcm #{ asset }`
+  audiofile_esc = Shellwords.escape audiofile
+  asset_esc = Shellwords.escape asset
+  `sox #{ audiofile_esc } -r #{ samplerate } -b #{ bps } -c #{ channelcount } -s -t wavpcm #{ asset_esc }`
 end
 
 
 def silence( seconds, samplerate, bps, channelcount )
   silence_conform = File.join( @assetsdir_audio, 'silence_' + seconds.to_s + '_' + samplerate.to_s + '_' + bps.to_s + '_' + channelcount.to_s + '.wav' )
+  silence_conform_esc = Shellwords.escape silence_conform
   if File.exists?( silence_conform )
     @logger.debug( "Skip: Silence asset exists (#{ File.basename( silence_conform ) })" )
   else
     # alternatively, use asdcplib's blackwave (blackwave -d <frame_count> output)
-    `sox -r #{ samplerate } -b #{ bps } -c #{ channelcount } -s -n #{ silence_conform } synth #{ seconds } sine 0`
+    `sox -r #{ samplerate } -b #{ bps } -c #{ channelcount } -s -n #{ silence_conform_esc } synth #{ seconds } sine 0`
   end
   return silence_conform
 end
@@ -2444,7 +2451,8 @@ unless @source_audio[ :orig_name ].empty?
   # for dcp output check channel counts of source files and build a smpte audio label
   channelcounts = []
   audio_list.each do |audiofile|
-    channelcounts << `soxi -c #{ audiofile }`.chomp.to_i
+    audiofile_esc = Shellwords.escape audiofile
+    channelcounts << `soxi -c #{ audiofile_esc }`.chomp.to_i
   end
   case options.output_type
   when 'dcp'
@@ -2479,17 +2487,20 @@ unless @source_audio[ :orig_name ].empty?
     set << File.basename( e )
   end
   sequence_audio_asset = File.join( @assetsdir_audio, "#{ Digest::MD5.hexdigest( set.join ) }_sequence_#{ image_sequence_length_seconds }_.wav" )
+  sequence_audio_asset_esc = Shellwords.escape sequence_audio_asset
   
   # c) splice
   sequence_audio_asset_tmp = File.join( @assetsdir_audio, 'tmp-' + File.basename( sequence_audio_asset ) )
-  `sox #{ conformed_audio_list.join( ' ' ) } #{ sequence_audio_asset_tmp } splice`
+  sequence_audio_asset_tmp_esc = Shellwords.escape sequence_audio_asset_tmp
+  conformed_audio_list_esc = conformed_audio_list.collect { |e| Shellwords.escape e }
+  `sox #{ conformed_audio_list_esc.join( ' ' ) } #{ sequence_audio_asset_tmp_esc } splice`
 
   # d) trim
   if File.exists?( sequence_audio_asset )
     @logger.debug( "Skip: Trimmed audio asset for image sequence exists (#{ File.basename( sequence_audio_asset ) })" )
   else
     @logger.debug( 'Trim audio' )
-    `sox #{ sequence_audio_asset_tmp } #{ sequence_audio_asset } trim 0 #{ image_sequence_length_hms }`
+    `sox #{ sequence_audio_asset_tmp_esc } #{ sequence_audio_asset_esc } trim 0 #{ image_sequence_length_hms }`
   end
   File.delete( sequence_audio_asset_tmp )
   
@@ -2499,9 +2510,13 @@ unless @source_audio[ :orig_name ].empty?
   if black_leader + black_tail > 0
     @logger.debug( 'Pad audio with leader/tail silence' )
     @final_audio = File.join( @assetsdir_audio, 'padded_' + File.basename( sequence_audio_asset ) )
-    `sox #{ audio_leader } #{ sequence_audio_asset } #{ audio_tail } #{ @final_audio } splice`
+    @final_audio_esc = Shellwords.escape @final_audio
+    audio_leader_esc = Shellwords.escape audio_leader
+    audio_tail_esc = Shellwords.escape audio_tail
+    `sox #{ audio_leader_esc } #{ sequence_audio_asset_esc } #{ audio_tail_esc } #{ @final_audio_esc } splice`
   else
     @final_audio = sequence_audio_asset
+    @final_audio_esc = Shellwords.escape @final_audio
   end
 
   @logger.info( '... Conform audio done' )
@@ -2524,20 +2539,22 @@ if options.montage == TRUE
       next
     else
       @logger.info( "Thumb for #{ @source[ :orig_name ][ i ] }" )
-      `convert #{ @source[ :orig_name ][ i ] } \
+      # protect path
+      `convert #{ Shellwords.escape @source[ :safe_name ][ i ] } \
          -type TrueColor \
          -resize #{ @thumbs_dimensions } \
          -background black \
          -gravity center \
          -extent #{ @thumbs_dimensions } \
          -depth 8 \
-       #{ thumbfile }`
+       #{ Shellwords.escape thumbfile }`
        thumbs << thumbfile
      end
   end
-  thumbs = thumbs.join(' ')
+  thumbs = thumbs.collect { |e| Shellwords.escape e }.join(' ')
   # cache montages, using string of all thumbnail filenames (md5 hexdigest and some) to match
   thumbs_asset = File.join( @thumbsdir, Digest::MD5.hexdigest( thumbs ) + '_montage_.jpg' )
+  thumbs_asset_esc = Shellwords.escape thumbs_asset
   if File.exists?( thumbs_asset )
     @logger.debug( "Skip: Montage exists (#{ File.basename( thumbs_asset ) })" )
   else
@@ -2548,13 +2565,13 @@ if options.montage == TRUE
        -border 1 \
        -geometry '#{ x }x#{ y }+5+5>' \
        -bordercolor lightblue \
-    #{ thumbs_asset }`
+    #{ thumbs_asset_esc }`
   end
   if ENV[ "DISPLAY" ].nil?
     @logger.warn( "DISPLAY not set. Skipping montage summary. #{ options.keep == TRUE ? nil : 'Say --keep to keep preview files.' }" )
   else
     @logger.warn( "Montage summary #{ @output_type }. Exit with ESC or 'q'" )
-    `display #{ thumbs_asset }`
+    `display #{ thumbs_asset_esc }`
   end
   exit if agree( "Continue? " ) == FALSE
 end # montage
@@ -2628,8 +2645,8 @@ end
 ### Create preview/fullpreview
 case @output_type
 when "preview", "fullpreview"
-  sequence = File.join( "#{ @conformdir }", "*.#{ @output_format }" )
-  audio = ( @source_audio[ :orig_name ].empty? ? '' : '-audiofile ' + @final_audio )
+  sequence = File.join( "#{ Shellwords.escape @conformdir }", "*.#{ @output_format }" )
+  audio = ( @source_audio[ :orig_name ].empty? ? '' : '-audiofile ' + Shellwords.escape( @final_audio ) )
   if ENV[ "DISPLAY" ].nil?
     @logger.warn( "DISPLAY not set. Skipping preview" )
   else
@@ -2652,7 +2669,7 @@ when "dcp"
   @logger.info( "Encode to JPEG 2000" )
   filemask = File.join( @conformdir, "*.#{ @output_format }" )
   files = Dir.glob( filemask ).sort
-  
+
   # openjpeg's cinema profiles imply rate constraints, kakadu's don't
   max_bytes_per_image, max_bytes_per_component = jpeg2000_dcp_rate_constraints( @dcp_wrap_stereoscopic == TRUE ? 48.0 : fps )
   if @size == "2k"
@@ -2669,41 +2686,49 @@ when "dcp"
   files.each do |file|
     counter += 1
     asset_link = File.join( @j2cdir, File.basename( file ).gsub( /.tiff$/, '.j2c' ) )
+
     if File.dirname( File.readlink( file ) ) == @conformdir # 1st file is always a link to the asset depot
       File.link( previous_asset, asset_link ) 
       @logger.cr( "Skip (Full level): #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
     else
       file = Pathname.new( file ).realpath.to_s
+      file_esc = Shellwords.escape file
+
       asset, todo = check_for_asset( file, 'j2c', fps ) # possible "Skip" message only with debug verbosity
+      asset_esc = Shellwords.escape asset
+
       previous_asset = asset
       if todo == TRUE
         @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
         case options.encoder
         when 'openjpeg-tm'
           # Do not use opendcp_j2k's colorspace transform (-x), files are X'Y'Z' already (Andrae Steiner)
-          `opendcp_j2k -i #{ file } -o #{ asset } -x -r #{ fps }`
+          `opendcp_j2k -i #{ file_esc } -o #{ asset_esc } -x -r #{ fps }`
         when 'openjpeg'
-          `image_to_j2k -#{ openjpeg_cinema_profile } -i #{ file } -o #{ asset } > /dev/null 2>&1`
+          `image_to_j2k -#{ openjpeg_cinema_profile } -i #{ file_esc } -o #{ asset_esc } > /dev/null 2>&1`
         when 'kakadu'
-          `kdu_compress -i #{ file } -o #{ asset } Sprofile=#{ kakadu_cinema_profile } Creslengths=#{ max_bytes_per_image } Creslengths:C0=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C1=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C2=#{ max_bytes_per_image },#{ max_bytes_per_component }`
+          `kdu_compress -i #{ file_esc } -o #{ asset_esc } Sprofile=#{ kakadu_cinema_profile } Creslengths=#{ max_bytes_per_image } Creslengths:C0=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C1=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C2=#{ max_bytes_per_image },#{ max_bytes_per_component }`
         end
       else
         @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
       end
+
       File.link( asset, asset_link )
     end
   end
   # blank logger garbage
   @logger.cr( " " * 60 )
-  
+
   # Setup MXF container names
   image_mxf_uuid = `kmuuidgen -n`
   image_mxf = File.join( @dcpdir, "j2c_#{ image_mxf_uuid }_.mxf" )
+  image_mxf_esc = Shellwords.escape image_mxf
   unless @source_audio[ :orig_name ].empty?
     audio_mxf_uuid = `kmuuidgen -n`
     audio_mxf = File.join( @dcpdir, "pcm_#{ audio_mxf_uuid }_.mxf" )
+    audio_mxf_esc = Shellwords.escape audio_mxf
   end
-  
+
   # Generate content keys. Proof-of-concept, ad-hoc, hairy, you name it.
   if options.dcp_encrypt == TRUE
     image_key = `kmrandgen -n -s 16`
@@ -2715,7 +2740,7 @@ when "dcp"
       File.open( File.join( @keysdir, audio_key_id ), 'w' ) { |f| f.write( audio_key_id + ':MDAK:' + audio_key ) }
     end
   end
-  
+
   def write_asdcp_track( opts_params_args )
     asdcp_line = "asdcp-test #{ opts_params_args } > /dev/null 2>&1"
     @logger.debug( asdcp_line )
@@ -2727,22 +2752,22 @@ when "dcp"
   if @dcp_wrap_stereoscopic == TRUE
     @logger.info( 'Wrap as stereoscopic essence' )
     # ugh, FIXME, for crying out loud
-    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + image_key + ' -j ' + image_key_id : '-E' } -a #{ image_mxf_uuid } -c #{ image_mxf } -3 #{ @j2cdir } #{ @j2cdir }"
+    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + image_key + ' -j ' + image_key_id : '-E' } -a #{ image_mxf_uuid } -c #{ image_mxf_esc } -3 #{ @j2cdir_esc } #{ @j2cdir_esc }"
   else
-    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + image_key + ' -j ' + image_key_id : '-E' } -p #{ fps } -a #{ image_mxf_uuid } -c #{ image_mxf } #{ @j2cdir }"
+    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + image_key + ' -j ' + image_key_id : '-E' } -p #{ fps } -a #{ image_mxf_uuid } -c #{ image_mxf_esc } #{ @j2cdir_esc }"
   end
   write_asdcp_track( opts_params_args )
   @logger.debug( "Image trackfile UUID: #{ image_mxf_uuid }" )
-  
+
   # Make audio trackfile
   unless @source_audio[ :orig_name ].empty?
     @logger.info( 'Write audio trackfile ...' )
     # FIXME 2.0 sound only here (v0.2010.11.19), hence no label. might be trouble on some servers
-    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + audio_key + ' -j ' + audio_key_id : '-E' } -l #{ SMPTE_AUDIO_LABEL } -p #{ fps } -a #{ audio_mxf_uuid } -c #{ audio_mxf } #{ @final_audio }"
+    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + audio_key + ' -j ' + audio_key_id : '-E' } -l #{ SMPTE_AUDIO_LABEL } -p #{ fps } -a #{ audio_mxf_uuid } -c #{ audio_mxf_esc } #{ @final_audio_esc }"
     @logger.debug( "Audio trackfile UUID: #{ audio_mxf_uuid }" )
     write_asdcp_track( opts_params_args ) 
   end
-  
+
   # Write CompositionPlaylist
   @logger.info( 'Write CPL' )
   cpl_uuid = `kmuuidgen -n` # FIXME
@@ -2799,7 +2824,7 @@ when "dcp"
     pkl_xml = pkl.xml
   end
   File.open( pkl_file, 'w' ) { |f| f.write( pkl_xml ) }
-  
+
   # Write Assetmap
   @logger.info( 'Write ASSETMAP' )
   am_assets = Array.new
