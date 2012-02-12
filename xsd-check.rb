@@ -31,8 +31,8 @@ end
 
 def abort_on_errors( errors )
   if ! errors.empty?
-    errors.map { |e| puts e }
-    abort
+    errors.map { |e| puts e.inspect }
+    abort "Document is not valid"
   end
 end
 
