@@ -22,22 +22,23 @@ e()
   file=${list[${2}]}
   echo "thread: ${1} (${SECONDS}s) -> execute task ${2} -> $(basename ${file})"
   #
-  # define the processing you want to execute for each shell argument here.
-  # with these examples output ends up in the current directory.
+  # Define the processing you want to execute for each shell argument here.
+  # With these examples output ends up in the current directory.
   #
-  # examples:
+  # File format conversion gains significantly
+  # For example 600 12bpc 1920x1080 tiffs with single job sequence ~220 secs, with threads-test.bash @ 8 threads ~120 secs
   #
-  #   file format conversion gains significantly
-  #   for example 600 12bpc 1920x1080 tiffs with single job sequence ~220 secs, with threads-test.bash @ 8 threads ~120 secs
+  # Examples (uncomment to use):
+  #
   #   convert ${file} -quality 100 $(basename ${file}).jpg
+  #
+  #   convert ${file} -set colorspace XYZ -depth 8 -colorspace sRGB srgb.$(basename ${file}).jpg
   #
   #   image_to_j2k -cinema2K 24 -i ${file} -o $(basename ${file}).j2c > /dev/null 2>&1
   #
+  #   j2k_to_image -i ${file} -o $(basename ${file}).tif
+  #
   #   opendcp_j2k -i ${file} -o $(basename ${file}).j2c
-  #
-  #   kdu_compress -i ${file} -o $(basename ${file}).j2c Sprofile=CINEMA2K Creslengths=1302083 Creslengths:C0=1302083,1041666 Creslengths:C1=1302083,1041666 Creslengths:C2=1302083,1041666 > /dev/null 2>&1
-  #
-  #   convert ${file} -set colorspace XYZ -depth 8 -colorspace sRGB srgb.$(basename ${file}).jpg
   #
 }
  
@@ -70,4 +71,6 @@ done
 wait
  
 echo "${TASKS} tasks done (${SECONDS}s)"
+
+exit 0
 
