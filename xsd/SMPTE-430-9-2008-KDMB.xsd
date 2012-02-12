@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+  xmlns:dcmlTypes="http://www.smpte-ra.org/433/2008/dcmlTypes"
+  elementFormDefault="qualified" attributeFormDefault="unqualified"
+  id="KDMBundle">
+  <xs:import namespace="http://www.w3.org/2000/09/xmldsig#"
+    schemaLocation="http://www.w3.org/TR/2002/REC-xmldsig-core-20020212/xmldsig-core-schema.xsd"/>
+  <xs:import namespace="http://www.smpte-ra.org/433/2008/dcmlTypes" schemaLocation="./dcmlTypes.xsd"/>
+  <xs:simpleType name="PathTextType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="([A-Za-z0-9]{1}([A-Za-z0-9,_,\-,.])*)([/]{1}[A-Za-z0-9]{1}([A-Za-z0-9,_,\-,.])*)*"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Recipient">
+    <xs:sequence>
+      <xs:element name="X509IssuerSerial" type="ds:X509IssuerSerialType"/>
+      <xs:element name="X509SubjectName" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="KDMFileType">
+    <xs:sequence>
+      <xs:element name="CPLId" type="dcmlTypes:UUIDType"/>
+      <xs:element name="FilePath">
+        <xs:simpleType>
+          <xs:restriction base="PathTextType">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="99"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="Recipient" type="Recipient"/>
+      <xs:element name="ContentKeysNotValidBefore" type="xs:dateTime"/>
+      <xs:element name="ContentKeysNotValidAfter" type="xs:dateTime"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:sequence>
+    <xs:element name="Id" type="dcmlTypes:UUIDType"/>
+    <xs:element name="AnnotationText" type="dcmlTypes:UserTextType" minOccurs="0"/>
+    <xs:element name="Creator" type="dcmlTypes:UserTextType" minOccurs="0"/>
+    <xs:element name="KDMFileList">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="KDMFile" type="KDMFileType" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+  </xs:sequence>
+<xs:element name="Catalog" type="CatalogType"/>
+</xs:schema>
+

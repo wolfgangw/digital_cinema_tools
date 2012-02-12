@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Version 0.20 -->
+<xs:schema
+  elementFormDefault="qualified"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:flm="http://isdcf.com/2010/06/FLM" targetNamespace="http://isdcf.com/2010/06/FLM"
+  xmlns:dcml="http://www.smpte-ra.org/schemas/433/2008/dcmlTypes"
+  xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+  <xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="dsig.xsd"/>
+  <xs:import namespace="http://www.smpte-ra.org/schemas/433/2008/dcmlTypes" schemaLocation="dcmlTypes-2008.xsd"/>
+  <xs:element name="FacilityListMessage" type="flm:FacilityListMessageType"/>
+
+  <xs:simpleType name="UUID">
+    <xs:restriction base="xs:anyURI">
+      <xs:pattern value="urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+    </xs:restriction>
+
+  </xs:simpleType>
+
+  <xs:complexType name="FacilityListMessageType">
+    <xs:sequence>
+      <xs:element name="MessageId" type="flm:UUID"/>
+      <xs:element name="IssueDate" type="xs:dateTime"/>
+      <xs:element name="AnnotationText" type="dcml:UserTextType" minOccurs="0"/>
+      <xs:element name="FacilityInfo" type="flm:FacilityInfoType"/>
+      <xs:element name="AuditoriumList" type="flm:AuditoriumListType">
+
+       <xs:unique name="AuditoriumNameUnique">
+         <xs:selector xpath="flm:Auditorium"/>
+         <xs:field    xpath="flm:AuditoriumName"/>
+       </xs:unique>
+       <xs:unique name="AuditoriumNumberUnique">
+         <xs:selector xpath="flm:Auditorium"/>
+         <xs:field    xpath="flm:AuditoriumNumber"/>
+       </xs:unique>
+      </xs:element>
+
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="FacilityInfoType">
+    <xs:sequence>
+      <xs:element name="FacilityID" type="xs:anyURI"/>
+      <xs:element name="AlternateFacilityIDList" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence maxOccurs="unbounded">
+
+            <xs:element name="AlternateFacilityID" type="xs:anyURI"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="FacilityName" type="dcml:UserTextType"/>
+      <xs:element name="FacilityTimeZone" type="xs:string" minOccurs="0"/>
+      <xs:element name="Circuit" type="dcml:UserTextType"/>
+      <xs:element name="FLMPartial" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="ContactList" minOccurs="0">
+
+       <xs:complexType>
+        <xs:sequence>
+          <xs:element name="Contact" type="flm:ContactType" maxOccurs="unbounded"/>
+        </xs:sequence>
+       </xs:complexType>
+      </xs:element>
+      <xs:element name="AddressList">
+       <xs:complexType>
+         <xs:sequence>
+
+           <xs:element name="Address" type="flm:AddressTypeType" maxOccurs="unbounded"/>
+         </xs:sequence>
+       </xs:complexType>
+      </xs:element>
+      <xs:element name="KDMDeliveryMethodList" type="flm:DeliveryMethodListType" minOccurs="0"/>
+      <xs:element name="DCPDeliveryMethodList" type="flm:DeliveryMethodListType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AuditoriumListType">
+    <xs:sequence>
+      <xs:element name="Auditorium" type="flm:AuditoriumType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+  <xs:complexType name="DeliveryMethodListType">
+    <xs:sequence>
+      <xs:element name="DeliveryMethod" type="flm:DeliveryMethodType" maxOccurs="unbounded"/>
+
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DeliveryMethodType">
+    <xs:choice>
+      <xs:element name="Email"    type="flm:EmailType"/>
+      <xs:element name="Modem"    type="flm:ModemType"/>
+      <xs:element name="Network"  type="flm:NetworkType"/>
+      <xs:element name="Physical" type="flm:PhysicalType"/>
+
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="PhysicalType">
+    <xs:sequence>
+      <xs:element name="MediaType" type="xs:string"/>
+      <xs:element name="Detail" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="EmailType">
+    <xs:sequence>
+      <xs:element name="EmailName" type="xs:string" minOccurs="0"/>
+      <xs:element name="EmailAddress" type="flm:EmailAddressType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="EmailAddressType">
+    <xs:restriction base="xs:string">
+
+      <xs:pattern value="([a-zA-Z0-9_\-])([a-zA-Z0-9_\-\.\+]*)@(\[((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}|((([a-zA-Z0-9\-]+)\.)+))([a-zA-Z]{2,}|(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\])"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="AddressType">
+   <xs:sequence>
+      <xs:element name="Addressee" type="xs:string" minOccurs="0"/>
+      <xs:element name="StreetAddress" type="dcml:UserTextType"/>
+      <xs:element name="City" type="xs:string"/>
+
+      <xs:element name="Province" type="xs:string"/>
+      <xs:element name="PostalCode" type="xs:string" minOccurs="0"/>
+      <xs:element name="Country" type="xs:string"/>
+   </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AddressTypeType">
+    <xs:choice>
+      <xs:element name="Physical" type="flm:AddressType"/>
+
+      <xs:element name="Shipping" type="flm:AddressType"/>
+      <xs:element name="Billing"  type="flm:AddressType"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:simpleType name="ScreenAspectRatioType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="1.85"/>
+      <xs:enumeration value="2.39"/>
+
+      <xs:enumeration value="1.66"/>
+      <xs:enumeration value="1.37"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="AdjustableScreenMaskType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="Top"/>
+      <xs:enumeration value="Side"/>
+
+      <xs:enumeration value="Both"/>
+      <xs:enumeration value="None"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="ContactType">
+    <xs:sequence>
+      <xs:element name="Name" type="dcml:UserTextType"/>
+      <xs:element name="CountryCode" type="xs:string" minOccurs="0"/>
+
+      <xs:element name="Phone1" type="xs:string" minOccurs="0"/>
+      <xs:element name="Phone2" type="xs:string" minOccurs="0"/>
+      <xs:element name="Email" type="flm:EmailAddressType" minOccurs="0"/>
+      <xs:element name="Type" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- DeviceGroups are a set of interconnected devies within an Auditorium. It must consist of 
+       a single Security Manager along with 0 or more auxilliary devices. -->
+  <xs:complexType name="DeviceGroupType">
+
+    <xs:sequence>
+      <xs:element name="Device" type="flm:DeviceType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AuditoriumType">
+    <xs:sequence>
+      <xs:element name="AuditoriumNumber" type="xs:unsignedInt"/>
+      <xs:element name="AuditoriumName" type="xs:string" minOccurs="0"/>
+
+      <xs:element name="Supports35MM" type="xs:boolean"/>
+      <xs:element name="ScreenAspectRatio" type="flm:ScreenAspectRatioType" minOccurs="0"/>
+      <xs:element name="AdjustableScreenMask" type="flm:AdjustableScreenMaskType" minOccurs="0"/>
+      <xs:element name="AudioFormat" type="xs:string" minOccurs="0"/>
+      <xs:element name="AuditoriumInstallDate" type="xs:dateTime" minOccurs="0"/>
+      <xs:element name="LargeFormatType" type="xs:string" minOccurs="0"/>
+      <xs:element name="Digital3DSystem" minOccurs="0">
+       <xs:complexType>
+         <xs:sequence>
+
+            <xs:element name="IsActive"                  type="xs:boolean"/>
+            <xs:element name="Digital3DConfiguration"    type="xs:string" minOccurs="0"/>
+            <xs:element name="InstallDate"               type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="ScreenColor"               type="flm:ScreenTypeToken" minOccurs="0"/>
+            <xs:element name="Ghostbusting"              type="xs:boolean" minOccurs="0"/>
+            <xs:element name="GhostbustingConfiguration" type="xs:string"  minOccurs="0"/>
+         </xs:sequence>
+       </xs:complexType>
+      </xs:element>
+
+      <xs:element name="DeviceGroupList">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="DeviceGroup" type="flm:DeviceGroupType" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DeviceType">
+    <xs:sequence>
+      <xs:element name="DeviceTypeID" type="dcml:deviceTypeType"/>
+      <xs:element name="DeviceIdentifier" type="dcml:deviceIdentifierPolyType"/>
+      <xs:element name="DeviceSerial" type="xs:string" minOccurs="0"/>
+      <xs:element name="ManufacturerID" type="xs:anyURI" minOccurs="0"/>
+      <xs:element name="ManufacturerName" type="xs:string"/>
+      <xs:element name="ModelNumber" type="xs:string"/>
+
+      <xs:element name="InstallDate" type="xs:dateTime" minOccurs="0"/>
+      <xs:element name="IsActive" type="xs:boolean"/>
+      <xs:element name="Integrator" type="xs:string" minOccurs="0"/>
+      <xs:element name="VPFFinanceEntity" type="xs:string" minOccurs="0"/>
+      <xs:element name="VPFStartDate" type="xs:date" minOccurs="0"/>
+      <xs:element name="IPAddressList" minOccurs="0">
+        <xs:complexType>
+         <xs:sequence>
+           <xs:element name="IPAddress" maxOccurs="unbounded" type="flm:IPAddressType"/>
+
+         </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SoftwareList" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence maxOccurs="unbounded">
+            <xs:element name="Software" type="flm:SoftwareType"/>
+          </xs:sequence>
+        </xs:complexType>
+
+      </xs:element>
+      <xs:element name="KeyInfoList" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence maxOccurs="unbounded">
+            <xs:element ref="ds:KeyInfo"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="WatermarkingList" minOccurs="0">
+
+        <xs:complexType>
+          <xs:sequence maxOccurs="unbounded">
+            <xs:element name="Watermarking">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="WatermarkManufacturer" type="xs:string"/>
+                  <xs:element name="WatermarkModel" type="xs:string" minOccurs="0"/>
+                  <xs:element name="WatermarkVersion" type="xs:string" minOccurs="0"/>
+                </xs:sequence>
+
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="KDMDeliveryMethodList" type="flm:DeliveryMethodListType" minOccurs="0"/>
+      <xs:element name="DCPDeliveryMethodList" type="flm:DeliveryMethodListType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SoftwareType">
+    <xs:sequence>
+      <xs:element name="SoftwareKind" type="flm:SoftwareKindToken" minOccurs="0"/>      
+      <xs:element name="SoftwareProducer" type="xs:string" minOccurs="0"/>
+      <xs:element name="Description" type="xs:string"/>
+      <xs:element name="Version" type="xs:string"/>
+      <xs:element name="FileName" type="xs:string" minOccurs="0"/>
+      <xs:element name="FileSize" type="xs:unsignedInt" minOccurs="0"/>
+      <xs:element name="FileDateTime" type="xs:dateTime" minOccurs="0"/>
+
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="IPAddressType">
+    <xs:sequence>
+       <xs:element name="Address" type="flm:ipAddress"/>
+       <xs:element name="Host" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="ipAddress">
+    <xs:union memberTypes="flm:ipAddressV4 flm:ipAddressV6"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="ipAddressV6">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="([0-9a-fA-F]{0,4}:){0,7}[0-9a-fA-F]{0,4}"/>
+      <xs:pattern value="(([0-9a-fA-F]+:){7}[0-9a-fA-F]+)|(([0-9a-fA-F]+:)*[0-9a-fA-F]+)?::(([0-9a-fA-F]+:)*[0-9a-fA-F]+)?"/>
+    </xs:restriction>
+
+  </xs:simpleType>
+
+  <xs:simpleType name="ipAddressV4">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="((1?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="SoftwareKindToken">
+    <xs:restriction base="xs:token">
+
+      <xs:enumeration value="Firmware"/>
+      <xs:enumeration value="Software"/>
+      <xs:enumeration value="Hardware"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ScreenTypeToken">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="Silver"/>
+
+      <xs:enumeration value="White"/>
+      <xs:enumeration value="Other"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="ModemType">
+    <xs:sequence>
+      <xs:element name="PhoneNumber" type="xs:string"/>
+    </xs:sequence>
+
+  </xs:complexType>
+
+  <xs:complexType name="NetworkType">
+    <xs:sequence>
+      <xs:element name="URL" type="xs:anyURI"/>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

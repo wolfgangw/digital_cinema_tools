@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+  xmlns:flm="http://www.smpte-ra.org/schemas/430-7/2008/FLM"
+  xmlns:etm="http://www.smpte-ra.org/schemas/430-3/2006/ETM"
+  xmlns:dcml="http://www.smpte-ra.org/schemas/433/2008/dcmlTypes"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  targetNamespace="http://www.smpte-ra.org/schemas/430-7/2008/FLM"
+  elementFormDefault="qualified" attributeFormDefault="unqualified"
+  id="FacilityListMessage">
+  <xs:import namespace="http://www.w3.org/2000/09/xmldsig#"
+    schemaLocation="http://www.w3.org/TR/2002/REC-xmldsig-core-20020212/xmldsig-core-schema.xsd"/>
+  <xs:import namespace="http://www.smpte-ra.org/schemas/433/2008/dcmlTypes"
+    schemaLocation="./dcmlTypes.xsd"/>
+  <xs:complexType name="FLMRequiredExtensionsType">
+    <xs:sequence>
+      <xs:element name="FLMPartial" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="FacilityInfo">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="FacilityID" type="xs:anyURI"/>
+            <xs:element name="AnnotationText" type="dcml:UserTextType" minOccurs="0"/>
+            <xs:element name="FacilityName" type="dcml:UserTextType" minOccurs="0"/>
+            <xs:element name="UTCOffset" type="flm:UTCOffsetType" minOccurs="0"/>
+            <xs:element name="ContactInfo" type="flm:ContactInfoType" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SecurityDeviceList" type="flm:SecurityDeviceListType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="SecurityDeviceListType">
+    <xs:choice>
+      <xs:element name="SecurityDevice" type="flm:CombinedType" maxOccurs="unbounded"/>
+      <xs:element name="SecurityDeviceCertificate" type="flm:CertOnlyType"
+        maxOccurs="unbounded"/>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="CertOnlyType">
+    <xs:sequence>
+      <xs:element ref="ds:KeyInfo"/>
+      <xs:element name="ForensicMarkId" type="flm:ForensicMarkIdType" minOccurs="0"
+        maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CombinedType">
+    <xs:complexContent>
+      <xs:extension base="flm:CertOnlyType">
+        <xs:sequence>
+          <xs:element name="DeviceDescription" type="dcml:deviceDescriptionType"
+            minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ForensicMarkIdType">
+    <xs:sequence>
+      <xs:element name="AlgorithmId" type="xs:anyURI"/>
+      <xs:element name="MarkId">
+        <xs:simpleType>
+          <xs:restriction base="xs:nonNegativeInteger">
+            <xs:minInclusive value="0"/>
+            <xs:maxInclusive value="524287"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ContactInfoType">
+    <xs:sequence>
+      <xs:element name="Name" type="dcml:UserTextType"/>
+      <xs:element name="CountryCode" type="dcml:UserTextType"/>
+      <xs:element name="Phone1" type="dcml:UserTextType"/>
+      <xs:element name="Phone2" type="dcml:UserTextType"/>
+      <xs:element name="Email" type="dcml:UserTextType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="UTCOffsetType">
+    <xs:sequence>
+      <xs:element name="Offset" type="flm:HourMinuteType"/>
+      <xs:element name="DSTException" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="DSTOffset" type="flm:HourMinuteType"/>
+            <xs:element name="DSTStart" type="xs:dateTime"/>
+            <xs:element name="DSTEnd" type="xs:dateTime"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="HourMinuteType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="-?[0-9][0-9]:[0-9][0-9]"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
+
