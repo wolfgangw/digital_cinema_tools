@@ -53,6 +53,7 @@ AppVersion = 'v0.2011.04.09'
 # is useless and will be dropped when the context is registered.
 #
 require 'openssl'
+require 'base64'
 
 class DC_Crypto_Context
   attr_reader :context, :errors, :chain_verified, :crypto_context_valid
