@@ -80,7 +80,7 @@
   </xs:element>
   <xs:element name="Subtitle">
     <xs:complexType>
-      <xs:choice>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="Font"/>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="Text"/>
         <xs:element ref="Image"/>
