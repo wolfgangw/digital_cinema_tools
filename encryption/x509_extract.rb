@@ -189,7 +189,13 @@ certs, errors = sort_certs( certs ) if certs
 
 if certs
   certs.each_with_index do |cert, index|
-    File.open( "#{ options.prefix }_#{ pad( certs.size.to_s.size, index ) }.pem", 'w' ) { |f| f.write cert.to_pem }
+    outfile = "#{ options.prefix }_#{ pad( certs.size.to_s.size, index ) }.pem"
+    begin
+      File.open( outfile, 'w' ) { |f| f.write cert.to_pem }
+    rescue Exception => e
+      puts e.inspect
+      exit 1
+    end
   end
   puts "#{ certs.size } certificate#{ certs.size != 1 ? 's' : '' } extracted"
 else
