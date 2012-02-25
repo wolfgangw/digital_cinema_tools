@@ -119,6 +119,7 @@ class Optparser
     options.audio_bps_choices = [ '16', '24' ]
     options.dcp_title = 'Cinemaslides test'
     options.issuer = ENV[ 'USER' ] + '@' + `hostname`.chomp
+    options.tkr_base_url = NIL
     options.annotation = "#{ AppName } " + DateTime.now.to_s
     options.dcp_package_type = 'OV'
     options.dcp_package_type_choices = [ 'ov', 'vf', Regexp.new( /vf\d+/i ) ] # keep regexp choices at the end of these lists
@@ -161,7 +162,7 @@ Usage:
              [-j, --encoder <encoder>] [--of, --output-format <image suffix>]
              [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--bi, --black-intermediate <seconds>] [--ip, --intermediate-plate <plate>]
              [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>]
-             [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--package-type <type>] [--kind <DCP kind>] [--wrap-stereoscopic]
+             [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--tkr-base-url <url>] [--annotation <DCP/KDM annotation>] [--package-type <type>] [--kind <DCP kind>] [--wrap-stereoscopic]
              [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>]
              [--keep] [--dont-check] [--dont-drop]
              [--sign] [--encrypt]
@@ -249,6 +250,9 @@ BANNER
       end
       opts.on( '--issuer issuer', String, 'DCP/KDM issuer. In KDM mode the first 3 letters will be used to signify the KDM creation facility' ) do |p|
         options.issuer = p
+      end
+      opts.on( '--tkr-base-url url', String, 'TKR Base URL' ) do |p|
+        options.tkr_base_url = p
       end
       opts.on( '--annotation annotation', String, 'DCP/KDM annotation' ) do |p|
         options.annotation = p
@@ -1240,14 +1244,18 @@ end # DCSignature
 
 
 class CPL_SMPTE_429_7_2006
-  def initialize( cpl_uuid, encrypt, image_mxfs, audio_mxfs, annotation, issue_date, issuer, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
+  def initialize( cpl_uuid, encrypt, image_mxfs, audio_mxfs, annotation, issue_date, issuer, tkr, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
       xml.CompositionPlaylist_( :xmlns => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL', 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#' ) {
         xml<< "<!-- #{ AppName } #{ AppVersion } smpte cpl -->"
         xml.Id_ "urn:uuid:#{ cpl_uuid }"
         xml.AnnotationText_ annotation
         xml.IssueDate_ issue_date
-        xml.Issuer_ issuer
+        if tkr and encrypt
+          xml.Issuer_( tkr, :language => 'x-TKR' )
+        else
+          xml.Issuer_ issuer
+        end
         xml.Creator_ creator
         xml.ContentTitleText_ content_title
         xml.ContentKind_ content_kind
@@ -2771,6 +2779,11 @@ when "dcp"
   # Write CompositionPlaylist
   @logger.info( 'Write CPL' )
   cpl_uuid = `kmuuidgen -n` # FIXME
+  if options.tkr_base_url
+    tkr_base_url = [ options.tkr_base_url.gsub( /\/$/, '' ), cpl_uuid ].join( '/' ) + '/'
+  else
+    tkr_base_url = NIL
+  end
   @logger.debug( "CPL UUID:       #{ cpl_uuid }" )
   cpl_file = File.join( @dcpdir, 'cpl_' + cpl_uuid + '_.xml' )
   cpl = CPL_SMPTE_429_7_2006.new( 
@@ -2782,6 +2795,7 @@ when "dcp"
     annotation = options.annotation,
     issue_date = DateTime.now.to_s,
     issuer = options.issuer,
+    tkr_base_url,
     creator = "#{ AppName } #{ AppVersion } smpte cpl",
     content_title = options.dcp_title,
     content_kind = options.dcp_kind,
