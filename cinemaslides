@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2012.02.07"
+AppVersion = "v0.2012.02.26"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -26,6 +26,8 @@ AppVersion = "v0.2012.02.07"
 #   + plaintext/encrypted DCPs
 #   + signatures
 #   + KDM mode
+#   + Theater Key Retrieval Base URL (see DRAFT-ISDCF Document 8 - Theater Key Retrieval)
+#   + CompositionMetadataAsset (see DRAFT-ISDCF Document 6 - Composition Metadata Guidelines)
 #
 # Run "cinemaslides -h" to see options
 # Run "cinemaslides --examples" to see a couple of example invocations
@@ -120,6 +122,7 @@ class Optparser
     options.dcp_title = 'Cinemaslides test'
     options.issuer = ENV[ 'USER' ] + '@' + `hostname`.chomp
     options.tkr_base_url = NIL
+    options.cma = NIL
     options.annotation = "#{ AppName } " + DateTime.now.to_s
     options.dcp_package_type = 'OV'
     options.dcp_package_type_choices = [ 'ov', 'vf', Regexp.new( /vf\d+/i ) ] # keep regexp choices at the end of these lists
@@ -158,16 +161,18 @@ class Optparser
       opts.banner = <<BANNER
 #{ AppName } #{ AppVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" } #{ ENV[ 'CINEMACERTSTORE' ].nil? ? "\nExport CINEMACERTSTORE to point to a directory which holds your digital cinema compliant signing key and certificates" : "\nCINEMACERTSTORE is set (#{ ENV[ 'CINEMACERTSTORE' ] })" }
 Usage:
-#{ AppName } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--dont-resize] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>]
-             [-j, --encoder <encoder>] [--of, --output-format <image suffix>]
+#{ AppName } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>]
+             [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--package-type <CPL type>] [--kind <DCP kind>]
              [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--bi, --black-intermediate <seconds>] [--ip, --intermediate-plate <plate>]
              [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>]
-             [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--tkr-base-url <url>] [--annotation <DCP/KDM annotation>] [--package-type <type>] [--kind <DCP kind>] [--wrap-stereoscopic]
-             [-o, --dcp-out <path>] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>]
-             [--keep] [--dont-check] [--dont-drop]
+             [--dont-check] [--dont-drop] [--dont-resize]
+             [-j, --encoder <encoder>] [--of, --output-format <image suffix>]
+             [-o, --dcp-out <path>]
+             [--keep] [--wrap-stereoscopic] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>]
              [--sign] [--encrypt]
              [--kdm] [--formulation <KDM formulation>] [--cpl <cpl file>] [--cpl-id <CPL UUID>] [ --cpl-content-title <text> ] [--keysdir <directory with referenced keys>]
                [--start <days from now>] [--end <days from now>] [--target <certificate>]
+             [--tkr-base-url <url>] [--cma <CompositionMetadataAsset data>]
              [-v, --verbosity <level>] [--examples] [-h, --help]
              [ image and audio files ] [ KDM mode parameters ]
 
@@ -253,6 +258,9 @@ BANNER
       end
       opts.on( '--tkr-base-url url', String, 'TKR Base URL' ) do |p|
         options.tkr_base_url = p
+      end
+      opts.on( '--cma cma', String, "CompositionMetadataAsset data (See '#{ AppName } --examples' for format)" ) do |p|
+        options.cma = p
       end
       opts.on( '--annotation annotation', String, 'DCP/KDM annotation' ) do |p|
         options.annotation = p
@@ -383,6 +391,16 @@ $ #{ AppName } -t dcp --encrypt --title "Encryption test" -o ENCRYPTION_TST_F_2K
 
   Generate KDM for some content, targeting our XDC Solo G3 server certificate with a time window from now to 10 days from now:
 $ #{ AppName } -v debug --kdm --cpl ENCRYPTION_TST_F_2K_20101231_WOE_OV/cpl_<UUID>_.xml --start 0 --end 10 --target 200100400530_000487.pem
+
+  Set Theater Key Retrieval Base URL (applies to encrypted packages only):
+$ #{ AppName } -t dcp --encrypt --tkr-base-url http://www.example.org/tkr/ ...
+
+  Add CompositionMetadataAsset. Fieldnames can be abbreviated as long as they are unambiguous.
+  Separate items with comma. Leading and trailing whitespace will be discarded. Fieldname case and order are ignored.
+  Format is Fieldname:Value. Allowed fieldnames are:
+    ReleaseRegion, Distributor, Facility, StereoscopicLuminance, MainSoundConfiguration, MainPictureActiveArea
+$ #{ AppName } -t dcp --cma "ReleaseRegion: DE, Distributor: Foo, Facility: Bar, StereoscopicLuminance: 4, MainSoundConfiguration: 5.1, MainPictureActiveArea: 1998x1080"
+$ #{ AppName } -t dcp --cma "rel:DE,distr:Foo,fac:Bar,luminance:4,soundconf:5.1,picture:1998x1080"
 
 EXAMPLES
         puts examples
@@ -1135,7 +1153,6 @@ class KDM_SMPTE_430_1_2006 # see SMPTE 430-3-2008 ETM and SMPTE 430-1-2006 KDM
   end
 end # KDM_SMPTE_430_1_2006
 
-
 class DCSignatureKDM
   def initialize( xml_to_sign, signer_key_file, ca_cert_file, intermediate_cert_file, certificate_chain )
     doc = Nokogiri::XML( xml_to_sign ) { |x| x.noblanks }
@@ -1244,15 +1261,20 @@ end # DCSignature
 
 
 class CPL_SMPTE_429_7_2006
-  def initialize( cpl_uuid, encrypt, image_mxfs, audio_mxfs, annotation, issue_date, issuer, tkr, creator, content_title, content_kind, content_version_id, content_version_label, rating_list )
+  def initialize( cpl_uuid, sign, encrypt, image_mxfs, audio_mxfs, annotation, issue_date, issuer, tkr_base_url, creator, content_title, content_kind, content_version_id, content_version_label, rating_list, cma_data )
+
+    required_namespaces = Hash.new
+    required_namespaces[ 'xmlns' ] = 'http://www.smpte-ra.org/schemas/429-7/2006/CPL'
+    required_namespaces[ 'xmlns:dsig' ] = 'http://www.w3.org/2000/09/xmldsig#' if sign
+
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
-      xml.CompositionPlaylist_( :xmlns => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL', 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#' ) {
+      xml.CompositionPlaylist_( required_namespaces  ) {
         xml<< "<!-- #{ AppName } #{ AppVersion } smpte cpl -->"
         xml.Id_ "urn:uuid:#{ cpl_uuid }"
         xml.AnnotationText_ annotation
         xml.IssueDate_ issue_date
-        if tkr and encrypt
-          xml.Issuer_( tkr, :language => 'x-TKR' )
+        if tkr_base_url and encrypt
+          xml.Issuer_( tkr_base_url, :language => 'x-TKR' )
         else
           xml.Issuer_ issuer
         end
@@ -1313,6 +1335,24 @@ class CPL_SMPTE_429_7_2006
                     end
                   } # MainSound
                 end
+                if cma_data # CompositionMetadataAsset
+                  xml.CompositionMetadataAsset_( 'xmlns:meta' => 'http://isdcf.com/schemas/draft/2011/cpl-metadata' ) {
+                    #
+                    # Set prefix for the parent node with this:
+                    xml.parent.namespace = xml.parent.namespace_definitions.find { |ns| ns.prefix == 'meta' }
+                    # instead of a global declaration in the root node
+                    #
+                    xml.Id_( "urn:uuid:#{ `kmuuidgen -n` }", 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' )
+                    xml.EditRate_( image_meta[ 'EditRate' ].to_s.gsub( '/', ' ' ), 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' )
+                    xml.IntrinsicDuration_( '0', 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' )
+                    xml.ReleaseRegion_ cma_data[ 'ReleaseRegion' ]
+                    xml.Distributor_ cma_data[ 'Distributor' ]
+                    xml.Facility_ cma_data[ 'Facility' ]
+                    xml.StereoscopicLuminance_ cma_data[ 'StereoscopicLuminance' ]
+                    xml.MainSoundConfiguration_ cma_data[ 'MainSoundConfiguration' ]
+                    xml.MainPictureActiveArea_ cma_data[ 'MainPictureActiveArea' ]
+                  } # CompositionMetadataAsset
+                end
               } # AssetList
             } # Reel
           end # image_mxfs.each
@@ -1339,9 +1379,14 @@ end # CPL_SMPTE_429_7_2006
 
 
 class PKL_SMPTE_429_8_2007
-  def initialize( pkl_uuid, annotation, issue_date, issuer, creator, assets )
+  def initialize( pkl_uuid, sign, annotation, issue_date, issuer, creator, assets )
+
+    required_namespaces = Hash.new
+    required_namespaces[ 'xmlns' ] = 'http://www.smpte-ra.org/schemas/429-8/2007/PKL'
+    required_namespaces[ 'xmlns:dsig' ] = 'http://www.w3.org/2000/09/xmldsig#' if sign
+
     @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
-      xml.PackingList_( :xmlns => 'http://www.smpte-ra.org/schemas/429-8/2007/PKL', 'xmlns:dsig' => 'http://www.w3.org/2000/09/xmldsig#' ) {
+      xml.PackingList_( required_namespaces ) {
         xml<< "<!-- #{ AppName } #{ AppVersion } smpte pkl -->"
         xml.Id_ "urn:uuid:#{ pkl_uuid }"
         xml.AnnotationText_ annotation
@@ -1987,10 +2032,25 @@ end
 # check dcp related options
 @dcp_wrap_stereoscopic = options.dcp_wrap_stereoscopic
 if @output_type == "dcp"
+
+  # JPEG 2000 encoder available?
   unless options.encoder_choices.include?( options.encoder )
     @logger.critical( "Not a usable encoder: '#{ options.encoder }'" )
     exit
   end
+  # Mark assets with encoder ids
+  case options.encoder
+  when 'openjpeg-tm'
+    @encoder_id = 'opjtm'
+  when 'openjpeg'
+    @encoder_id = 'opj'
+  when 'kakadu'
+    @encoder_id = 'kdu'
+  else
+    @encoder_id = 'xxx' # FIXME
+  end
+
+  # ENV required for signature present?
   if options.dcp_encrypt == TRUE
     options.sign = TRUE
   end
@@ -2003,17 +2063,8 @@ if @output_type == "dcp"
       signer_key_file, signer_cert_file, signer_cert_obj, ca_cert_file, intermediate_cert_file, certchain_text, certchain_objs = signature_context
     end
   end
-  # mark assets with encoder ids
-  case options.encoder
-  when 'openjpeg-tm'
-    @encoder_id = 'opjtm'
-  when 'openjpeg'
-    @encoder_id = 'opj'
-  when 'kakadu'
-    @encoder_id = 'kdu'
-  else
-    @encoder_id = 'xxx' # FIXME
-  end
+
+  # Requested fps sane?
   if ! options.fps_dcp_choices.include?( options.fps )
     if options.fps_asdcp_choices.include?( options.fps )
       @logger.critical( "DCI compliant framerate but not yet implemented in #{ File.basename( $0 ) }: #{ options.fps } fps" )
@@ -2033,7 +2084,34 @@ if @output_type == "dcp"
       exit if agree( 'Continue anyway?' ) == FALSE
     end
   end
+
+  # Requested CMA sane?
+  if options.cma
+    cma_field_names = %w( ReleaseRegion Distributor Facility StereoscopicLuminance MainSoundConfiguration MainPictureActiveArea )
+    begin
+      items = options.cma.split( ',' ).map { |item| e_key, e_value = item.split( ':' ).map { |e| e.gsub( /^\s+|\s$/, '' ) } }
+      cma_data = Hash.new
+      items.each do |item|
+        matches = cma_field_names.find_all { |e| e.downcase =~ Regexp.new( item[ 0 ].downcase ) }
+        if matches.size == 0
+          raise "CompositionMetadataAsset: Fieldname '#{ item[ 0 ] }' not allowed"
+        elsif matches.size > 1
+          raise "CompositionMetadataAsset: Ambiguous fieldname: '#{ item[ 0 ] }' => #{ matches.inspect }"
+        else
+          cma_data[ matches[ 0 ] ] = item[ 1 ]
+        end
+      end
+    rescue Exception => e
+      @logger.info e
+      @logger.info( "CompositionMetadataAsset: Data not valid: #{ options.cma.inspect }" )
+      exit
+    end
+  else
+    cma_data = NIL
+  end
+
   @logger.debug( "DCP related options ok" )
+
 end
 
 
@@ -2788,6 +2866,7 @@ when "dcp"
   cpl_file = File.join( @dcpdir, 'cpl_' + cpl_uuid + '_.xml' )
   cpl = CPL_SMPTE_429_7_2006.new( 
     cpl_uuid,
+    options.sign,
     options.dcp_encrypt,
     # ruby 1.9 fixes: String#each_line is present in 1.8 and 1.9 and will return an Enumerator
     image_mxf.each_line.to_a, # reels
@@ -2801,9 +2880,10 @@ when "dcp"
     content_kind = options.dcp_kind,
     content_version_id = cpl_uuid + '_' + issue_date,
     content_version_label = content_version_id,
-    rating_list = nil
+    rating_list = nil,
+    cma_data
   )
-  if options.sign == TRUE
+  if options.sign
     cpl_xml = DCSignature.new( cpl.xml, signer_key_file, ca_cert_file, intermediate_cert_file, certchain_objs ).xml
   else
     cpl_xml = cpl.xml
@@ -2826,13 +2906,14 @@ when "dcp"
   pkl_file = File.join( @dcpdir, 'pkl_' + pkl_uuid + '_.xml' )
   pkl = PKL_SMPTE_429_8_2007.new(
     pkl_uuid,
+    options.sign,
     options.annotation, # FIXME
     issue_date = DateTime.now.to_s,
     options.issuer,
     creator = "#{ AppName } #{ AppVersion } smpte pkl",
     pkl_assets.flatten
   )
-  if options.sign == TRUE
+  if options.sign
     pkl_xml = DCSignature.new( pkl.xml, signer_key_file, ca_cert_file, intermediate_cert_file, certchain_objs ).xml
   else
     pkl_xml = pkl.xml
