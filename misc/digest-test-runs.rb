@@ -52,20 +52,38 @@ BANNER
   end
 end
 options, opts = Optparser.parse( ARGV )
-if ARGV.size != 1 and ! File.file? ARGV[ 0 ]
+if ARGV.size != 1
   puts opts.banner
   exit 1
 end
 arg = ARGV.first
 
+class Numeric
+  TERA = 1099511627776.0
+  GIGA = 1073741824.0
+  MEGA = 1048576.0
+  KILO = 1024.0
+  def to_k
+    case
+    when self == 1 then "1 Byte"
+    when self < KILO then "%d Bytes" % self
+    when self < MEGA then "%.3f KB" % ( self / KILO )
+    when self < GIGA then "%.3f MB" % ( self / MEGA )
+    when self < TERA then "%.3f GB" % ( self / GIGA )
+    else "%.3f TB" % ( self / TERA )
+    end
+  end
+end
+
 class Eta
   attr_reader :percentage, :eta, :elapsed
-  def initialize( title, width, looks_like, terminal_size )
+  def initialize( title, width, looks_like, terminal_size, bytes )
     @title = title
     @total = 100
     @scaling = width.to_f / @total
     @left, @major, @fill, @right = looks_like.scan( /./ )
     @terminal_size = terminal_size
+    @bytes = bytes
     @start = Time.now
   end
 
@@ -108,6 +126,10 @@ class Eta
     "%s %02d:%02d:%02d" % [ head, h, m, s ]
   end
 
+  def bps
+    "#{ ( @bytes / @total * @percentage / @elapsed ).to_k }/sec" if @elapsed
+  end
+
   private
 
   def bar
@@ -123,7 +145,7 @@ class Eta
   end
 
   def tail
-    [ time_string( 'ETA', @eta ), time_string( 'Elapsed', @elapsed ) ].join( ' ' )
+    [ time_string( 'ETA', @eta ), time_string( 'Elapsed', @elapsed ), bps ].join( ' ' )
   end
 end # Eta
 
@@ -141,9 +163,9 @@ end
 
 
 def digest_with_etabar( options, title, file, pbar_width = 50, looks_like = '[= ]' )
-  size = File.size file
+  bytes = File.size file
   chunksize = 4096
-  chunks = size / chunksize + ( size % chunksize > 0 ? 1 : 0 )
+  chunks = bytes / chunksize + ( bytes % chunksize > 0 ? 1 : 0 )
   chunks_per_percent = chunks / 100 + 1
 
   begin
@@ -153,7 +175,7 @@ def digest_with_etabar( options, title, file, pbar_width = 50, looks_like = '[= 
     exit 1
   end
   io = File.open file
-  eta = Eta.new( title, pbar_width, looks_like, detect_terminal_size )
+  eta = Eta.new( title, pbar_width, looks_like, detect_terminal_size, bytes )
 
   ( 0 .. 100 ).each do |percentage|
     # read 1 % of chunks
@@ -165,15 +187,6 @@ def digest_with_etabar( options, title, file, pbar_width = 50, looks_like = '[= 
   end
 
   return dgst.digest, eta
-end
-
-class Numeric
-  def to_units
-    units = %w{ B KB MB GB TB }
-    e = ( Math.log( self ) / Math.log( 1024 ) ).floor
-      s = "%.3f" % ( to_f / 1024 ** e )
-    s.sub( /\.?0*$/, units[ e ] )
-  end
 end
 
 #
@@ -197,12 +210,19 @@ end
 if command_exists?( 'sysctl' )
   drop_caches_status = `sysctl vm.drop_caches`.chomp
 end
-puts "Digest algorithm:#{ options.digest_algorithm }  Runs:#{ options.runs }  Chunksize:#{ options.chunksize }  File:#{ arg }  Filesize:#{ ( File.size arg ).to_units }  #{ drop_caches_status }"
 
-options.runs.times do |i|
-  header = "%#{ options.runs.to_s.size }s" % ( i + 1 ) + "/#{ options.runs }"
-  digest, eta = digest_with_etabar( options, title = header, file = arg, pbar_width = 30, looks_like = '[= ]' )
-  eta.preserve_terminal_title_with_message [ eta.time_string( 'Time', eta.elapsed ), "Rate %s/sec" % ( File.size( arg ) / eta.elapsed ).to_units ].join ' '
+if File.exists? arg and File.file? arg
+  puts "Digest algorithm:#{ options.digest_algorithm }  Runs:#{ options.runs }  Chunksize:#{ options.chunksize }  File:#{ arg }  Filesize:#{ ( File.size arg ).to_k }  #{ drop_caches_status }"
+
+  options.runs.times do |i|
+    header = "%#{ options.runs.to_s.size }s" % ( i + 1 ) + "/#{ options.runs }"
+    digest, eta = digest_with_etabar( options, title = header, file = arg, pbar_width = 30, looks_like = '[= ]' )
+    eta.preserve_terminal_title_with_message [ eta.time_string( 'Time', eta.elapsed ), "Rate %s/sec" % ( File.size( arg ) / eta.elapsed ).to_k ].join ' '
+  end
+else
+  puts "File #{ arg } doesn't exist/not a file"
+  puts opts.banner
+  exit 1
 end
 
 exit 0
