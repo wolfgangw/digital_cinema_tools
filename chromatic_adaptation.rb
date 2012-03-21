@@ -104,27 +104,27 @@ M_A_Von_Kries = Matrix[
 ]
 
 case options.source
-  when "k5900"                : X_WS, Y_WS, Z_WS = K5900_X, K5900_Y, K5900_Z
-  when "d50"                  : X_WS, Y_WS, Z_WS = D50_X, D50_Y, D50_Z
-  when "d55"                  : X_WS, Y_WS, Z_WS = D55_X, D55_Y, D55_Z
-  when "d65"                  : X_WS, Y_WS, Z_WS = D65_X, D65_Y, D65_Z
-  when "rec709"               : X_WS, Y_WS, Z_WS = REC709_X, REC709_Y, REC709_Z
-  when "d75"                  : X_WS, Y_WS, Z_WS = D75_X, D75_Y, D75_Z
-  when "dci_calibration_white": X_WS, Y_WS, Z_WS = DCI_Calibration_White_X, DCI_Calibration_White_Y, DCI_Calibration_White_Z
+  when "k5900"                 then X_WS, Y_WS, Z_WS = K5900_X, K5900_Y, K5900_Z
+  when "d50"                   then X_WS, Y_WS, Z_WS = D50_X, D50_Y, D50_Z
+  when "d55"                   then X_WS, Y_WS, Z_WS = D55_X, D55_Y, D55_Z
+  when "d65"                   then X_WS, Y_WS, Z_WS = D65_X, D65_Y, D65_Z
+  when "rec709"                then X_WS, Y_WS, Z_WS = REC709_X, REC709_Y, REC709_Z
+  when "d75"                   then X_WS, Y_WS, Z_WS = D75_X, D75_Y, D75_Z
+  when "dci_calibration_white" then X_WS, Y_WS, Z_WS = DCI_Calibration_White_X, DCI_Calibration_White_Y, DCI_Calibration_White_Z
 end
 case options.destination
-  when "k5900"                : X_WD, Y_WD, Z_WD = K5900_X, K5900_Y, K5900_Z
-  when "d50"                  : X_WD, Y_WD, Z_WD = D50_X, D50_Y, D50_Z
-  when "d55"                  : X_WD, Y_WD, Z_WD = D55_X, D55_Y, D55_Z
-  when "d65"                  : X_WD, Y_WD, Z_WD = D65_X, D65_Y, D65_Z
-  when "rec709"               : X_WD, Y_WD, Z_WD = REC709_X, REC709_Y, REC709_Z
-  when "d75"                  : X_WD, Y_WD, Z_WD = D75_X, D75_Y, D75_Z
-  when "dci_calibration_white": X_WD, Y_WD, Z_WD = DCI_Calibration_White_X, DCI_Calibration_White_Y, DCI_Calibration_White_Z
+  when "k5900"                 then X_WD, Y_WD, Z_WD = K5900_X, K5900_Y, K5900_Z
+  when "d50"                   then X_WD, Y_WD, Z_WD = D50_X, D50_Y, D50_Z
+  when "d55"                   then X_WD, Y_WD, Z_WD = D55_X, D55_Y, D55_Z
+  when "d65"                   then X_WD, Y_WD, Z_WD = D65_X, D65_Y, D65_Z
+  when "rec709"                then X_WD, Y_WD, Z_WD = REC709_X, REC709_Y, REC709_Z
+  when "d75"                   then X_WD, Y_WD, Z_WD = D75_X, D75_Y, D75_Z
+  when "dci_calibration_white" then X_WD, Y_WD, Z_WD = DCI_Calibration_White_X, DCI_Calibration_White_Y, DCI_Calibration_White_Z
 end
 case options.crd_definition
-  when "xyzscaling"           : M_A = M_A_XYZScaling
-  when "bradford"             : M_A = M_A_Bradford
-  when "vonkries"             : M_A = M_A_Von_Kries
+  when "xyzscaling"            then M_A = M_A_XYZScaling
+  when "bradford"              then M_A = M_A_Bradford
+  when "vonkries"              then M_A = M_A_Von_Kries
 end
 
 # CRD, Cone response domain
