@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 #
 # Wolfgang Woehl 2010
 # Calculate chromatic adaptation transformation matrix
