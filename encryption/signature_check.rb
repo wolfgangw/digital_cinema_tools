@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 AppName = File.basename __FILE__
-AppVersion = 'v0.2012.02.12'
+AppVersion = 'v0.2012.03.24'
 #
 # Usage:  signature_check.rb cpl.xml
 #         signature_check.rb --quiet cpl.xml
@@ -609,8 +609,16 @@ class DC_Signer_Crypto_Compliance
       errors << "Extensions #{ required_oids.join( ', ' ) } missing" unless required_oids.empty?
 
       # 2.1.11 Public key thumbprint dnQualifier
-      asn1 = Base64.decode64( cert.public_key.to_pem.split( "\n" )[ 1 .. -2 ].join )
-      dnq_calc = Base64.encode64( OpenSSL::Digest.new( 'sha1', asn1 ).digest ).chomp
+      #
+      # This works for rubies < 1.9.3:
+      #   asn1 = Base64.decode64( cert.public_key.to_pem.split( "\n" )[ 1 .. -2 ].join )
+      #   dnq_calc = Base64.encode64( OpenSSL::Digest.new( 'sha1', asn1 ).digest ).chomp
+      #
+      # rubies >= 1.9.3 changed the default encoding of public key so do this instead:
+      #
+      pkey_der = OpenSSL::ASN1::Sequence( [ OpenSSL::ASN1::Integer( cert.public_key.n ), OpenSSL::ASN1::Integer( cert.public_key.e ) ] ).to_der
+      dnq_calc = Base64.encode64( OpenSSL::Digest.new( 'sha1', pkey_der ).digest ).chomp
+      #
       field_dnq = find_field( 'dnQualifier', cert.subject )
       if field_dnq.empty?
         errors << 'dnQualifier field missing in subject name'
