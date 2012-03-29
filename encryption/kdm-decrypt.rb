@@ -17,8 +17,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 AppName = File.basename( __FILE__ )
-AppVersion = 'v0.2011.12.03.backport'
+AppVersion = 'v0.2012.03.29'
 #
+if RUBY_VERSION <= '1.9'
+  begin
+    require 'rubygems'
+  rescue LoadError
+  end
+end
 require 'openssl'
 require 'base64'
 require 'nokogiri'
