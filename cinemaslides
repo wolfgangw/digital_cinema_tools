@@ -1978,8 +1978,8 @@ available_mandatory, missing_mandatory = check_external( mandatory )
 available_mandatory += available_codecs unless available_codecs.nil?
 
 @logger.debug( "Available tools: #{ available_mandatory.sort.join(', ') }" ) unless available_mandatory.empty?
-@logger.debug( "Missing tools: #{ missing_mandatory.join( ', ' ) }" ) if ( missing_mandatory && missing_mandatory.size > 0 )
-@logger.debug( "Missing tools: #{ missing_codecs.join( ', ' ) }" ) if ( missing_codecs && missing_codecs.size > 0 )
+@logger.info( "Missing tools: #{ missing_mandatory.join( ', ' ) }" ) if ( missing_mandatory && missing_mandatory.size > 0 )
+@logger.info( "Missing tools: #{ missing_codecs.join( ', ' ) }" ) if ( missing_codecs && missing_codecs.size > 0 )
 @logger.debug( "All necessary tools available" ) if ( missing_mandatory.empty? and ( options.output_type == 'dcp' ? missing_codecs.empty? : TRUE ) ) # FIXME
 
 if missing_mandatory.size > 0
