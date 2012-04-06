@@ -1656,7 +1656,12 @@ if options.kdm == TRUE
     CINEMACERTSTORE = ENV[ 'CINEMACERTSTORE' ]
     @logger.debug( "CINEMACERTSTORE is set to #{ CINEMACERTSTORE }" )
     if File.exists?( CINEMACERTSTORE ) and File.ftype( Pathname.new( CINEMACERTSTORE ).realpath ) == 'directory'
-      signer_key_file, signer_cert_file, signer_cert_obj, ca_cert_file, intermediate_cert_file, certchain_text, certchain_objs = signature_context
+      begin
+        signer_key_file, signer_cert_file, signer_cert_obj, ca_cert_file, intermediate_cert_file, certchain_text, certchain_objs = signature_context
+      rescue Exception => e
+        @logger.info( e.message )
+        exit 1
+      end
       signer_cert_thumbprint = dc_thumbprint( signer_cert_file )
       @logger.info( "KDM signer: #{ signer_cert_obj.subject.to_s }" )
     else
@@ -2067,7 +2072,12 @@ if @output_type == "dcp"
       exit
     else
       CINEMACERTSTORE = ENV[ 'CINEMACERTSTORE' ]
-      signer_key_file, signer_cert_file, signer_cert_obj, ca_cert_file, intermediate_cert_file, certchain_text, certchain_objs = signature_context
+      begin
+        signer_key_file, signer_cert_file, signer_cert_obj, ca_cert_file, intermediate_cert_file, certchain_text, certchain_objs = signature_context
+      rescue Exception => e
+        @logger.info( e.message )
+        exit 1
+      end
     end
   end
 
