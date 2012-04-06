@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2012.02.26"
+AppVersion = "v0.2012.04.06"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
 # It will conform images to cinema-compliant specs and transform to X'Y'Z'.
 # Additional proof-of-concept features:
-#   + plaintext/encrypted DCPs
+#   + encrypted DCPs
 #   + signatures
 #   + KDM mode
 #   + Theater Key Retrieval Base URL (see DRAFT-ISDCF Document 8 - Theater Key Retrieval)
@@ -412,7 +412,13 @@ EXAMPLES
       end
 
     end
-    opts.parse!( args )
+
+    begin
+      opts.parse!( args )
+    rescue Exception => e
+      puts "Options error: #{ e.message }"
+      exit
+    end
     options
   end # parse
 end # class
@@ -1335,7 +1341,7 @@ class CPL_SMPTE_429_7_2006
                     end
                   } # MainSound
                 end
-                if cma_data # CompositionMetadataAsset
+                if cma_data && cma_data.keys.size > 0 # CompositionMetadataAsset
                   xml.CompositionMetadataAsset_( 'xmlns:meta' => 'http://isdcf.com/schemas/draft/2011/cpl-metadata' ) {
                     #
                     # Set prefix for the parent node with this:
@@ -1345,12 +1351,12 @@ class CPL_SMPTE_429_7_2006
                     xml.Id_( "urn:uuid:#{ `kmuuidgen -n` }", 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' )
                     xml.EditRate_( image_meta[ 'EditRate' ].to_s.gsub( '/', ' ' ), 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' )
                     xml.IntrinsicDuration_( '0', 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' )
-                    xml.ReleaseRegion_ cma_data[ 'ReleaseRegion' ]
-                    xml.Distributor_ cma_data[ 'Distributor' ]
-                    xml.Facility_ cma_data[ 'Facility' ]
-                    xml.StereoscopicLuminance_ cma_data[ 'StereoscopicLuminance' ]
-                    xml.MainSoundConfiguration_ cma_data[ 'MainSoundConfiguration' ]
-                    xml.MainPictureActiveArea_ cma_data[ 'MainPictureActiveArea' ]
+                    xml.ReleaseRegion_ cma_data[ 'ReleaseRegion' ] if cma_data[ 'ReleaseRegion' ]
+                    xml.Distributor_ cma_data[ 'Distributor' ] if cma_data[ 'Distributor' ]
+                    xml.Facility_ cma_data[ 'Facility' ] if cma_data[ 'Facility' ]
+                    xml.StereoscopicLuminance_ cma_data[ 'StereoscopicLuminance' ] if cma_data[ 'StereoscopicLuminance' ]
+                    xml.MainSoundConfiguration_ cma_data[ 'MainSoundConfiguration' ] if cma_data[ 'MainSoundConfiguration' ]
+                    xml.MainPictureActiveArea_ cma_data[ 'MainPictureActiveArea' ] if cma_data[ 'MainPictureActiveArea' ]
                   } # CompositionMetadataAsset
                 end
               } # AssetList
@@ -1972,7 +1978,8 @@ available_mandatory, missing_mandatory = check_external( mandatory )
 available_mandatory += available_codecs unless available_codecs.nil?
 
 @logger.debug( "Available tools: #{ available_mandatory.sort.join(', ') }" ) unless available_mandatory.empty?
-@logger.debug( "Missing tools: #{ ( missing_mandatory + missing_codecs ).join(', ') }" ) unless ( missing_mandatory.empty? or missing_codecs.empty? )
+@logger.debug( "Missing tools: #{ missing_mandatory.join( ', ' ) }" ) if ( missing_mandatory && missing_mandatory.size > 0 )
+@logger.debug( "Missing tools: #{ missing_codecs.join( ', ' ) }" ) if ( missing_codecs && missing_codecs.size > 0 )
 @logger.debug( "All necessary tools available" ) if ( missing_mandatory.empty? and ( options.output_type == 'dcp' ? missing_codecs.empty? : TRUE ) ) # FIXME
 
 if missing_mandatory.size > 0
