@@ -1,8 +1,10 @@
 #!/usr/bin/env ruby
 #
-#
 # dc_crypto_context.rb checks X509 certificates for SMPTE 430-2 compliance
-# Copyright 2011 Wolfgang Woehl
+#
+# Usage: dc_crypto_context.rb <dir>
+#
+# 2011-2012 Wolfgang Woehl
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = 'v0.2012.03.24'
+AppVersion = 'v0.2012.04.08'
 #
 # Script will check a given set of files for the presence of a SMPTE compliant certificate chain, used in 
 # digital cinema to sign Composition Playlists (CPL), Packing Lists (PKL) and Key Delivery Messages (KDM).
@@ -504,22 +506,25 @@ if ARGV.size == 1
     files = Dir.glob( File.join( dir, '*' ) )
   else
     puts "Not found: #{ dir }"
-    exit
+    exit 1
   end
 else
   puts "Usage: #{ File.basename( $0 ) } <directory>"
-  exit
+  exit 1
 end
 
 cc = DC_Crypto_Context.new( files )
 
 if cc.valid?
   puts cc.messages
+  exit 0
 else
   if ! cc.errors[ :pre_context ].empty?
     puts cc.errors[ :pre_context ]
+    exit 1
   else
     puts cc.messages
+    exit 1
   end
 end
 
