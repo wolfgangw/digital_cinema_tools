@@ -792,16 +792,16 @@ def check_signature( xml )
   signature_result = DC_Signature_Verification.new( xml )
 end
 
-def get_xml( file )
+def get_xml( file, options )
   begin
     xml = Nokogiri::XML( open file )
   rescue Exception => e
-    puts "#{ file }: #{ e.message }"
+    puts "#{ file }: #{ e.message }" if options.verbose
     return FALSE
   end
   unless xml.errors.empty?
     xml.errors.each do |e|
-      puts "Syntax error: #{ file }: #{ e }"
+      puts "Syntax error: #{ file }: #{ e }" if options.verbose
     end
     return FALSE
   end
@@ -820,7 +820,7 @@ end
 # Nokogiri git master (2012.01.11) implements interface to libxml2's C14N
 if Nokogiri::XML::Document.new.respond_to?( 'canonicalize' )
   c14n_available = TRUE
-  xml = get_xml( ARGV[ 0 ] )
+  xml = get_xml( ARGV[ 0 ], options )
 else
   puts "Installed version of Nokogiri does not support C14N which is required for signature verification"
   puts "See https://github.com/wolfgangw/digital_cinema_tools/wiki/MISC for notes on how to install Nokogiri with C14N support from current git (https://github.com/tenderlove/nokogiri)"
