@@ -832,7 +832,7 @@ if c14n_available and xml
   puts signature_result.messages if options.verbose
 end
 
-if signature_result.verified?
+if signature_result and signature_result.verified?
   exit 0
 else
   exit 1
