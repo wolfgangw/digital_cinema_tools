@@ -19,7 +19,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = 'v0.2012.04.08'
+AppName = File.basename __FILE__
+AppVersion = 'v0.2012.04.11'
 #
 # Script will check a given set of files for the presence of a SMPTE compliant certificate chain, used in 
 # digital cinema to sign Composition Playlists (CPL), Packing Lists (PKL) and Key Delivery Messages (KDM).
@@ -56,6 +57,45 @@ AppVersion = 'v0.2012.04.08'
 #
 require 'openssl'
 require 'base64'
+require 'optparse'
+require 'ostruct'
+
+class Optparser
+  def self.parse( args )
+    # defaults
+    options = OpenStruct.new
+    options.verbose = TRUE
+
+    opts = OptionParser.new do |opts|
+
+      # Banner and usage
+      opts.banner = <<BANNER
+#{ AppName } #{ AppVersion }
+Usage: #{ AppName } [-q, --quiet] <directory>
+BANNER
+
+      # Options
+      opts.on( '-q', '--quiet', "Quiet operation. Exit codes 0 for complete and compliant certificate chain and 1 for failure" ) do |p|
+        options.verbose = FALSE
+      end
+      opts.on_tail( '-h', '--help', 'Display this screen' ) do
+        puts opts
+        exit
+      end
+
+    end
+    begin
+      opts.parse!( args )
+    rescue Exception => e
+      exit if e.class == SystemExit
+      puts "Options error: #{ e.message }"
+      exit
+    end
+    options
+  end
+end
+options = Optparser.parse( ARGV )
+
 
 class DC_Crypto_Context
   attr_reader :context, :errors, :chain_verified, :crypto_context_valid, :type
@@ -509,21 +549,21 @@ if ARGV.size == 1
     exit 1
   end
 else
-  puts "Usage: #{ File.basename( $0 ) } <directory>"
+  puts "Usage: #{ AppName } <directory>"
   exit 1
 end
 
 cc = DC_Crypto_Context.new( files )
 
 if cc.valid?
-  puts cc.messages
+  puts cc.messages if options.verbose
   exit 0
 else
   if ! cc.errors[ :pre_context ].empty?
-    puts cc.errors[ :pre_context ]
+    puts cc.errors[ :pre_context ] if options.verbose
     exit 1
   else
-    puts cc.messages
+    puts cc.messages if options.verbose
     exit 1
   end
 end
