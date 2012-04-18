@@ -74,7 +74,8 @@ if RUBY_VERSION <= '1.9'
   require 'ftools' # File.copy
   begin
     require 'rubygems'
-  rescue LoadError
+  rescue LoadError => e
+    raise e.message
   end
 end
 require 'optparse'
