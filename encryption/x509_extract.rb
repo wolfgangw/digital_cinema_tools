@@ -26,6 +26,13 @@ AppVersion = 'v0.2012.02.12'
 #   - Nokogiri
 #
 
+if RUBY_VERSION <= '1.9'
+  begin
+    require 'rubygems'
+  rescue LoadError => e
+    raise e.message
+  end
+end
 require 'nokogiri'
 require 'openssl'
 require 'optparse'
@@ -140,14 +147,23 @@ def pemify( string )
 end
 
 def signature_namespace_and_prefix( doc )
+  # If Signature's namespace is not in doc's namespace collection then it will be either
+  #   * in Ns_Xmldsig declared as default namespace for Signature scope
+  #   * or whacked beyond recognition
   doc_ns = doc.collect_namespaces
-  if doc_ns.key( MStr::Ns_Xmldsig )
-    prefix = doc_ns.key( MStr::Ns_Xmldsig ).split( 'xmlns:' ).last
+  if RUBY_VERSION < '1.9'
+    # Hash#index will be deprecated in the ruby 1.9.x series. Is in here for 1.8.x
+    if doc_ns.index( MStr::Ns_Xmldsig )
+      prefix = doc_ns.index( MStr::Ns_Xmldsig ).split( 'xmlns:' ).last
+    else
+      prefix = 'xmlns'
+    end
   else
-    # If Signature's namespace is not in doc's namespace collection then it will be either
-    #   * in Ns_Xmldsig declared as default namespace for Signature scope
-    #   * or whacked beyond recognition
-    prefix = 'xmlns'
+    if doc_ns.key( MStr::Ns_Xmldsig )
+      prefix = doc_ns.key( MStr::Ns_Xmldsig ).split( 'xmlns:' ).last
+    else
+      prefix = 'xmlns'
+    end
   end
   sig_ns = { prefix => MStr::Ns_Xmldsig }
   return sig_ns, prefix
