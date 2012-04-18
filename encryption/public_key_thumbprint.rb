@@ -22,7 +22,7 @@ require 'openssl'
 require 'base64'
 
 if ARGV.size < 1
-  puts "Usage: #{ AppName } <cert> [more <certs>]"
+  puts "Usage: #{ AppName } <cert> [<more certs>]"
   exit 1
 end
 
@@ -33,12 +33,13 @@ ARGV.each do |arg|
     puts "#{ arg }: #{ e.inspect }"
     next
   end
-  asn1 = Base64.decode64( cert.public_key.to_s.split( "\n" )[ 1 .. -2 ].join )
-  public_key_thumbprint = OpenSSL::Digest.new( 'sha1', asn1 ).digest
+  pkey_der = OpenSSL::ASN1::Sequence( [ OpenSSL::ASN1::Integer( cert.public_key.n ), OpenSSL::ASN1::Integer( cert.public_key.e ) ] ).to_der
+  public_key_thumbprint = OpenSSL::Digest.new( 'sha1', pkey_der ).digest
   public_key_thumbprint_b64 = Base64.encode64( public_key_thumbprint ).chomp
   public_key_thumbprint_b16 = public_key_thumbprint.unpack( 'H2' * 20 ).join
-  puts cert.subject.to_s
-  puts "Public key thumbprint b64: #{ public_key_thumbprint_b64 } b16: #{ public_key_thumbprint_b16 }"
+  puts "Subject: #{ cert.subject.to_s }"
+  puts "Public key thumbprint b64: #{ public_key_thumbprint_b64 }"
+  puts "Public key thumbprint b16: #{ public_key_thumbprint_b16 }"
 end
 
 exit 0
