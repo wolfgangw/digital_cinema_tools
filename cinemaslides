@@ -417,9 +417,9 @@ EXAMPLES
     begin
       opts.parse!( args )
     rescue Exception => e
-      exit if e.class == SystemExit
+      exit 0 if e.class == SystemExit
       puts "Options error: #{ e.message }"
-      exit
+      exit 1
     end
     options
   end # parse
