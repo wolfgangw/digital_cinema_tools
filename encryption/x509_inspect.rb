@@ -189,11 +189,11 @@ end
 def x509_inspect( certs, options )
   report = Array.new
   certs.each do |cert|
-    cert_list = Array.new
+    cert_list_of_items = Array.new
     options.items.each do |item|
-      cert_list << { item => Methmap[ item ].call( cert ) } if Methmap.keys.include? item
+      cert_list_of_items << { item => Methmap[ item ].call( cert ) } if Methmap.keys.include? item
     end
-    report << cert_list
+    report << cert_list_of_items
   end
   report
 end
@@ -202,7 +202,7 @@ def puts_padded( report, spacer )
   report.each do |cert_items|
     line = Array.new
     cert_items.each_with_index do |item, index|
-      line << pad_column( item.to_s, report.collect { |items| items[ index ].to_s } )
+      line << pad_column( item.inspect, column = report.collect { |items| items[ index ].inspect } )
     end
     puts line.join spacer
   end
@@ -220,6 +220,7 @@ puts_padded( report, spacer = ' ' )
 
 if errors
   errors.map { |e| puts e }
+  exit 1
 end
 
 exit 0
