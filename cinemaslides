@@ -111,7 +111,7 @@ class Optparser
     options.encoder = 'openjpeg'
     options.encoder_choices = [ 'openjpeg-tm', 'openjpeg', 'kakadu' ]
     options.output_format = 'jpg'
-    options.black = 0.0
+    options.black = NIL
     options.black_leader = NIL
     options.black_tail = NIL
     options.black_intermediate = NIL
@@ -2000,10 +2000,13 @@ end
 
 
 ### Get options and initialize
-black_leader = black_tail = black_intermediate = options.black # 0.0
+black_leader = black_tail = black_intermediate = 0.0
 black_leader = options.black_leader.abs unless options.black_leader.nil?
 black_tail = options.black_tail.abs unless options.black_tail.nil?
 black_intermediate = options.black_intermediate.abs unless options.black_intermediate.nil?
+if options.black
+  black_leader = black_tail = options.black
+end
 
 @resize = options.resize
 
