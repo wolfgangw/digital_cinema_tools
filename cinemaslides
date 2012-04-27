@@ -2081,6 +2081,7 @@ if @output_type == "dcp"
       exit
     else
       CINEMACERTSTORE = ENV[ 'CINEMACERTSTORE' ]
+      @logger.debug( "CINEMACERTSTORE is set to #{ CINEMACERTSTORE }" )
       begin
         signer_key_file, signer_cert_file, signer_cert_obj, ca_cert_file, intermediate_cert_file, certchain_text, certchain_objs = signature_context
       rescue Exception => e
