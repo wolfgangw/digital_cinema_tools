@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2012.04.27"
+AppVersion = "v0.2012.04.28"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -1203,7 +1203,7 @@ class DCSignatureKDM
     #File.copy( tmp.path, 'presigned.xml' )
 
     # FIXME hardcoded certificate chain size
-    @signed_xml = `xmlsec1 --sign --id-attr:Id http://www.smpte-ra.org/schemas/430-3/2006/ETM:AuthenticatedPublic --id-attr:Id http://www.smpte-ra.org/schemas/430-3/2006/ETM:AuthenticatedPrivate --privkey-pem #{ signer_key_file } --trusted-pem #{ ca_cert_file } --trusted-pem #{ intermediate_cert_file } #{ tmp.path }`
+    @signed_xml = `xmlsec1 --sign --id-attr:Id http://www.smpte-ra.org/schemas/430-3/2006/ETM:AuthenticatedPublic --id-attr:Id http://www.smpte-ra.org/schemas/430-3/2006/ETM:AuthenticatedPrivate --privkey-pem #{ signer_key_file } #{ tmp.path } 2>/dev/null`
     #
 
   end # initialize
@@ -1258,14 +1258,14 @@ class DCSignature
 
     pre_signed_xml = @builder_signature_template.to_xml( :indent => 2 )
     tmp = Tempfile.new( 'cinemaslides-' )
-    tmpfile = File.open( tmp.path, 'w' ) { |f| f.write pre_signed_xml; f.close }
+    File.open( tmp.path, 'w' ) { |f| f.write pre_signed_xml; f.close }
 
     # FIXME hardcoded certificate chain size
-    @signed_xml = `xmlsec1 --sign --privkey-pem #{ signer_key_file } --trusted-pem #{ ca_cert_file } --trusted-pem #{ intermediate_cert_file } #{ tmp.path }`
+    @signed_xml = `xmlsec1 --sign --privkey-pem #{ signer_key_file } #{ tmp.path } 2>/dev/null`
     #
-    
+
   end # initialize
-  
+
   def xml
     @signed_xml
   end
