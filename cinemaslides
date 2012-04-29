@@ -2622,7 +2622,7 @@ unless @source_audio[ :orig_name ].empty?
   conformed_audio_list.each do |e|
     set << File.basename( e )
   end
-  sequence_audio_asset = File.join( @assetsdir_audio, "#{ Digest::MD5.hexdigest( set.join ) }_sequence_#{ image_sequence_length_seconds }_.wav" )
+  sequence_audio_asset = File.join( @assetsdir_audio, "#{ Digest::MD5.hexdigest( set.join ) }_sequence_#{ audio_fade_in }_#{ image_sequence_length_seconds }_#{ audio_fade_out }_.wav" )
   sequence_audio_asset_esc = Shellwords.escape sequence_audio_asset
 
   # c) splice
@@ -2636,7 +2636,7 @@ unless @source_audio[ :orig_name ].empty?
     @logger.debug( "Skip: Trimmed audio asset for image sequence exists (#{ File.basename( sequence_audio_asset ) })" )
   else
     @logger.debug( "Trim final audio to #{ image_sequence_length_hms }" )
-    `sox #{ sequence_audio_asset_tmp_esc } #{ sequence_audio_asset_esc } trim 0 #{ image_sequence_length_hms } fade #{ audio_fade_in_hms } #{ image_sequence_length_hms } #{ audio_fade_out_hms }`
+    `sox #{ sequence_audio_asset_tmp_esc } #{ sequence_audio_asset_esc } trim 0 #{ image_sequence_length_hms } fade t #{ audio_fade_in_hms } #{ image_sequence_length_hms } #{ audio_fade_out_hms }`
   end
   File.delete( sequence_audio_asset_tmp )
 
