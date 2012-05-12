@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 # rec709-xyz_matrix.rb
 #
 # For now this script produces 1 3x3 matrix (ITU Rec. 709 to XYZ) to verify numbers
