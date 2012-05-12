@@ -1631,6 +1631,8 @@ end
 @assetsdir = File.join( @cinemaslidesdir, "assets" )
 Dir.mkdir( @assetsdir ) unless File.exists?( @assetsdir )
 
+UUID_RE = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+UUID_RFC4122_RE = "^[0-9a-f]{8}-[0-9a-f]{4}-([1-5])[0-9a-f]{3}-[8-9a-b][0-9a-f]{3}-[0-9a-f]{12}$"
 
 ### KDM mode
 if options.kdm == TRUE
@@ -1698,17 +1700,21 @@ if options.kdm == TRUE
     # Use --cpl-id (requires --keysdir) for the odd experiment to generate a KDM without access to the targeted CPL document
     if options.kdm_cpl_id and options.kdm_cpl == NIL
       cpl_content_authenticator = NIL
-      cpl_uuid = options.kdm_cpl_id
+      if options.kdm_cpl_id.match UUID_RFC4122_RE
+        cpl_uuid = options.kdm_cpl_id
+      else
+        kdm_no_go << "#{ options.kdm_cpl_id } is not a RFC4122 UUID"
+      end
       if options.kdm_cpl_content_title_text
         cpl_content_title_text = options.kdm_cpl_content_title_text
       else
-        @logger.info( "No content title text specified. Use --cpl-content-title" )
+        @logger.info( 'No content title text specified. Use --cpl-content-title <title>' )
         kdm_no_go << 'No content title text'
       end
+      cpl_key_ids_types = Array.new
       if options.kdm_keysdir
         if File.exists?( options.kdm_keysdir ) and File.ftype( Pathname.new( options.kdm_keysdir ).realpath ) == 'directory'
           keysdir_files = Dir.glob( File.join( options.kdm_keysdir, '*' ) )
-          cpl_key_ids_types = Array.new
           keysdir_files.each do |kf|
             kf_id, kf_type = File.read( kf ).chomp.split( /:/ )[ 0, 2 ]
             cpl_key_ids_types << { kf_id => kf_type }
@@ -1718,8 +1724,8 @@ if options.kdm == TRUE
           kdm_no_go << 'keysdir is not a directory'
         end
       else
-        @logger.info( "No keys location specified. Use --keysdir <dir>" )
-        kdm_no_go << "No keysdir"
+        @logger.info( 'No keys location specified. Use --keysdir <dir>' )
+        kdm_no_go << 'No keysdir'
       end
     # Get CPL info
     elsif File.exists?( options.kdm_cpl ) and File.ftype( Pathname.new( options.kdm_cpl ).realpath ) == 'file'
@@ -1742,17 +1748,21 @@ if options.kdm == TRUE
       kdm_no_go << 'No CPL'
     end
   end
-          
+
   if cpl_key_ids_types.size == 0
     if options.kdm_cpl
       @logger.info( "KDM not applicable: #{ options.kdm_cpl } doesn't reference content keys" )
       kdm_no_go << 'No content keys referenced in CPL'
     elsif options.kdm_cpl_id
-      @logger.info( "KDM not applicable: Could not retrieve key info for CPL #{ options.kdm_cpl_id }" )
-      kdm_no_go << 'No content keys retrievable'
+      @logger.info( 'KDM not applicable: No content keys found' )
+      kdm_no_go << 'No content keys found'
     end
   else
-    @logger.info( "References #{ cpl_key_ids_types.size } content key#{ ( cpl_key_ids_types.size != 1 ) ? 's' : '' }" )
+    if options.kdm_cpl
+      @logger.info( "References #{ cpl_key_ids_types.size } content key#{ ( cpl_key_ids_types.size != 1 ) ? 's' : '' }" )
+    elsif options.kdm_cpl_id
+      @logger.info( "Found #{ cpl_key_ids_types.size } content key#{ ( cpl_key_ids_types.size != 1 ) ? 's' : '' }" )
+    end
     # check presence and local specs compliance of content keys
     @logger.info( "Checking content keys ..." )
     keys = Array.new
@@ -1762,7 +1772,7 @@ if options.kdm == TRUE
       if File.exists?( File.join( @keysdir, kit.keys.first ) )
         candidate_key = File.read( File.join( @keysdir, kit.keys.first ) )
         if key_spec_valid?( candidate_key )
-          @logger.debug( "   Found: #{ kit.keys.first }" )
+          @logger.debug( "   Valid: #{ kit.keys.first }" )
           keys << candidate_key
         else
           @logger.info( "Key file #{ kit.keys.first } doesn't fit specs: <UUID>:<Key type>:<Key>" )
@@ -1782,7 +1792,7 @@ if options.kdm == TRUE
       kdm_no_go << 'Content key(s) not valid'
     end
     if keys_missing + keys_invalid == 0
-      @logger.info( "All content keys present" )
+      @logger.info( "All content keys valid" )
     end
   end
   
