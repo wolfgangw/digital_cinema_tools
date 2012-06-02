@@ -1612,12 +1612,20 @@ end
 @logger.debug( commandline )
 
 
+# Minimum requirements for either KDM mode or slideshow prep
 if ENV[ 'CINEMASLIDESDIR' ].nil?
   @cinemaslidesdir = File.join( ENV[ 'HOME' ], "cinemaslidesdir" )
   @logger.debug( "CINEMASLIDESDIR not set. Will use #{ @cinemaslidesdir }" )
 else
   @cinemaslidesdir = File.expand_path( ENV[ 'CINEMASLIDESDIR' ] )
   @logger.debug( "CINEMASLIDESDIR is set to #{ @cinemaslidesdir }" )
+end
+# Required for confirm_or_create()
+uuidgen_tool = [ 'kmuuidgen' ]
+available, missing = check_external( uuidgen_tool )
+if available.empty?
+  @logger.warn( 'kmuuidgen (from asdcplib) missing. Check your installation' )
+  exit
 end
 if confirm_or_create( @cinemaslidesdir ) == TRUE
   @logger.debug( "#{ @cinemaslidesdir } is writeable" )
