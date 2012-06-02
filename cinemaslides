@@ -163,7 +163,7 @@ class Optparser
       opts.banner = <<BANNER
 #{ AppName } #{ AppVersion } #{ ENV[ 'CINEMASLIDESDIR' ].nil? ? "\nExport CINEMASLIDESDIR to point to desired work directory needed for temporary files, thumbnails, asset depot, DCPs (Default: HOME/cinemaslidesdir)" : "\nCINEMASLIDESDIR is set (#{ ENV[ 'CINEMASLIDESDIR' ] })" } #{ ENV[ 'CINEMACERTSTORE' ].nil? ? "\nExport CINEMACERTSTORE to point to a directory which holds your digital cinema compliant signing key and certificates" : "\nCINEMACERTSTORE is set (#{ ENV[ 'CINEMACERTSTORE' ] })" }
 Usage:
-#{ AppName } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--fps <fps>] [-x --transition-and-timing <type,a,b[,c]>]
+#{ AppName } [-t, --type <type>] [-k, --size <DCP resolution>] [-a, --aspect <aspect name or widthxheight>] [--fps <fps>] [-x --transition <type,a,b[,c]>]
              [--title <DCP title>] [--issuer <DCP issuer/KDM facility code>] [--annotation <DCP/KDM annotation>] [--package-type <CPL type>] [--kind <DCP kind>]
              [-b, --black <seconds>] [--bl, --black-leader <seconds>] [--bt, --black-tail <seconds>] [--bi, --black-intermediate <seconds>] [--ip, --intermediate-plate <plate>]
              [--audio-fade <in_seconds,out_seconds>] [-s, --samplerate <audio samplerate>] [--bps <bits per audio sample>]
@@ -209,7 +209,7 @@ BANNER
       opts.on( '--fps fps', 'Framerate (Default: 24)', Float ) do |p| # 23.976
         options.fps = p.to_f
       end
-      opts.on( '-x', '--transition-and-timing transition,seconds[,seconds[,seconds]]', Array, "Use this option to specify the transition type ('cut', 'fade' or 'crossfade') and timing parameters (Default: '-x cut,5'). Separate parameters with comma (no spaces)" ) do |p|
+      opts.on( '-x', '--transition transition,seconds[,seconds[,seconds]]', Array, "Use this option to specify the transition type ('cut', 'fade' or 'crossfade') and timing parameters (Default: '-x cut,5'). Separate parameters with comma (no spaces)" ) do |p|
         if options.transition_and_timing_choices.include?( p.first.downcase )
           options.transition_and_timing = p
         else
