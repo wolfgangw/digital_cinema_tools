@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2012.05.12"
+AppVersion = "v0.2012.06.09"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -1757,7 +1757,10 @@ if options.kdm == TRUE
     end
   end
 
-  if cpl_key_ids_types.size == 0
+  if cpl_key_ids_types.nil?
+    @logger.info( 'No key references found' )
+    kdm_no_go << 'No key references'
+  elsif cpl_key_ids_types.size == 0
     if options.kdm_cpl
       @logger.info( "KDM not applicable: #{ options.kdm_cpl } doesn't reference content keys" )
       kdm_no_go << 'No content keys referenced in CPL'
