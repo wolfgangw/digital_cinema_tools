@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# v0.2011.09.19
+# v0.2012.06.10
 # Wolfgang Woehl 2011
 # A no-frills timelapse tool to capture a sequence of screenshots
 # Needs ImageMagick's import tool
@@ -55,7 +55,7 @@ class Optparser
           options.size = p
         end
       end
-      opts.on( '-q', '--quality quality', Integer, 'JPEG quality. Use a number between 0 (strongest compression) and 100 (least compression)' ) do |p|
+      opts.on( '-q', '--quality quality', Integer, 'JPEG quality. Use a number between 1 (strongest compression) and 100 (least compression)' ) do |p|
         options.quality = p if p >= 0 and p <= 100
       end
       opts.on_tail( '-h', '--help', 'Display this screen' ) do
