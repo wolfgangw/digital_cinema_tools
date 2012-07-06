@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2012.06.09"
+AppVersion = "v0.2012.07.05"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -486,10 +486,10 @@ class Logger
     carriage_return( @color[:info], text ) unless @verbosity == "quiet"
   end
   def carriage_return( color, text )
-    printf "\033[#{ color }m#{ @prefix } #{ text }\033[0m#{ ' ' * 64 }\r"; STDOUT.flush
+    printf "\033[#{ color }m%s %s\033[0m\r", @prefix, text
   end
   def to_console( color, text )
-    printf "\033[#{ color }m#{ @prefix } #{ text }\033[0m#{ ' ' * 64 }\n"
+    printf "\033[#{ color }m%s %s\033[0m\n", @prefix, text
   end
 end
 @logger = Logger.new( prefix = '*', options.verbosity )
@@ -558,16 +558,16 @@ def cleanup_workdir( keep )
     case @output_type
     when 'preview', 'fullpreview'
       @logger.info( "Removing preview files (Say '--keep' to keep them)" )
-      `rm -rf #{ @workdir }`
+      `rm -rf #{ Shellwords.escape @workdir }`
       #unless @final_audio.nil?
       #  `rm #{ @final_audio }` # which lives in @assetsdir_audio, for now
       #end
     when 'dcp'
       @logger.info( "Removing temporary files (Say '--keep' to keep them)" )
-      `rm -rf #{ @conformdir }`
-      `rm -rf #{ @j2cdir }`
+      `rm -rf #{ Shellwords.escape @conformdir }`
+      `rm -rf #{ Shellwords.escape @j2cdir }`
       if File.dirname( @dcpdir ) != @workdir
-        `rm -rf #{ @workdir }`
+        `rm -rf #{ Shellwords.escape @workdir }`
       end
     end
     # Remove temporary safe links (for source filenames with spaces and rogue chars)
@@ -585,7 +585,7 @@ def get_timestamp
   #[t.year, '%02d' % t.month, '%02d' % t.day, '%02d' % t.hour, '%02d' % t.min, '%02d' % t.sec].join('_')
   DateTime.now.to_s
 end
-timestamp = get_timestamp
+timestamp = get_timestamp.gsub( /[:+]/, '_' )
 
 
 # fit custom aspect ratios into the target container dimensions (1k for preview, 2k/4k for fullpreview/dcp)
@@ -627,6 +627,7 @@ end
 
 
 def make_black_sequence( info, duration, fps )
+  clear_terminal_line
   @logger.info( "Black #{ info }: #{ duration } seconds" )
   blackfile = sequencefile
   make_black_frame( blackfile, fps )
@@ -688,28 +689,48 @@ def fade( image, seconds, fps, initial, final, step )
   else # fade out
     ladder = ( final .. initial ).step( step.abs ).to_a
   end
-  ladder[ -1 ] = 0 # sic. float implementation, tighten the nut
-  levels = ladder.collect { |rung| sigmoid( rung, initial, final, -50, 0.125 ) }
-  if levels.first < -50
-    levels[ 0 ] = -100
-    levels[ -1 ] = 0
-  else
-    levels[ 0 ] = 0
-    levels[ -1 ] = -100
-  end
-  @logger.debug( "levels: #{levels.inspect}" )
-  #
-  # levels has 1 element more than the number of steps provided by the following range
-  # so the last element never gets applied -- 
-  # hence the shifted fade symmetry (by 1 step).
-  # 
-  ( 1..( seconds * fps ) ).each do |i|
+  ladder[ -1 ] = 0 # sic. tighten the floats nut
+
+  levels = shear_y( ladder, ladder.collect { |rung| sigmoid( rung, initial, final, -50, 0.125 ) } )
+
+  ( 1 .. ( seconds * fps ) ).each do |i|
     filename = sequencefile
     level = levels[ i - 1 ]
-    @logger.cr( sprintf( '%.2f', level ) )
+    @logger.cr( level )
     asset, todo = check_for_asset( image, @output_format, fps, level )
     if todo == TRUE
       convert_apply_level( image, level, asset )
+    end
+    File.symlink( asset, filename )
+    @framecount += 1
+  end
+end
+
+
+def crossfade( image1, image2, fps, seconds )
+  clear_terminal_line
+  @logger.info( "XXX Crossfade #{ imagecount_info( image1 ) }" )
+  initial = -100.0
+  final = 0.0
+  step = 100 / ( seconds * fps )
+  ladder = ( initial .. final ).step( step ).to_a
+  ladder[ -1 ] = 0
+  levels = shear_y( ladder, ladder.collect { |rung| sigmoid( rung, initial, final, 50, 0.125 ) } ).map { |v| v.abs }
+  case @output_type
+  when "dcp"
+    compress = "-compress none"
+    depth = "-depth 12"
+  when "preview", "fullpreview"
+    compress = ""
+    depth = "-depth 8"
+  end
+  ( 1 .. ( seconds * fps ) ).each do |i|
+    filename = sequencefile
+    level = levels[ i - 1 ]
+    @logger.cr( level )
+    asset, todo = check_for_asset( [ image1, image2 ], @output_format, fps, level )
+    if todo == TRUE
+      composite( image1, level, image2, depth, compress, asset )
     end
     File.symlink( asset, filename )
     @framecount += 1
@@ -728,34 +749,20 @@ def sigmoid( value, initial, final, center, rate )
   end
   return ( initial - final ).abs / ( 1.0 + Math.exp( rate * s_sign( final - initial ) * ( -( value - center ).to_f ) ) ) + base
 end
-
-
-def crossfade( image1, image2, fps, seconds )
-  @logger.info( "XXX Crossfade #{ imagecount_info( image1 ) }" )
-  initial = 100.0
-  final = 0.0
-  step = - ( 100 / ( seconds * fps ) )
-  ladder = ( final .. initial ).step( step.abs ).collect
-  levels = ladder.collect { |rung| sigmoid( rung, initial, final, 50, 0.125 ) }
-  case @output_type
-  when "dcp"
-    compress = "-compress none"
-    depth = "-depth 12"
-  when "preview", "fullpreview"
-    compress = ""
-    depth = "-depth 8"
+def shear_y( ladder, levels )
+  if levels.first > levels.last
+    levels = levels.reverse
+    reversed = true
   end
-  ( 1..( seconds * fps ) ).each do |i|
-    filename = sequencefile
-    level = levels[ i - 1 ]
-    @logger.cr( sprintf( '%.2f', level ) )
-    asset, todo = check_for_asset( [ image1, image2 ], @output_format, fps, level )
-    if todo == TRUE
-      composite( image1, level, image2, depth, compress, asset )
-    end
-    File.symlink( asset, filename )
-    @framecount += 1
+  shift_initial = ladder.first - levels.first
+  shift_final = ladder.last - levels.last
+  shifts = ( shift_initial .. shift_final ).step( ( shift_final - shift_initial ) / ( ladder.size + 1 ) ).to_a
+  y = []
+  levels.each_with_index do |v, index|
+    y[ index ] = ( 100 * ( v + shifts[ index ] ) ).to_i / 100.0 # Max target 12 bpc requires 2 decimal places precision
   end
+  y = y.reverse if reversed
+  return y
 end
 
 
@@ -794,39 +801,68 @@ def sequencefile
 end
 
 
+# FIXME ugh
 def digest_over_content( file )
   Digest::MD5.hexdigest( File.read( file ) )
 end
 def digest_over_name( file )
   Digest::MD5.hexdigest( File.basename( file ) )
 end
+def digest_over_string( string )
+  Digest::MD5.hexdigest( string )
+end
 
 
+#
 # entry into the asset depot will trigger a relatively strong and good enough md5 digest over full content (including metadata)
 # members of the asset depot will trigger a cheaper and good enough digest over filename (which is in part an md5 digest)
 #   + dimensions + (level unless jpeg 2000 codestream requested) + (encoder + fps if jpeg 2000 codestream is requested) + suffix
-def check_for_asset( filename_s, suffix, fps, level = nil )
-  # 2 images from crossfade?
-  if filename_s.size == 2
-    if File.dirname( filename_s.first ) != @assetsdir
-      id = digest_over_content( filename_s[ 0 ] ) + '_' + digest_over_content( filename_s[ 1 ] )
-    else
-      id = digest_over_name( filename_s[ 0 ] ) + '_' + digest_over_name( filename_s[ 1 ] )
+#
+def build_assetname( id, level, suffix, fps )
+  File.join( @assetsdir, id + "_#{ @dimensions }_#{ @resize == TRUE ? 'r' : 'nr' }#{ level.nil? ? '' : '_' + level.to_s }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' + fps.to_s + '_' : '' : '_pre' }_.#{ suffix }" )
+end
+def check_for_crossfade_asset( files, level, suffix, fps )
+  level_a = level.to_s
+  level_b = ((100 * (100-level)).to_i / 100.0).to_s
+  digest_a = digest_over_name files[0]
+  digest_b = digest_over_name files[1]
+  primary_id = [ digest_a, digest_b ].join( '_' )
+  primary_level = [ level_a, level_b ].join( '_' )
+  an = build_assetname( primary_id, primary_level, suffix, fps )
+  if File.exists?( an )
+    return primary_id, primary_level
+  else # try the reverse
+    secondary_id = [ digest_b, digest_a ].join( '_' )
+    secondary_level = [ level_b, level_a ].join( '_' )
+    an = build_assetname( secondary_id, secondary_level, suffix, fps )
+    if File.exists?( an )
+      return secondary_id, secondary_level
     end
-    origin = [ File.basename( filename_s[ 0 ] ), File.basename( filename_s[ 1 ] ) ].join( ' X ' )
+  end
+  return primary_id, primary_level
+end
+def check_for_asset( files, suffix, fps, level = nil )
+  # 2 images from crossfade?
+  if files.size == 2
+    if File.dirname( files.first ) != @assetsdir
+      id = [ digest_over_content( files[ 0 ] ), digest_over_content( files[ 1 ] ) ].join( '_' )
+    else
+      id, level = check_for_crossfade_asset( files, level, suffix, fps )
+    end
+    origin = [ File.basename( files[ 0 ] ), File.basename( files[ 1 ] ) ].join( ' X ' )
   else # not from crossfade
-    if File.exists?( filename_s )
-      if File.dirname( filename_s ) != @assetsdir
-        id = digest_over_content( filename_s )
+    if File.exists?( files )
+      if File.dirname( files ) != @assetsdir
+        id = digest_over_content( files )
       else
-        id = digest_over_name( filename_s )
+        id = digest_over_name( files )
       end
     else
       id = 'black'
     end
-    origin = File.basename( filename_s )
+    origin = File.basename( files )
   end
-  assetname = File.join( @assetsdir, id + "_#{ @dimensions }_#{ @resize == TRUE ? 'r' : 'nr' }#{ level.nil? ? '' : '_' + level.to_s }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' : '' : '_pre' }_.#{ suffix }" )
+  assetname = build_assetname( id, level, suffix, fps )
   if File.exists?( assetname )
     @logger.debug( "Skip: Asset exists (#{ origin } -> #{ File.basename( assetname ) })" )
     todo = FALSE
@@ -962,6 +998,139 @@ def confirm_or_create( location )
 end
 
 
+class Eta
+  attr_reader :percentage, :eta, :elapsed
+  def initialize( title, width, looks_like, terminal_size, options )
+    @title = title
+    @total = 100
+    @scaling = width.to_f / @total
+    @left, @major, @fill, @right = looks_like.scan( /./ )
+    @terminal_size = terminal_size
+    @output = Logger.new( prefix = '', options )
+    @start = Time.now
+  end
+
+  def update( percentage )
+    @percentage = percentage
+    update_eta
+  end
+
+  def update_eta
+    return if @percentage == 0
+    @elapsed = Time.now - @start
+    @eta = @elapsed * @total / @percentage - @elapsed
+  end
+
+  def update_terminal( percentage )
+    update( percentage )
+    line = bar
+    if @terminal_size and line.length > @terminal_size[ :columns ]
+      line = ' [...] ' + line[ line.length - @terminal_size[ :columns ] + 9 .. -1 ]
+    end
+    @output.cr( "%s\r" % line )
+  end
+
+  def clear_terminal
+    @output.cr( "%s\r" % ( ' ' * bar.size ) )
+  end
+
+  def preserve_terminal
+    @output.info ''
+  end
+
+  def preserve_terminal_title_with_message( message )
+    clear_terminal
+    @output.debug [ @title, message ].join( ' ' )
+  end
+
+  private
+
+  def bar
+    [ @title, percentage_pad, inner_bar, tail ].join( ' ' )
+  end
+
+  def percentage_pad
+    "%3s%" % @percentage
+  end
+
+  def inner_bar
+    @left + @major * ( @percentage * @scaling ).ceil + @fill * ( ( @total - @percentage ) * @scaling ).floor + @right
+  end
+
+  def tail
+    [ time_string( 'ETA', @eta ), time_string( 'Elapsed', @elapsed ) ].join( ' ' )
+  end
+
+  def time_string( head, t )
+    return "%s --:--:--" % head if t.nil?
+    t = t.to_i; s = t % 60; m  = ( t / 60 ) % 60; h = t / 3600
+    "%s %02d:%02d:%02d" % [ head, h, m, s ]
+  end
+end # Eta
+
+
+def command_exists?( command )
+  ENV[ 'PATH' ].split( File::PATH_SEPARATOR ).any? { |d| File.exists? File.join( d, command ) }
+end
+
+def detect_terminal_size
+  if command_exists?( 'tput' )
+    { :columns => `tput cols`.to_i, :lines => `tput lines`.to_i }
+  else
+    nil
+  end
+end
+
+def clear_terminal_line
+  t = detect_terminal_size
+  if t
+    cols = t[ :columns ]
+  else
+    cols = 64
+  end
+  @logger.cr( ' ' * cols )
+end
+
+def with_etabar( args, options, etabar_title, etabar_pbar_width, etabar_looks_like, &block )
+  eta = Eta.new( etabar_title, etabar_pbar_width, etabar_looks_like, detect_terminal_size, options )
+  chunks_per_percent = args.size / 100 + 1
+  index = 0
+  result = Array.new
+  ( 0 .. 100 ).each do |percentage|
+    chunks_per_percent.times do
+      break if index == args.size
+      result << yield( args[ index ] )
+      index += 1
+    end
+    eta.update_terminal percentage
+  end
+  eta.preserve_terminal_title_with_message "Done"
+  return result.reject { |e| e.nil? }
+end
+
+def digest_with_etabar( digest_algorithm, title, file, pbar_width, looks_like, options )
+  size = File.size file
+  chunksize = 4096
+  chunks = size / chunksize + ( size % chunksize > 0 ? 1 : 0 )
+  chunks_per_percent = chunks / 100 + 1
+
+  dgst = OpenSSL::Digest.new( digest_algorithm )
+  io = File.open file
+  eta = Eta.new( title, pbar_width, looks_like, detect_terminal_size, options )
+
+  ( 0 .. 100 ).each do |percentage|
+    # read 1 % of chunks
+    chunks_per_percent.times do
+      chunk = io.read( chunksize )
+      dgst.update chunk if chunk
+    end
+    eta.update_terminal percentage
+  end
+
+  return dgst.digest, eta
+end
+
+
 class MXF_Metadata < Hash
   def initialize( mxf )
     asdcp_info = `asdcp-test -v -i #{ mxf }`.chomp
@@ -1038,10 +1207,14 @@ module DCTools
     return tmp.reverse.join( ',' )
   end
   
-  def asdcp_digest( file )
+  def asdcp_digest( asset_file, options )
     # equiv. `openssl dgst -sha1 -binary #{ file } | openssl base64`.chomp
     # equiv. `asdcp-test -t #{ file }`.split( ' ' ).first
-    Base64::encode64( OpenSSL::Digest.digest( OpenSSL::Digest::SHA1.new, File.read( file ) ) ).chomp
+    etabar_title = "#{ asset_file }: Computing hash value:"
+    hash, eta = digest_with_etabar( digest_algorithm = 'sha1', title = etabar_title, file = asset_file, width = 20, looks_like = '[= ]', opts = options )
+    value = Base64::encode64( hash ).chomp
+    eta.preserve_terminal_title_with_message( value )
+    return value
   end
   
   def cipher_data_payload_binary_package( signer_cert_thumbprint, cpl_id, key_type, key_id, kdm_not_valid_before, kdm_not_valid_after, key )
@@ -1273,7 +1446,7 @@ end # DCSignature
 
 
 class CPL_SMPTE_429_7_2006
-  def initialize( cpl_uuid, sign, encrypt, image_mxfs, audio_mxfs, annotation, issue_date, issuer, tkr_base_url, creator, content_title, content_kind, content_version_id, content_version_label, rating_list, cma_data )
+  def initialize( cpl_uuid, sign, encrypt, image_mxfs, audio_mxfs, annotation, issue_date, issuer, tkr_base_url, creator, content_title, content_kind, content_version_id, content_version_label, rating_list, cma_data, options )
 
     required_namespaces = Hash.new
     required_namespaces[ 'xmlns' ] = 'http://www.smpte-ra.org/schemas/429-7/2006/CPL'
@@ -1314,7 +1487,7 @@ class CPL_SMPTE_429_7_2006
                     xml.Duration_ image_meta[ 'ContainerDuration' ] # FIXME
                     if encrypt == TRUE
                       xml.KeyId_ "urn:uuid:#{ image_meta[ 'CryptographicKeyID' ] }"
-                      xml.Hash_ asdcp_digest( image_mxf )
+                      xml.Hash_ asdcp_digest( image_mxf, options )
                     end
                     xml.FrameRate_ image_meta[ 'SampleRate' ].to_s.gsub( '/', ' ' ) # FIXME SampleRate?
                     xml.ScreenAspectRatio_ image_meta[ 'AspectRatio' ].to_s.gsub( '/', ' ' )
@@ -1328,7 +1501,7 @@ class CPL_SMPTE_429_7_2006
                     xml.Duration_ image_meta[ 'ContainerDuration' ] # FIXME
                     if encrypt == TRUE
                       xml.KeyId_ "urn:uuid:#{ image_meta[ 'CryptographicKeyID' ] }"
-                      xml.Hash_ asdcp_digest( image_mxf )
+                      xml.Hash_ asdcp_digest( image_mxf, options )
                     end
                     xml.FrameRate_ image_meta[ 'SampleRate' ].to_s.gsub( '/', ' ' ) # FIXME SampleRate?
                     xml.ScreenAspectRatio_ image_meta[ 'AspectRatio' ].to_s.gsub( '/', ' ' )
@@ -1343,7 +1516,7 @@ class CPL_SMPTE_429_7_2006
                     xml.Duration_ audio_meta[ 'ContainerDuration' ].to_s.gsub( '/', ' ' ) # FIXME
                     if encrypt == TRUE
                       xml.KeyId_ "urn:uuid:#{ audio_meta[ 'CryptographicKeyID' ] }"
-                      xml.Hash_ asdcp_digest( audio_mxfs[ index ] )
+                      xml.Hash_ asdcp_digest( audio_mxfs[ index ], options )
                     end
                   } # MainSound
                 end
@@ -1391,7 +1564,7 @@ end # CPL_SMPTE_429_7_2006
 
 
 class PKL_SMPTE_429_8_2007
-  def initialize( pkl_uuid, sign, annotation, issue_date, issuer, creator, assets )
+  def initialize( pkl_uuid, sign, annotation, issue_date, issuer, creator, assets, options )
 
     required_namespaces = Hash.new
     required_namespaces[ 'xmlns' ] = 'http://www.smpte-ra.org/schemas/429-8/2007/PKL'
@@ -1421,7 +1594,7 @@ class PKL_SMPTE_429_8_2007
             xml.Asset_ {
               xml.Id_ "urn:uuid:#{ asset_uuid }"
               # optional: AnnotationText per asset
-              xml.Hash_ asdcp_digest( asset )
+              xml.Hash_ asdcp_digest( asset, options )
               xml.Size_ File.size( asset )
               xml.Type_ mimetype
               xml.OriginalFileName_ File.basename( asset )
@@ -2420,6 +2593,12 @@ elsif options.transition_and_timing.first == "crossfade"
       @source[ :orig_name ].length * fr_cast( duration, fps )
     )
 end
+# bail out if we have 0 frames to generate
+if sequence_frames == 0
+  @logger.info( "Transition specs #{ options.transition_and_timing }" )
+  @logger.info( 'No frames to generate. Exiting' )
+  exit 0
+end
 # meat of sequence_frames (without black leader/tail) -- where audio will play
 image_sequence_frames = sequence_frames - ( fr_cast( black_leader, fps ) + fr_cast( black_tail, fps ) )
 image_sequence_length_seconds = image_sequence_frames / fps
@@ -2804,6 +2983,7 @@ case @output_type
 when "preview", "fullpreview"
   sequence = File.join( "#{ Shellwords.escape @conformdir }", "*.#{ @output_format }" )
   audio = ( @source_audio[ :orig_name ].empty? ? '' : '-audiofile ' + Shellwords.escape( @final_audio ) )
+  clear_terminal_line
   if ENV[ "DISPLAY" ].nil?
     @logger.warn( "DISPLAY not set. Skipping preview" )
   else
@@ -2823,6 +3003,7 @@ when "dcp"
   Dir.mkdir( @j2cdir )
 
   ## JPEG 2000 encoding
+  clear_terminal_line
   @logger.info( "Encode to JPEG 2000" )
   filemask = File.join( @conformdir, "*.#{ @output_format }" )
   files = Dir.glob( filemask ).sort
@@ -2905,6 +3086,7 @@ when "dcp"
   end
 
   # Make image trackfile
+  clear_terminal_line
   @logger.info( 'Write image trackfile ...' )
   if @dcp_wrap_stereoscopic == TRUE
     @logger.info( 'Wrap as stereoscopic essence' )
@@ -2952,7 +3134,8 @@ when "dcp"
     content_version_id = cpl_uuid + '_' + issue_date,
     content_version_label = content_version_id,
     rating_list = nil,
-    cma_data
+    cma_data,
+    options
   )
   if options.sign
     cpl_xml = DCSignature.new( cpl.xml, signer_key_file, ca_cert_file, intermediate_cert_file, certchain_objs ).xml
@@ -2982,7 +3165,8 @@ when "dcp"
     issue_date = DateTime.now.to_s,
     options.issuer,
     creator = "#{ AppName } #{ AppVersion } smpte pkl",
-    pkl_assets.flatten
+    pkl_assets.flatten,
+    options
   )
   if options.sign
     pkl_xml = DCSignature.new( pkl.xml, signer_key_file, ca_cert_file, intermediate_cert_file, certchain_objs ).xml
