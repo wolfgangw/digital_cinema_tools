@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
 #
 # x509_extract.rb extracts X509 certificates from signed DCinema documents
-# Copyright 2012 Wolfgang Woehl
+#
+# Wolfgang Woehl 2012
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
