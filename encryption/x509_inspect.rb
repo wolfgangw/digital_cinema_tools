@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 AppName = File.basename __FILE__
-AppVersion = 'v0.2012.02.12'
+AppVersion = 'v0.2012.09.05'
 #
 # Usage:  x509_inspect.rb chain_0.pem [chain_1.pem [...]]
 #         x509_inspect.rb chain_*
@@ -176,7 +176,8 @@ Methmap = {
   'pubkey' => lambda { |cert| cert.public_key.n },
   'exponent' => lambda { |cert| cert.public_key.e },
 }
-%w( file version serial signature_algorithm not_before not_after ).each do |item|
+Methmap[ 'version' ] = lambda { |cert| ( cert.send 'version' ).to_i + 1 }
+%w( file serial signature_algorithm not_before not_after ).each do |item|
   Methmap[ item ] = lambda { |cert| cert.send item }
 end
 %w( o ou cn dnq o_issuer ou_issuer cn_issuer dnq_issuer ).each do |item|
