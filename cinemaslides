@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2012.07.05"
+AppVersion = "v0.2012.09.17"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -216,7 +216,7 @@ BANNER
           options.transition_and_timing[ 0 ] = 'malformed'
         end
       end
-      opts.on( '-j', '--encoder codec', String, "Use 'openjpeg' or 'kakadu' for JPEG 2000 encoding (Default: openjpeg)" ) do |p|
+      opts.on( '-j', '--encoder codec', String, "Use 'openjpeg', 'openjpeg-tm' (for OpenDCP's opendcp_j2k) or 'kakadu' for JPEG 2000 encoding (Default: openjpeg)" ) do |p|
         options.encoder = p.downcase
       end
       opts.on( '--of', '--output-format suffix', String, "Use 'jpg' or any other image related suffix (Default: jpg for previews, tiff for DCPs)" ) do |p|
@@ -2305,6 +2305,13 @@ if @output_type == "dcp"
       exit if agree( 'Continue anyway?' ) == FALSE
     end
   end
+  # Catch framerates which would not be valid passed to openjpeg's image_to_j2k
+  if options.output_type == 'dcp' and options.encoder == 'openjpeg' and ! ( [ 24, 48 ].include? options.fps.to_i )
+    @logger.info( "JPEG 2000 codec requested: #{ options.encoder }. This requires a framerate of either 24 or 48" )
+    @logger.info( "Framerate requested: #{ options.fps }" )
+    @logger.info( "Use 'openjpeg-tm' (for OpenDCP's opendcp_j2k) or 'kakadu' which allow different framerates" )
+    exit
+  end
 
   # Requested CMA sane?
   if options.cma
@@ -2745,6 +2752,8 @@ end
 
 
 # See SMPTE 428-2-2006
+#
+# FIXME TODO Map 1-channel source to channel 3 and return 5.1
 def sox_conform( audiofile, samplerate, bps, channelcount, asset ) # SMPTE 428-2-2006
   audiofile_esc = Shellwords.escape audiofile
   asset_esc = Shellwords.escape asset
@@ -2794,6 +2803,9 @@ unless @source_audio[ :orig_name ].empty?
   when 'dcp'
     if channelcounts.uniq.size == 1
       case channelcounts.first
+      # FIXME '1.0' is not a valid label nor is a 1-channel MXF legal in the field. Do not use unless you know what you are doing
+      when 1
+        SMPTE_AUDIO_LABEL = '1.0'
       when 2
         SMPTE_AUDIO_LABEL = '2.0' # not a valid label. will be fixed with channel count conform
       when 6
@@ -3037,7 +3049,12 @@ when "dcp"
 
       previous_asset = asset
       if todo == TRUE
-        @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
+        case options.verbosity
+        when 'info'
+          @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
+        when 'debug'
+          @logger.debug( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
+        end
         case options.encoder
         when 'openjpeg-tm'
           # Do not use opendcp_j2k's colorspace transform (-x), files are X'Y'Z' already (Andrae Steiner)
@@ -3051,7 +3068,7 @@ when "dcp"
         @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
       end
 
-      File.link( asset, asset_link )
+      File.link( asset_esc, asset_link )
     end
   end
   # blank logger garbage
