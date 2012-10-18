@@ -3,6 +3,9 @@
 # Calculate public key thumbprint of X509 certificates
 # 2012 Wolfgang Woehl
 #
+# See https://bugs.ruby-lang.org/issues/4421 for a related ticket and discussion
+#
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
