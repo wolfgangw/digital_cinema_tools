@@ -45,6 +45,9 @@ Items:
   file version serial signature_algorithm not_before not_after
   o ou cn dnq o_issuer ou_issuer cn_issuer dnq_issuer
   basicConstraints keyUsage authorityKeyIdentifier
+  pubkey exponent
+Default items:
+  o ou cn dnq serial
 
 BANNER
 
