@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2012.07.05"
+AppVersion = "v0.2012.10.18"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -2288,7 +2288,7 @@ if @output_type == "dcp"
   # Requested fps sane?
   if ! options.fps_dcp_choices.include?( options.fps )
     if options.fps_asdcp_choices.include?( options.fps )
-      @logger.critical( "DCI compliant framerate but not yet implemented in #{ File.basename( $0 ) }: #{ options.fps } fps" )
+      @logger.critical( "DCI compliant framerate but not yet implemented in #{ AppName }: #{ options.fps } fps" )
       exit
     else
       @logger.critical( "Not a DCI compliant framerate: #{ options.fps } fps" )
