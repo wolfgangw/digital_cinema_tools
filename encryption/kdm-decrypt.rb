@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 AppName = File.basename( __FILE__ )
-AppVersion = 'v0.2012.03.29'
+AppVersion = 'v0.2012.10.31'
 #
 if RUBY_VERSION <= '1.9'
   begin
@@ -121,9 +121,10 @@ if xml.root.node_name != message
   puts 'Not a DCinemaSecurityMessage'
   exit_usage
 else
-  message_id = xml.xpath( "//xmlns:#{ message }/xmlns:AuthenticatedPublic/xmlns:MessageId" ).text.split( 'urn:uuid:' ).last
-  message_type = xml.xpath( "//xmlns:#{ message }/xmlns:AuthenticatedPublic/xmlns:MessageType" ).text
-  cipher_values = xml.xpath( "//xmlns:#{ message }/xmlns:AuthenticatedPrivate/enc:EncryptedKey/enc:CipherData/enc:CipherValue" )
+  xml.remove_namespaces!
+  message_id = xml.xpath( "//#{ message }/AuthenticatedPublic/MessageId" ).text.split( 'urn:uuid:' ).last
+  message_type = xml.xpath( "//#{ message }/AuthenticatedPublic/MessageType" ).text
+  cipher_values = xml.xpath( "//#{ message }/AuthenticatedPrivate/EncryptedKey/CipherData/CipherValue" )
   case message_type
   when types[ :smpte ]
     type = :smpte
