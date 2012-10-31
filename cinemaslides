@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2012.10.18"
+AppVersion = "v0.2012.10.21"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -2853,15 +2853,20 @@ unless @source_audio[ :orig_name ].empty?
   File.delete( sequence_audio_asset_tmp )
 
   # e) pad with silence for black leader/tail
-  audio_leader = ( black_leader > 0 ? silence( black_leader, options.audio_samplerate, options.audio_bps, channelcounts.first ) : '' )
-  audio_tail = ( black_tail > 0 ? silence( black_tail, options.audio_samplerate, options.audio_bps, channelcounts.first ) : '' )
+  audio_leader = ( black_leader > 0 ? silence( black_leader, options.audio_samplerate, options.audio_bps, channelcounts.first ) : nil )
+  audio_tail = ( black_tail > 0 ? silence( black_tail, options.audio_samplerate, options.audio_bps, channelcounts.first ) : nil )
   if black_leader + black_tail > 0
     @logger.debug( 'Pad audio with leader/tail silence' )
     @final_audio = File.join( @assetsdir_audio, 'padded_' + File.basename( sequence_audio_asset ) )
     @final_audio_esc = Shellwords.escape @final_audio
-    audio_leader_esc = Shellwords.escape audio_leader
-    audio_tail_esc = Shellwords.escape audio_tail
-    `sox #{ audio_leader_esc } #{ sequence_audio_asset_esc } #{ audio_tail_esc } #{ @final_audio_esc } splice`
+    audio_leader_esc = Shellwords.escape audio_leader if audio_leader
+    audio_tail_esc = Shellwords.escape audio_tail if audio_tail
+    final_audio_parts = Array.new
+    final_audio_parts << audio_leader_esc if audio_leader_esc
+    final_audio_parts << sequence_audio_asset_esc if sequence_audio_asset_esc
+    final_audio_parts << audio_tail_esc if audio_tail_esc
+    final_audio_parts = final_audio_parts.join( ' ' )
+    `sox #{ final_audio_parts } #{ @final_audio_esc } splice`
   else
     @final_audio = sequence_audio_asset
     @final_audio_esc = Shellwords.escape @final_audio
