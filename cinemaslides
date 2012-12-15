@@ -2763,7 +2763,7 @@ end
 def sox_conform( audiofile, samplerate, bps, channelcount, asset ) # SMPTE 428-2-2006
   audiofile_esc = Shellwords.escape audiofile
   asset_esc = Shellwords.escape asset
-  `sox #{ audiofile_esc } -r #{ samplerate } -b #{ bps } -c #{ channelcount } -s -t wavpcm #{ asset_esc }`
+  `sox #{ audiofile_esc } -r #{ samplerate } -b #{ bps } -c #{ channelcount } -e signed-integer -t wavpcm #{ asset_esc }`
 end
 
 
@@ -2774,7 +2774,7 @@ def silence( seconds, samplerate, bps, channelcount )
     @logger.debug( "Skip: Silence asset exists (#{ File.basename( silence_conform ) })" )
   else
     # alternatively, use asdcplib's blackwave (blackwave -d <frame_count> output)
-    `sox -r #{ samplerate } -b #{ bps } -c #{ channelcount } -s -n #{ silence_conform_esc } synth #{ seconds } sine 0`
+    `sox -r #{ samplerate } -b #{ bps } -c #{ channelcount } -e signed-integer -n #{ silence_conform_esc } synth #{ seconds } sine 0`
   end
   return silence_conform
 end
