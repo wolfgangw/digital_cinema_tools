@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2012.10.21"
+AppVersion = "v0.2012.12.15"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -1478,21 +1478,7 @@ class CPL_SMPTE_429_7_2006
             xml.Reel_ {
               xml.Id_ "urn:uuid:#{ `kmuuidgen -n` }" # FIXME
               xml.AssetList_ {
-                if image_meta.has_key?( 'File essence type is JPEG 2000 stereoscopic pictures.' )
-                  xml.MainStereoscopicPicture_( 'xmlns:msp-cpl' => 'http://www.smpte-ra.org/schemas/429-10/2008/Main-Stereo-Picture-CPL' ) {
-                    xml.Id_ "urn:uuid:#{ image_meta[ 'AssetUUID' ] }"
-                    xml.EditRate_ image_meta[ 'EditRate' ].to_s.gsub( '/', ' ' )
-                    xml.IntrinsicDuration_ image_meta[ 'ContainerDuration' ]
-                    xml.EntryPoint_ 0 # FIXME
-                    xml.Duration_ image_meta[ 'ContainerDuration' ] # FIXME
-                    if encrypt == TRUE
-                      xml.KeyId_ "urn:uuid:#{ image_meta[ 'CryptographicKeyID' ] }"
-                      xml.Hash_ asdcp_digest( image_mxf, options )
-                    end
-                    xml.FrameRate_ image_meta[ 'SampleRate' ].to_s.gsub( '/', ' ' ) # FIXME SampleRate?
-                    xml.ScreenAspectRatio_ image_meta[ 'AspectRatio' ].to_s.gsub( '/', ' ' )
-                  } # MainStereoscopicPicture
-                else
+                if image_meta.has_key?( 'File essence type is JPEG 2000 pictures.' )
                   xml.MainPicture_ {
                     xml.Id_ "urn:uuid:#{ image_meta[ 'AssetUUID' ] }"
                     xml.EditRate_ image_meta[ 'EditRate' ].to_s.gsub( '/', ' ' )
@@ -1519,6 +1505,22 @@ class CPL_SMPTE_429_7_2006
                       xml.Hash_ asdcp_digest( audio_mxfs[ index ], options )
                     end
                   } # MainSound
+                end
+                if image_meta.has_key?( 'File essence type is JPEG 2000 stereoscopic pictures.' )
+                  xml.MainStereoscopicPicture_( 'xmlns:msp-cpl' => 'http://www.smpte-ra.org/schemas/429-10/2008/Main-Stereo-Picture-CPL' ) {
+                    xml.parent.namespace = xml.parent.namespace_definitions.find { |ns| ns.prefix == 'msp-cpl' }
+                    xml.Id_( "urn:uuid:#{ image_meta[ 'AssetUUID' ] }", 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' )
+                    xml.EditRate_( image_meta[ 'EditRate' ].to_s.gsub( '/', ' ' ), 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' )
+                    xml.IntrinsicDuration_( image_meta[ 'ContainerDuration' ], 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' )
+                    xml.EntryPoint_( 0, 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' ) # FIXME
+                    xml.Duration_( image_meta[ 'ContainerDuration' ], 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' ) # FIXME
+                    if encrypt == TRUE
+                      xml.KeyId_( "urn:uuid:#{ image_meta[ 'CryptographicKeyID' ] }", 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' )
+                      xml.Hash_( asdcp_digest( image_mxf, options ), 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' )
+                    end
+                    xml.FrameRate_( image_meta[ 'SampleRate' ].to_s.gsub( '/', ' ' ), 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' ) # FIXME SampleRate?
+                    xml.ScreenAspectRatio_( image_meta[ 'AspectRatio' ].to_s.gsub( '/', ' ' ), 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' )
+                  } # MainStereoscopicPicture
                 end
                 if cma_data && cma_data.keys.size > 0 # CompositionMetadataAsset
                   xml.CompositionMetadataAsset_( 'xmlns:meta' => 'http://isdcf.com/schemas/draft/2011/cpl-metadata' ) {
@@ -2301,8 +2303,12 @@ if @output_type == "dcp"
       @logger.info( "asdcplib versions before 1.8.41 do not allow wrapping of stereoscopic essence for framerates higher than 24" )
       exit
     else
-      @logger.info( "While your asdcplib version (#{ asdcplib_version }) allows wrapping of stereoscopic essence with #{ options.fps.to_i } you should be aware that the resulting package is quite likely not field compliant (8/2011)" )
-      exit if agree( 'Continue anyway?' ) == FALSE
+      if options.fps_asdcp_choices.include? options.fps
+        @logger.info( "Using #{ options.fps } fps (Not guaranteed to work everywhere in the field as of 12/2012)" )
+      else
+        @logger.info( "#{ options.fps } fps not supported" )
+        exit
+      end
     end
   end
   # Catch framerates which would not be valid passed to openjpeg's image_to_j2k
@@ -3026,7 +3032,7 @@ when "dcp"
   files = Dir.glob( filemask ).sort
 
   # openjpeg's cinema profiles imply rate constraints, kakadu's don't
-  max_bytes_per_image, max_bytes_per_component = jpeg2000_dcp_rate_constraints( @dcp_wrap_stereoscopic == TRUE ? 48.0 : fps )
+  max_bytes_per_image, max_bytes_per_component = jpeg2000_dcp_rate_constraints( @dcp_wrap_stereoscopic == TRUE ? fps * 2 : fps )
   if @size == "2k"
     kakadu_cinema_profile = "CINEMA2K"
     openjpeg_cinema_profile = "cinema2K #{ @dcp_wrap_stereoscopic == TRUE ? 48 : fps }"
@@ -3049,7 +3055,7 @@ when "dcp"
       file = Pathname.new( file ).realpath.to_s
       file_esc = Shellwords.escape file
 
-      asset, todo = check_for_asset( file, 'j2c', fps ) # possible "Skip" message only with debug verbosity
+      asset, todo = check_for_asset( file_esc, 'j2c', fps ) # possible "Skip" message only with debug verbosity
       asset_esc = Shellwords.escape asset
 
       previous_asset = asset
@@ -3113,7 +3119,7 @@ when "dcp"
   if @dcp_wrap_stereoscopic == TRUE
     @logger.info( 'Wrap as stereoscopic essence' )
     # ugh, FIXME, for crying out loud
-    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + image_key + ' -j ' + image_key_id : '-E' } -a #{ image_mxf_uuid } -c #{ image_mxf_esc } -3 #{ @j2cdir_esc } #{ @j2cdir_esc }"
+    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + image_key + ' -j ' + image_key_id : '-E' } -p #{ fps } -a #{ image_mxf_uuid } -c #{ image_mxf_esc } -3 #{ @j2cdir_esc } #{ @j2cdir_esc }"
   else
     opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + image_key + ' -j ' + image_key_id : '-E' } -p #{ fps } -a #{ image_mxf_uuid } -c #{ image_mxf_esc } #{ @j2cdir_esc }"
   end
