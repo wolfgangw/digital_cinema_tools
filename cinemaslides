@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2012.12.15"
+AppVersion = "v0.2012.12.31"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -144,8 +144,8 @@ class Optparser
     options.kdm_cpl_content_title_text = NIL
     options.kdm_keysdir = NIL
     options.kdm_target = NIL
-    options.kdm_start = 0 # time window will start now
-    options.kdm_end = 28 # time window will be 4 weeks
+    options.kdm_start = '0' # time window will start now
+    options.kdm_end = '28' # time window will be 4 weeks
     options.montage = FALSE
     options.keep = FALSE
     options.dont_check = FALSE
@@ -173,7 +173,7 @@ Usage:
              [--keep] [--wrap-stereoscopic] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>]
              [--sign] [--encrypt]
              [--kdm] [--formulation <KDM formulation>] [--cpl <cpl file>] [--cpl-id <CPL UUID>] [ --cpl-content-title <text> ] [--keysdir <directory with referenced keys>]
-               [--start <days from now>] [--end <days from now>] [--target <certificate>]
+               [--start <days from now>|<datetime>] [--end <days from now>|<datetime>] [--target <certificate>]
              [--tkr-base-url <url>] [--cma <CompositionMetadataAsset data>]
              [-v, --verbosity <level>] [--examples] [-h, --help]
              [ image and audio files ] [ KDM mode parameters ]
@@ -327,10 +327,10 @@ BANNER
       opts.on( '--keysdir keys dir', String, "KDM mode: Location of the referenced CPL's keys. Use with --cpl-id" ) do |p|
         options.kdm_keysdir = p
       end
-      opts.on( '--start days', Integer, 'KDM mode: KDM validity starts <days> from now (Default: Now)' ) do |p|
+      opts.on( '--start days', String, 'KDM mode: KDM validity starts <days> from now or at <datetime> (Default: Now)' ) do |p|
         options.kdm_start = p
       end
-      opts.on( '--end days', Integer, 'KDM mode: KDM validity ends <days> from now (Default: 4 weeks from now)' ) do |p|
+      opts.on( '--end days', String, 'KDM mode: KDM validity ends <days> from now or at <datetime> (Default: 4 weeks from now)' ) do |p|
         options.kdm_end = p
       end
       opts.on( '--target certificate', String, 'KDM mode: Path to the recipient device certificate' ) do |p|
@@ -394,8 +394,11 @@ $ #{ AppName } --aspect 1.33x1 | --aspect 3072x2304 | --aspect 3x1 [...]
         asdcp-test -x decrypted_ -k '<content key -- 16 bytes in hex>' <encrypted MXF>
 $ #{ AppName } -t dcp --encrypt --title "Encryption test" -o ENCRYPTION_TST_F_2K_20101231_WOE_OV -x cut,0.04167 demo_sequence/
 
-  Generate KDM for some content, targeting our XDC Solo G3 server certificate with a time window from now to 10 days from now:
-$ #{ AppName } -v debug --kdm --cpl ENCRYPTION_TST_F_2K_20101231_WOE_OV/cpl_<UUID>_.xml --start 0 --end 10 --target 200100400530_000487.pem
+  Generate KDM for some content, targeting some server certificate with a time window from now to 10 days from now:
+$ #{ AppName } -v debug --kdm --cpl cpl.xml --start 0 --end 10 --target server.pem
+
+  Generate KDM for some content, targeting some server certificate with a time window from 2012-12-31T00:00:01+01:00 to 2013-01-31T23:59:59+01:00:
+$ #{ AppName } -v debug --kdm --cpl cpl.xml --start 2012-12-31T00:00:01+01:00 --end 2013-01-31T23:59:59+01:00 --target server.pem
 
   Set Theater Key Retrieval Base URL (applies to encrypted packages only):
 $ #{ AppName } -t dcp --encrypt --tkr-base-url http://www.example.org/tkr/ ...
@@ -1983,15 +1986,50 @@ if options.kdm == TRUE
   end
   
   # check KDM time window
-  kdm_not_valid_before = ( DateTime.now - 0.1 + options.kdm_start ) # check for valid window
-  kdm_not_valid_after = ( DateTime.now + options.kdm_end )
+  # Exit on fail now (we need valid datetimes in later checks)
+  dt_re = /^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\+|-)\d\d:\d\d$/
+  if options.kdm_start =~ /^\d+$/
+    kdm_not_valid_before = ( DateTime.now - 0.1 + options.kdm_start.to_i )
+  elsif options.kdm_start =~ dt_re
+    begin
+      kdm_not_valid_before = DateTime.parse options.kdm_start
+    rescue Exception => e
+      puts "Option --start: #{ e.message }"
+      exit 1
+    end
+  else
+    puts "Option --start: Not valid. Use either days from now or datetime string"
+    exit 1
+  end
+  if options.kdm_end =~ /^\d+$/
+    kdm_not_valid_after = ( DateTime.now + options.kdm_end.to_i )
+  elsif options.kdm_end =~ dt_re
+    begin
+      kdm_not_valid_after = DateTime.parse options.kdm_end
+    rescue Exception => e
+      puts "Option --end: #{ e.message }"
+      exit 1
+    end
+  else
+    puts "Option --end: Not valid. Use either days from now or datetime string"
+    exit 1
+  end
   if kdm_not_valid_before > kdm_not_valid_after
     @logger.info( "KDM time window out of order" )
     kdm_no_go << 'KDM time window out of order'
   else
     # defer logger.info to after we have a valid target certificate in order to check containment of time window in the target device's validity period
   end
-  
+  if kdm_not_valid_before < DateTime.now
+    @logger.info( "Warning: Requested KDM validity starts in the past: #{ datetime_friendly kdm_not_valid_before }" )
+  end
+  if kdm_not_valid_after < DateTime.now
+    @logger.info( "Warning: Requested KDM validity ends in the past: #{ datetime_friendly kdm_not_valid_after }" )
+  end
+  if kdm_not_valid_before < DateTime.now and kdm_not_valid_after < DateTime.now
+    @logger.info( "Warning: Requested KDM validity window lies in the past: #{ datetime_friendly kdm_not_valid_before } - #{ datetime_friendly kdm_not_valid_after }" )
+  end
+
   # check presence and validity of target certificate
   if options.kdm_target == NIL
     @logger.info( "No target certificate specified. Use --target <certificate>" )
