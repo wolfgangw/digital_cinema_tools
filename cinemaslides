@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2012.12.31"
+AppVersion = "v0.2013.01.05"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -135,6 +135,7 @@ class Optparser
     options.dcp_color_transform_matrix = 'srgb_to_xyz'
     options.dcp_color_transform_matrix_choices = [ 'iturec709_to_xyz', 'srgb_to_xyz', '709', 'srgb', Regexp.new( '(\d+(\.\d+)?\s*){9,9}' ) ]
     options.dcp_encrypt = FALSE
+    options.encrypt_headers = TRUE
     options.sign = FALSE
     options.kdm = FALSE
     options.kdm_formulation = 'dci-specific'
@@ -171,7 +172,7 @@ Usage:
              [-j, --encoder <encoder>] [--of, --output-format <image suffix>]
              [-o, --dcp-out <path>]
              [--keep] [--wrap-stereoscopic] [-m, --montagepreview] [--mg, --mplayer-gamma <gamma>]
-             [--sign] [--encrypt]
+             [--sign] [--encrypt] [--dont-encrypt-headers]
              [--kdm] [--formulation <KDM formulation>] [--cpl <cpl file>] [--cpl-id <CPL UUID>] [ --cpl-content-title <text> ] [--keysdir <directory with referenced keys>]
                [--start <days from now>|<datetime>] [--end <days from now>|<datetime>] [--target <certificate>]
              [--tkr-base-url <url>] [--cma <CompositionMetadataAsset data>]
@@ -306,6 +307,9 @@ BANNER
       end
       opts.on( '--encrypt', 'Encrypt trackfiles. Implies signature. Stores content keys in CINEMASLIDESDIR/keys' ) do
         options.dcp_encrypt = TRUE
+      end
+      opts.on( '--dont-encrypt-headers', 'Do not encrypt JP2K headers (Default: Encrypt headers)' ) do
+        options.encrypt_headers = FALSE
       end
       opts.on( '--kdm', 'KDM mode: Generate key delivery message. Use with --cpl or --cpl-id, --start, --end, --issuer and --target' ) do
         options.kdm = TRUE
@@ -3157,9 +3161,9 @@ when "dcp"
   if @dcp_wrap_stereoscopic == TRUE
     @logger.info( 'Wrap as stereoscopic essence' )
     # ugh, FIXME, for crying out loud
-    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + image_key + ' -j ' + image_key_id : '-E' } -p #{ fps } -a #{ image_mxf_uuid } -c #{ image_mxf_esc } -3 #{ @j2cdir_esc } #{ @j2cdir_esc }"
+    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? ( options.encrypt_headers == TRUE ? '-e ' : '-E ' ) + '-k ' + image_key + ' -j ' + image_key_id : '' } -p #{ fps } -a #{ image_mxf_uuid } -c #{ image_mxf_esc } -3 #{ @j2cdir_esc } #{ @j2cdir_esc }"
   else
-    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + image_key + ' -j ' + image_key_id : '-E' } -p #{ fps } -a #{ image_mxf_uuid } -c #{ image_mxf_esc } #{ @j2cdir_esc }"
+    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? ( options.encrypt_headers == TRUE ? '-e ' : '-E ' ) + '-k ' + image_key + ' -j ' + image_key_id : '' } -p #{ fps } -a #{ image_mxf_uuid } -c #{ image_mxf_esc } #{ @j2cdir_esc }"
   end
   write_asdcp_track( opts_params_args )
   @logger.debug( "Image trackfile UUID: #{ image_mxf_uuid }" )
@@ -3168,7 +3172,7 @@ when "dcp"
   unless @source_audio[ :orig_name ].empty?
     @logger.info( 'Write audio trackfile ...' )
     # FIXME 2.0 sound only here (v0.2010.11.19), hence no label. might be trouble on some servers
-    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? '-e -k ' + audio_key + ' -j ' + audio_key_id : '-E' } -l #{ SMPTE_AUDIO_LABEL } -p #{ fps } -a #{ audio_mxf_uuid } -c #{ audio_mxf_esc } #{ @final_audio_esc }"
+    opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? ( options.encrypt_headers == TRUE ? '-e ' : '-E ' ) + '-k ' + audio_key + ' -j ' + audio_key_id : '' } -l #{ SMPTE_AUDIO_LABEL } -p #{ fps } -a #{ audio_mxf_uuid } -c #{ audio_mxf_esc } #{ @final_audio_esc }"
     @logger.debug( "Audio trackfile UUID: #{ audio_mxf_uuid }" )
     write_asdcp_track( opts_params_args ) 
   end
