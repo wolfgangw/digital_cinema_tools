@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2013.01.05"
+AppVersion = "v0.2013.02.24"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -3171,7 +3171,6 @@ when "dcp"
   # Make audio trackfile
   unless @source_audio[ :orig_name ].empty?
     @logger.info( 'Write audio trackfile ...' )
-    # FIXME 2.0 sound only here (v0.2010.11.19), hence no label. might be trouble on some servers
     opts_params_args = "-L #{ options.dcp_encrypt == TRUE ? ( options.encrypt_headers == TRUE ? '-e ' : '-E ' ) + '-k ' + audio_key + ' -j ' + audio_key_id : '' } -l #{ SMPTE_AUDIO_LABEL } -p #{ fps } -a #{ audio_mxf_uuid } -c #{ audio_mxf_esc } #{ @final_audio_esc }"
     @logger.debug( "Audio trackfile UUID: #{ audio_mxf_uuid }" )
     write_asdcp_track( opts_params_args ) 
