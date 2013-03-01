@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2013.02.24"
+AppVersion = "v0.2013.03.01"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -2174,7 +2174,7 @@ if options.kdm == TRUE
   else
     kdm_formulation_acronym = options.kdm_formulation.split( '-' ).map { |e| e[ 0 ] }.join
   end
-  kdm_file = "k_#{ kdm_cpl_content_title }_#{ recipient_cn_name }_#{ yyyymmdd( kdm_not_valid_before ) }_#{ yyyymmdd( kdm_not_valid_after ) }_#{ kdm_creation_facility_code }_#{ options.dcp_package_type }_#{ kdm_formulation_acronym }_#{ kdm_message_uuid[0..7] }.xml"
+  kdm_file = "kdm_#{ kdm_cpl_content_title }_#{ recipient_cn_name }_#{ yyyymmdd( kdm_not_valid_before ) }_#{ yyyymmdd( kdm_not_valid_after ) }_#{ kdm_creation_facility_code }_#{ options.dcp_package_type }_#{ kdm_formulation_acronym }_#{ kdm_message_uuid[0..7] }.xml"
   if File.exists?( kdm_file )
     @logger.info( "KDM exists: #{ kdm_file }" )
     @logger.info( "4 bytes UUID collision: #{ kdm_message_uuid }. Not overwriting" )
