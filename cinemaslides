@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2013.03.01"
+AppVersion = "v0.2013.03.04"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -448,6 +448,25 @@ ARGV.each do |arg|
 end
 # destructive parse
 options = Optparser.parse( ARGV )
+
+
+module OS
+  def OS.windows?
+    (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+  end
+
+  def OS.mac?
+    (/darwin/ =~ RUBY_PLATFORM) != nil
+  end
+
+  def OS.unix?
+    !OS.windows?
+  end
+
+  def OS.linux?
+    OS.unix? and not OS.mac?
+  end
+end
 
 
 class Logger
@@ -3053,8 +3072,12 @@ when "preview", "fullpreview"
     @logger.warn( "DISPLAY not set. Skipping preview" )
   else
     @logger.warn( "Loop #{ @output_type }. Exit with ESC or 'q'" )
-    mplayer_vo = ""
-    `mplayer -really-quiet mf://#{ sequence } #{ audio } -mf fps=#{ fps }:type=#{ @output_format } -loop 0 #{ mplayer_vo } -vf eq2=#{ options.mplayer_gamma } > /dev/null 2>&1`
+    if OS.mac?
+      mplayer_vo = 'corevideo'
+    else
+      mplayer_vo = ''
+    end
+    `mplayer -really-quiet mf://#{ sequence } #{ audio } -mf fps=#{ fps }:type=#{ @output_format } -loop 0 #{ mplayer_vo } #{ OS.mac? ? '' : "-vf eq2=#{ options.mplayer_gamma }" } > /dev/null 2>&1`
   end
   final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
   cleanup_workdir( options.keep )
