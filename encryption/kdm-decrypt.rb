@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 AppName = File.basename( __FILE__ )
-AppVersion = 'v0.2012.10.31'
+AppVersion = 'v0.2013.03.13'
 #
 if RUBY_VERSION <= '1.9'
   begin
@@ -29,9 +29,48 @@ require 'openssl'
 require 'base64'
 require 'nokogiri'
 require 'pp'
+require 'optparse'
+require 'ostruct'
+
+class Optparser
+  def self.parse( args )
+    # defaults
+    options = OpenStruct.new
+    options.output_as_keyid_keytype_keydata_triple = FALSE
+
+    opts = OptionParser.new do |opts|
+
+      # Banner and usage
+      opts.banner = <<BANNER
+#{ AppName } #{ AppVersion }
+Usage: #{ AppName } [options] <KDM file> <RSA private key file>
+BANNER
+
+      # Options
+      opts.on( '--as-triple', "Output content keys as <key id>:<key type>:<key data> triple to STDOUT" ) do |p|
+        options.output_as_keyid_keytype_keydata_triple = TRUE
+      end
+      opts.on_tail( '-h', '--help', 'Display this screen' ) do
+        puts opts
+        exit
+      end
+    end
+
+    begin
+      opts.parse!( args )
+    rescue Exception => e
+      exit if e.class == SystemExit
+      puts "Options error: #{ e.message }"
+      exit 1
+    end
+    options
+  end
+end
+options = Optparser.parse( ARGV )
+
 
 def exit_usage
-  puts "Usage: #{ AppName } <KDM file> <RSA private key file>"
+  puts "Usage: #{ AppName } [options] <KDM file> <RSA private key file>"
   return exit
 end
 
@@ -131,14 +170,23 @@ else
   when types[ :interop ]
     type = :interop
   end
-  puts "#{ type } KDM: #{ message } #{ message_id } (#{ message_type })"
+  kdm_info = "#{ type } KDM: #{ message } #{ message_id } (#{ message_type })"
+  if options.output_as_keyid_keytype_keydata_triple
+    $stderr.puts kdm_info
+  else
+    puts kdm_info
+  end
 
   kc = NIL
   cipher_values.each do |cvn|
     cv = cvn.text
     kc = KDMCipher.new( cv, pkey )
     if kc
-      pp kc
+      if options.output_as_keyid_keytype_keydata_triple
+        puts "#{ kc.plaintext[ :key_id ] }:#{ kc.plaintext[ :key_type ] }:#{ kc.plaintext[ :key_data ] }"
+      else
+        pp kc
+      end
     else
       next
     end
