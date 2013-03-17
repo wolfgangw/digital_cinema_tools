@@ -2856,6 +2856,29 @@ def silence( seconds, samplerate, bps, channelcount )
 end
 
 
+def log_jpeg2000_encoder_action( options, file, files, counter )
+  case options.verbosity
+  when 'info'
+    @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
+  when 'debug'
+    @logger.debug( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
+  end
+end
+
+
+def jpeg2000_encoder_action( options, file_esc, asset_esc, fps, openjpeg_cinema_profile, kakadu_cinema_profile, max_bytes_per_image, max_bytes_per_component )
+  case options.encoder
+  when 'openjpeg-tm'
+    # Do not use opendcp_j2k's colorspace transform (-x), files are X'Y'Z' already (Andrae Steiner)
+    `opendcp_j2k -i #{ file_esc } -o #{ asset_esc } -x -r #{ fps }`
+  when 'openjpeg'
+    `image_to_j2k -#{ openjpeg_cinema_profile } -i #{ file_esc } -o #{ asset_esc } > /dev/null 2>&1`
+  when 'kakadu'
+    `kdu_compress -i #{ file_esc } -o #{ asset_esc } Sprofile=#{ kakadu_cinema_profile } Creslengths=#{ max_bytes_per_image } Creslengths:C0=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C1=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C2=#{ max_bytes_per_image },#{ max_bytes_per_component }`
+  end
+end
+
+
 unless @source_audio[ :orig_name ].empty?
   @logger.info( 'Conform audio ...' )
 
@@ -3171,21 +3194,8 @@ when "dcp"
       asset_esc = Shellwords.escape asset
       previous_asset = asset
       if todo == TRUE
-        case options.verbosity
-        when 'info'
-          @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
-        when 'debug'
-          @logger.debug( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
-        end
-        case options.encoder
-        when 'openjpeg-tm'
-          # Do not use opendcp_j2k's colorspace transform (-x), files are X'Y'Z' already (Andrae Steiner)
-          `opendcp_j2k -i #{ file_esc } -o #{ asset_esc } -x -r #{ fps }`
-        when 'openjpeg'
-          `image_to_j2k -#{ openjpeg_cinema_profile } -i #{ file_esc } -o #{ asset_esc } > /dev/null 2>&1`
-        when 'kakadu'
-          `kdu_compress -i #{ file_esc } -o #{ asset_esc } Sprofile=#{ kakadu_cinema_profile } Creslengths=#{ max_bytes_per_image } Creslengths:C0=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C1=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C2=#{ max_bytes_per_image },#{ max_bytes_per_component }`
-        end
+        log_jpeg2000_encoder_action( options, file, files, counter )
+        jpeg2000_encoder_action( options, file_esc, asset_esc, fps, openjpeg_cinema_profile, kakadu_cinema_profile, max_bytes_per_image, max_bytes_per_component )
       else
         @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
       end
