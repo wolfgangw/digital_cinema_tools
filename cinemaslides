@@ -2022,7 +2022,7 @@ if options.kdm == TRUE
       @logger.info( "All content keys valid" )
     end
   end
-  
+
   # check KDM time window
   # Exit on fail now (we need valid datetimes in later checks)
   dt_re = /^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\+|-)\d\d:\d\d$/
@@ -3162,6 +3162,7 @@ when "dcp"
       # symlink to sequence batch head or symlink to clone of sequence batch head
       File.link( previous_asset, asset_link )
       @logger.cr( "Skip (Full level): #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
+
     else
       # sequence batch head -- symlink to asset depot
       file = Pathname.new( file ).realpath.to_s
