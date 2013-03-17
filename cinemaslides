@@ -808,11 +808,26 @@ end
 
 
 def sequence_links_to( file, seconds, fps )
-  ( 1..( seconds * fps - 1 ) ).each do # 1 file already written
-    link = sequencefile
-    # FIXME link available on all platforms?
-    File.symlink( file, link )
+  # work around max entries on some filesystems
+  # ext3 31999, hfs 32767, no such limit on zfs
+  batchsize = 30000
+  amount = ( seconds * fps -1 ).to_i
+  count = 0 # this file's counter, @framecount is global
+
+  ( amount / batchsize + ( amount % batchsize > 0 ? 1 : 0 ) ).times do
+    ( batchsize - 1 ).times do
+      break if count == amount
+      link = sequencefile
+      File.symlink( file, link )
+      @framecount += 1
+      count += 1
+    end
+    break if count == amount
+    file_clone = sequencefile
+    FileUtils.copy( file, file_clone )
+    file = file_clone
     @framecount += 1
+    count += 1
   end
 end
 
@@ -3105,24 +3120,54 @@ when "dcp"
     kakadu_cinema_profile = "CINEMA4K"
     openjpeg_cinema_profile = "cinema4K"
   end
-  
+
   counter = 0
   previous_asset = ""
-  
+
+  #
+  # Point of the following hoopla, in case it's not entirely obvious =8O:
+  # Walk through @conformdir and generate a parallel sequence in @j2cdir.
+  # Files we will meet in @conformdir:
+  #   - 1st file is always a symlink to asset depot
+  #   - in a slideshow sequence with frame duration > 1 frame some following files
+  #     will be symlinks to the first file of their sequence batch
+  #   - Special case: Because of common FS link limits
+  #     in a sequence batch with more than FS link limit frames we will meet
+  #     file clones of the batch head in here (every other batch of max links)
+  #     which had in turn been symlinked to. See sequence_links_to()
+  #
   files.each do |file|
     counter += 1
     asset_link = File.join( @j2cdir, File.basename( file ).gsub( /.tiff$/, '.j2c' ) )
 
-    if File.dirname( File.readlink( file ) ) == @conformdir # 1st file is always a link to the asset depot
-      File.link( previous_asset, asset_link ) 
+    if File.ftype( file ) == 'file'
+      # check for file_clone
+      if File.dirname( file ) == @conformdir
+        file = Pathname.new( file ).realpath.to_s
+        file_esc = Shellwords.escape file
+        asset, todo = check_for_asset( file_esc, 'j2c', fps )
+        asset_esc = Shellwords.escape asset
+        previous_asset = asset
+        if todo == TRUE
+          log_jpeg2000_encoder_action( options, file, files, counter )
+          jpeg2000_encoder_action( options, file_esc, asset_esc, fps, openjpeg_cinema_profile, kakadu_cinema_profile, max_bytes_per_image, max_bytes_per_component )
+        else
+          @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
+        end
+        File.link( asset, asset_link )
+        @logger.cr( "Skip (Full level): #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
+      end
+
+    elsif File.dirname( File.readlink( file ) ) == @conformdir
+      # symlink to sequence batch head or symlink to clone of sequence batch head
+      File.link( previous_asset, asset_link )
       @logger.cr( "Skip (Full level): #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
     else
+      # sequence batch head -- symlink to asset depot
       file = Pathname.new( file ).realpath.to_s
       file_esc = Shellwords.escape file
-
-      asset, todo = check_for_asset( file_esc, 'j2c', fps ) # possible "Skip" message only with debug verbosity
+      asset, todo = check_for_asset( file_esc, 'j2c', fps )
       asset_esc = Shellwords.escape asset
-
       previous_asset = asset
       if todo == TRUE
         case options.verbosity
