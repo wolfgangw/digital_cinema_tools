@@ -3199,12 +3199,11 @@ when "dcp"
       else
         @logger.cr( "#{ options.encoder }: #{ File.basename( file ) } (#{ counter } of #{ files.size })" )
       end
-
       File.link( asset_esc, asset_link )
     end
   end
   # blank logger garbage
-  @logger.cr( " " * 60 )
+  @logger.cr( " " * 80 )
 
   # Setup MXF container names
   image_mxf_uuid = `kmuuidgen -n`
