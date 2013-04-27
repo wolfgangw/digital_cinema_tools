@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2013.04.13"
+AppVersion = "v0.2013.04.27"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -1378,37 +1378,36 @@ class DCSignatureKDM
     doc = Nokogiri::XML( xml_to_sign ) { |x| x.noblanks }
     @builder_signature_template = Nokogiri::XML::Builder.with( doc.at( doc.root.node_name ) ) do |xml|
       xml[ 'ds' ].Signature_( 'xmlns:ds' => 'http://www.w3.org/2000/09/xmldsig#' ) {
-        xml.SignedInfo_ {
-          xml.CanonicalizationMethod_( 'Algorithm' => 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments' )
-          xml.SignatureMethod_( 'Algorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256' )
-          xml.Reference_( 'URI' => '#ID_AuthenticatedPublic' ) {
-            xml.DigestMethod_( 'Algorithm' => 'http://www.w3.org/2001/04/xmlenc#sha256' )
-            xml.DigestValue_
+        xml[ 'ds' ].SignedInfo_ {
+          xml[ 'ds' ].CanonicalizationMethod_( 'Algorithm' => 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments' )
+          xml[ 'ds' ].SignatureMethod_( 'Algorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256' )
+          xml[ 'ds' ].Reference_( 'URI' => '#ID_AuthenticatedPublic' ) {
+            xml[ 'ds' ].DigestMethod_( 'Algorithm' => 'http://www.w3.org/2001/04/xmlenc#sha256' )
+            xml[ 'ds' ].DigestValue_
           } # Reference
-          xml.Reference_( 'URI' => '#ID_AuthenticatedPrivate' ) {
-            xml.DigestMethod_( 'Algorithm' => 'http://www.w3.org/2001/04/xmlenc#sha256' )
-            xml.DigestValue_
+          xml[ 'ds' ].Reference_( 'URI' => '#ID_AuthenticatedPrivate' ) {
+            xml[ 'ds' ].DigestMethod_( 'Algorithm' => 'http://www.w3.org/2001/04/xmlenc#sha256' )
+            xml[ 'ds' ].DigestValue_
           } # Reference
         } # SignedInfo
-        xml.SignatureValue_
-        xml.KeyInfo_ {
+        xml[ 'ds' ].SignatureValue_
+        xml[ 'ds' ].KeyInfo_ {
           certificate_chain.each do |cert|
-            xml.X509Data_ {
-              xml.X509IssuerSerial_ {
-                xml.X509IssuerName_ transform_cert_name( cert.issuer )
-                xml.X509SerialNumber_ cert.serial.to_s
+            xml[ 'ds' ].X509Data_ {
+              xml[ 'ds' ].X509IssuerSerial_ {
+                xml[ 'ds' ].X509IssuerName_ transform_cert_name( cert.issuer )
+                xml[ 'ds' ].X509SerialNumber_ cert.serial.to_s
               } # X509IssuerSerial
-              xml.X509Certificate stripped( cert.to_pem )
+              xml[ 'ds' ].X509Certificate stripped( cert.to_pem )
             } # X509Data
           end # certs
         } # KeyInfo
       } # Signature
     end # @builder_signature_template
-    
+
     pre_signed_xml = @builder_signature_template.to_xml( :indent => 2 )
     tmp = Tempfile.new( 'cinemaslides-' )
     tmpfile = File.open( tmp.path, 'w' ) { |f| f.write pre_signed_xml; f.close }
-    #File.copy( tmp.path, 'presigned.xml' )
 
     # FIXME hardcoded certificate chain size
     @signed_xml = `xmlsec1 --sign --id-attr:Id http://www.smpte-ra.org/schemas/430-3/2006/ETM:AuthenticatedPublic --id-attr:Id http://www.smpte-ra.org/schemas/430-3/2006/ETM:AuthenticatedPrivate --privkey-pem #{ signer_key_file } #{ tmp.path } 2>/dev/null`
