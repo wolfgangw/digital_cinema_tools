@@ -3366,6 +3366,12 @@ when "dcp"
   )
   File.open( am_file, 'w' ) { |f| f.write( am.xml ) }
 
+  # Write VolumeIndex
+  @logger.info( 'Write VolumeIndex' )
+  vi_file = File.join( @dcpdir, 'VOLINDEX.xml' )
+  vi = VI_SMPTE_429_9_2007.new( volume_index = 1 )
+  File.open( vi_file, 'w' ) { |f| f.write( vi.xml ) }
+
   # readme and report
   readme_file_name = options.annotation.gsub( /[\\\/\&: ]/, '_' ) + '.readme'
   readme_file_path = File.join( @dcpdir, readme_file_name )
