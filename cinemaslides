@@ -1701,6 +1701,22 @@ class AM_SMPTE_429_9_2007
 end # AM_SMPTE_429_9_2007
 
 
+class VI_SMPTE_429_9_2007
+  def initialize( volume_index )
+    @builder = Nokogiri::XML::Builder.new( :encoding => 'UTF-8' ) do |xml|
+      xml.VolumeIndex_( :xmlns => 'http://www.smpte-ra.org/schemas/429-9/2007/AM' ) {
+        xml<< "<!-- #{ AppName } #{ AppVersion } smpte vi -->"
+        xml.Index_ volume_index
+      }
+    end
+  end
+
+  def xml
+    return @builder.to_xml( :indent => 2 )
+  end
+end # VI_SMPTE_429_9_2007
+
+
 # FIXME right now this is tightly coupled with make-dc-certificate-chain.rb's output.
 # FIXME hardcoded number and names of signer key, certificates and verified chain.
 # FIXME also there's an unholy mix of certificate files here and certificate objects there.
