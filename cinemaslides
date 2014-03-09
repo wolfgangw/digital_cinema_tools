@@ -1825,7 +1825,7 @@ end
 
 def dc_thumbprint( cert_file )
   tmp = Tempfile.new( 'cinemaslides-' )
-  `openssl asn1parse -in #{ cert_file } -out #{ tmp.path } -noout -strparse 4`
+  `openssl asn1parse -in #{ Shellwords.shellescape cert_file } -out #{ tmp.path } -noout -strparse 4`
   `openssl dgst -sha1 -binary #{ tmp.path } | openssl base64`.chomp
 end
 
@@ -2107,6 +2107,7 @@ if options.kdm == TRUE
     if File.exists?( options.kdm_target ) and File.ftype( Pathname.new( options.kdm_target ).realpath ) == 'file'
       begin
         recipient_cert_obj = OpenSSL::X509::Certificate.new( File.read( options.kdm_target ) )
+        @logger.debug( "Target: #{ recipient_cert_obj.inspect }" )
         recipient_cert_thumbprint = dc_thumbprint( options.kdm_target )
         recipient_cn_name = 'TEST'
         # make target name for kdm filename and print RDN info
@@ -2195,7 +2196,7 @@ if options.kdm == TRUE
     tmpfile = File.open( tmp.path, 'w' ) { |f| f.write cipher_data_payload ; f.close }
     @logger.debug( "Encrypt payload for content key ID #{ key_id }" )
     # targeting ...
-    cipher_data_payload_encrypted_b64 = `openssl rsautl -encrypt -oaep -certin -inkey #{ options.kdm_target } -in #{ tmp.path } | openssl base64`.chomp
+    cipher_data_payload_encrypted_b64 = `openssl rsautl -encrypt -oaep -certin -inkey #{ Shellwords.shellescape options.kdm_target } -in #{ tmp.path } | openssl base64`.chomp
     cipher_data_payloads << cipher_data_payload_encrypted_b64
   end
     
