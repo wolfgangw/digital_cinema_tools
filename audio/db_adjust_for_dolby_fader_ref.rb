@@ -3,7 +3,7 @@
 # Calculate required attenuation/amplification,
 # given two Dolby CP650/750 Main Fader Knob values:
 #
-#   Desired fader setting (defaut 7.0)
+#   Desired fader setting (default 7.0)
 #   Actual fader setting
 #
 #   e.g.
@@ -113,8 +113,8 @@ fader_target_db = dolby_fader_to_db fader_target
 
 required_level_change = fader_input_db - fader_target_db
 
-puts "Dolby CP650/750 fader: You want to play at #{ fader_target } (#{ "%.3f" % fader_target_db } dB #{ att_or_amp? fader_target_db })"
 puts "Dolby CP650/750 fader: You're actually playing at #{ fader_input } (#{ "%.3f" % fader_input_db } dB #{ att_or_amp? fader_input_db })"
+puts "Dolby CP650/750 fader: You want to play at #{ fader_target } (#{ "%.3f" % fader_target_db } dB #{ att_or_amp? fader_target_db })"
 if fader_input == fader_target
   puts "No level change required"
 else
