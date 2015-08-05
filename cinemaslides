@@ -2926,6 +2926,10 @@ unless @source_audio[ :orig_name ].empty?
         SMPTE_AUDIO_LABEL = '5.1'
       when 8
         SMPTE_AUDIO_LABEL = '7.1'
+      when 12, 16
+        SMPTE_AUDIO_LABEL = 'WTF'
+      else
+        SMPTE_AUDIO_LABEL = 'WTF' # well ...
       end
     else
       @logger.critical( 'Differing channel counts in audio source. This will not work' )
