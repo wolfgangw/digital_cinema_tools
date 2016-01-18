@@ -89,6 +89,7 @@ require 'nokogiri'
 require 'highline/import'
 require 'pathname'
 require 'shellwords'
+require 'open3'
 
 
 # FIXME catch missing parameters, false options, typos etc.
@@ -1851,6 +1852,12 @@ def jpeg2000_encoder_action( options, file_esc, asset_esc, fps, openjpeg_cinema_
     `kdu_compress -i #{ file_esc } -o #{ asset_esc } Sprofile=#{ kakadu_cinema_profile } Creslengths=#{ max_bytes_per_image } Creslengths:C0=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C1=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C2=#{ max_bytes_per_image },#{ max_bytes_per_component }`
   end
 end
+
+
+def asdcplib_version
+  out, err, status = Open3.capture3( 'asdcp-unwrap -V' )
+  major, minor, patchlevel = out.scan( /(\d)\.(\d+)\.(\d+)/ )[0].map { |e| e.to_i }
+end
 ###
 
 
@@ -2406,9 +2413,9 @@ if @output_type == "dcp"
     end
   end
   if options.output_type == 'dcp' and @dcp_wrap_stereoscopic == TRUE and options.fps != 24
-    asdcplib_version = `asdcp-test -V`.match( /\d+\.\d+\.\d+/ )[0]
-    if asdcplib_version < '1.8.41'
-      @logger.info( "asdcplib versions before 1.8.41 do not allow wrapping of stereoscopic essence for framerates higher than 24" )
+    asdcp_major, asdcp_minor, asdcp_patchlevel = asdcplib_version
+    if ( asdcp_major == 1 and asdcp_minor < 8 )
+      @logger.info( "asdcplib versions before 1.8.41 do not allow wrapping of stereoscopic essence for framerates higher than 24 (your asdcplib version: #{ [ asdcp_major, asdcp_minor, asdcp_patchlevel ].join('.') })" )
       exit
     else
       if options.fps_asdcp_choices.include? options.fps
