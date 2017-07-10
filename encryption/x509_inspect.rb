@@ -60,7 +60,7 @@ BANNER
         options.all = true
       end
       opts.on( '--no-chain', 'Do not try to detect and sort chain' ) do
-        options.detect_chain = FALSE
+        options.detect_chain = false
       end
       opts.on_tail( '-h', '--help', 'Display this screen' ) do
         puts opts
@@ -100,7 +100,7 @@ end
 def sort_certs( certs )
   # Find root ca and collect issuers
   # ruby version of CTP's dsig_cert.py
-  root = NIL
+  root = nil
   issuer_map = Hash.new
   errors = Array.new
 
@@ -116,7 +116,7 @@ def sort_certs( certs )
       issuer_map[ cert.issuer.to_s ] = cert
     end
   end
-  if root == NIL
+  if root == nil
     errors << "Self-signed root certificate not found"
     return [], errors
   end
@@ -222,7 +222,7 @@ if ARGV.empty?
 end
 
 certs = pemfiles_to_obj( ARGV )
-certs, errors = sort_certs( certs ) unless certs.size < 2 or options.detect_chain == FALSE
+certs, errors = sort_certs( certs ) unless certs.size < 2 or options.detect_chain == false
 report = x509_inspect( certs, options )
 puts_padded( report, spacer = ' ' )
 
