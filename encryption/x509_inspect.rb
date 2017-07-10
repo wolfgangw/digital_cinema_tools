@@ -34,7 +34,7 @@ class Optparser
     # defaults
     options = OpenStruct.new
     options.items = [ 'o', 'ou', 'cn', 'dnq', 'serial' ]
-    options.all = false
+    options.items_all = %w[ file version serial signature_algorithm not_before not_after o ou cn dnq o_issuer ou_issuer cn_issuer dnq_issuer basicConstraints keyUsage authorityKeyIdentifier pubkey exponent ]
     options.detect_chain = true
 
     opts = OptionParser.new do |opts|
@@ -57,7 +57,7 @@ BANNER
         options.items = p
       end
       opts.on( '-a', '--all' ) do
-        options.all = true
+        options.items = options.items_all
       end
       opts.on( '--no-chain', 'Do not try to detect and sort chain' ) do
         options.detect_chain = false
