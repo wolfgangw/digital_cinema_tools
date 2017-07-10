@@ -34,13 +34,14 @@ class Optparser
     # defaults
     options = OpenStruct.new
     options.items = [ 'o', 'ou', 'cn', 'dnq', 'serial' ]
-    options.detect_chain = TRUE
+    options.all = false
+    options.detect_chain = true
 
     opts = OptionParser.new do |opts|
       # Banner and usage
       opts.banner = <<BANNER
 #{ AppName } #{ AppVersion }
-Usage: #{ AppName } [-l,--list <item1,item2,...>] [--no-chain] [-h,--help] <certs>
+Usage: #{ AppName } [-l,--list <item1,item2,...>] [-a,--all] [--no-chain] [-h,--help] <certs>
 Items:
   file version serial signature_algorithm not_before not_after
   o ou cn dnq o_issuer ou_issuer cn_issuer dnq_issuer
@@ -54,6 +55,9 @@ BANNER
       # Options
       opts.on( '-l', '--list list', Array, "List of items to be displayed (Default: 'o,ou,cn,dnq,serial')" ) do |p|
         options.items = p
+      end
+      opts.on( '-a', '--all' ) do
+        options.all = true
       end
       opts.on( '--no-chain', 'Do not try to detect and sort chain' ) do
         options.detect_chain = FALSE
