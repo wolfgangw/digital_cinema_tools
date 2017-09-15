@@ -4,7 +4,7 @@
 #
 # Usage: dc_crypto_context.rb <dir>
 #
-# 2011-2012 Wolfgang Woehl
+# 2011-2017 Wolfgang Woehl
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 AppName = File.basename __FILE__
-AppVersion = 'v0.2012.04.11'
+AppVersion = 'v0.2017.09.15'
 #
 # Script will check a given set of files for the presence of a SMPTE compliant certificate chain, used in 
 # digital cinema to sign Composition Playlists (CPL), Packing Lists (PKL) and Key Delivery Messages (KDM).
@@ -440,8 +440,8 @@ class DC_Crypto_Context
           if cn_subject_roles.empty?
             errors << 'Role title missing in CommonName field of leaf certificate subject name'
           else
-            errors << 'CS role missing in CommonName field of leaf certificate subject name' unless roles.include?( 'CS' )
-            errors << 'Superfluous roles present in CommonName field of leaf certificate subject name' unless roles.size == 1 and roles[ 0 ] == 'CS'
+            errors << 'CS role missing in CommonName field of leaf certificate subject name' unless ( roles.include?( 'CS' ) or roles.include?( 'SM' ) )
+            errors << 'Superfluous roles present in CommonName field of leaf certificate subject name' unless roles.size == 1 and ( roles[ 0 ] == 'CS' or roles[ 0 ] == 'SM' )
           end
         when :interop
           # lax rules noop
