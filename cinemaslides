@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-AppVersion = "v0.2016.01.18"
+AppVersion = "v0.2023.12.29.lol"
 #
 # Cinemaslides offers preview modes, a basic set of transition types 
 # and a basic set of DCP authoring options.
@@ -104,54 +104,54 @@ class Optparser
     options.size_choices = [ '2k', '4k' ]
     options.aspect = 'flat'
     options.aspect_choices = [ 'flat', 'scope', 'hd', 'full', Regexp.new( '\d+(\.\d+)?x\d+(\.\d+)?' ) ] # custom aspect ratios: match '<numeric>x<numeric>'
-    options.aspect_malformed = FALSE
-    options.resize = TRUE # option to _not_ resize images (useful for images which are close to target dimensions and would suffer from scaling/-resize)
+    options.aspect_malformed = false
+    options.resize = true # option to _not_ resize images (useful for images which are close to target dimensions and would suffer from scaling/-resize)
     options.fps = 24.0
     options.fps_dcp_choices = [ 24.0, 25.0, 30.0, 48.0, 50.0, 60.0 ]
     options.fps_asdcp_choices = [ 23.976, 24.0, 25.0, 30.0, 48.0, 50.0, 60.0 ] # 24000/1001 not DCI compliant but shows up in asdcplib. Why?
     options.encoder = 'openjpeg'
     options.encoder_choices = [ 'openjpeg-tm', 'openjpeg', 'kakadu' ]
     options.output_format = 'jpg'
-    options.black = NIL
-    options.black_leader = NIL
-    options.black_tail = NIL
-    options.black_intermediate = NIL
-    options.intermediate_plate = NIL
+    options.black = nil
+    options.black_leader = nil
+    options.black_tail = nil
+    options.black_intermediate = nil
+    options.intermediate_plate = nil
     options.audio_samplerate = 48000
     options.audio_samplerate_choices = [ '48000', '48k', '96000', '96k' ]
     options.audio_bps = 24
     options.audio_bps_choices = [ '16', '24' ]
-    options.audio_fade = NIL # shall be "in,out"
+    options.audio_fade = nil # shall be "in,out"
     options.dcp_title = 'Cinemaslides test'
     options.issuer = ENV[ 'USER' ] + '@' + `hostname`.chomp
-    options.tkr_base_url = NIL
-    options.cma = NIL
+    options.tkr_base_url = nil
+    options.cma = nil
     options.annotation = "#{ AppName } " + DateTime.now.to_s
     options.dcp_package_type = 'OV'
     options.dcp_package_type_choices = [ 'ov', 'vf', Regexp.new( /vf\d+/i ) ] # keep regexp choices at the end of these lists
     options.dcp_kind = 'test'
     options.dcp_kind_choices = [ 'feature', 'trailer', 'test', 'teaser', 'rating', 'advertisement', 'short', 'transitional', 'psa', 'policy' ]
-    options.dcp_wrap_stereoscopic = FALSE
+    options.dcp_wrap_stereoscopic = false
     options.dcp_user_output_path = nil
     options.dcp_color_transform_matrix = 'srgb_to_xyz'
     options.dcp_color_transform_matrix_choices = [ 'iturec709_to_xyz', 'srgb_to_xyz', '709', 'srgb', Regexp.new( '(\d+(\.\d+)?\s*){9,9}' ) ]
-    options.dcp_encrypt = FALSE
-    options.encrypt_headers = TRUE
-    options.sign = FALSE
-    options.kdm = FALSE
+    options.dcp_encrypt = false
+    options.encrypt_headers = true
+    options.sign = false
+    options.kdm = false
     options.kdm_formulation = 'dci-specific'
     options.kdm_formulation_choices = [ 'dci-specific', 'dci-any', 'modified-transitional-1', 'transitional-1', 'ds', 'da', 'mt1', 't1' ]
-    options.kdm_cpl = NIL
-    options.kdm_cpl_id = NIL
-    options.kdm_cpl_content_title_text = NIL
-    options.kdm_keysdir = NIL
-    options.kdm_target = NIL
+    options.kdm_cpl = nil
+    options.kdm_cpl_id = nil
+    options.kdm_cpl_content_title_text = nil
+    options.kdm_keysdir = nil
+    options.kdm_target = nil
     options.kdm_start = '0' # time window will start now
     options.kdm_end = '28' # time window will be 4 weeks
-    options.montage = FALSE
-    options.keep = FALSE
-    options.dont_check = FALSE
-    options.dont_drop = FALSE
+    options.montage = false
+    options.keep = false
+    options.dont_check = false
+    options.dont_drop = false
     options.verbosity = 'info'
     options.verbosity_choices = [ 'quiet', 'info', 'debug' ]
     options.transition_and_timing = Array.new
@@ -202,11 +202,11 @@ BANNER
         elsif p.match( options.aspect_choices.last )
           options.aspect = 'Custom aspect ratio:' + p
         else
-          options.aspect_malformed = TRUE
+          options.aspect_malformed = true
         end
       end
       opts.on( '--dont-resize', 'Do not resize images (Useful for images close to target dimensions)' ) do
-        options.resize = FALSE
+        options.resize = false
       end
       opts.on( '--fps fps', 'Framerate (Default: 24)', Float ) do |p| # 23.976
         options.fps = p.to_f
@@ -283,37 +283,37 @@ BANNER
         end
       end
       opts.on( '--wrap-stereoscopic', 'Wrap images as stereoscopic essence (Useful when a monoscopic slideshow needs to run on a 3D projector preset)' ) do
-        options.dcp_wrap_stereoscopic = TRUE
+        options.dcp_wrap_stereoscopic = true
       end
       opts.on( '-o', '--dcp-out path', String, "DCP location and folder name (Default: Write to #{ AppName }'s working directory)" ) do |p|
         options.dcp_user_output_path = p
       end
       opts.on( '-m', '--montagepreview', 'Display a montage of the images before processing' ) do
-        options.montage = TRUE
+        options.montage = true
       end
       opts.on( '--mg', '--mplayer-gamma gamma', Float, 'Tweak mplayer gamma (Used for previews. Range 0.1 - 10. Default: 1.2)' ) do |p|
         options.mplayer_gamma = p if ( 0.1 <= p and p <= 10 )
       end
       opts.on( '--keep', 'Do not remove preview/temporary files' ) do
-        options.keep = TRUE
+        options.keep = true
       end
       opts.on( '--dont-check', 'Do not check files' ) do
-        options.dont_check = TRUE
+        options.dont_check = true
       end
       opts.on( '--dont-drop', 'Do not drop and ignore unreadable files or files ImageMagick cannot decode but nag and exit instead' ) do
-        options.dont_drop = TRUE
+        options.dont_drop = true
       end
       opts.on( '--sign', 'Sign CPL and PKL (export ENV variable CINEMACERTSTORE to point at a directory that holds your signing certificate and validating certificate chain)' ) do
-        options.sign = TRUE
+        options.sign = true
       end
       opts.on( '--encrypt', 'Encrypt trackfiles. Implies signature. Stores content keys in CINEMASLIDESDIR/keys' ) do
-        options.dcp_encrypt = TRUE
+        options.dcp_encrypt = true
       end
       opts.on( '--dont-encrypt-headers', 'Do not encrypt JP2K headers (Default: Encrypt headers)' ) do
-        options.encrypt_headers = FALSE
+        options.encrypt_headers = false
       end
       opts.on( '--kdm', 'KDM mode: Generate key delivery message. Use with --cpl or --cpl-id, --start, --end, --issuer and --target' ) do
-        options.kdm = TRUE
+        options.kdm = true
       end
       opts.on( '-f', '--formulation formulation', String, "Use dci-specific, dci-any, modified-transitional-1, transitional-1 or the respective acronyms (Default: dci-specific | ds)" ) do |p|
         if options.kdm_formulation_choices.include?( p.downcase )
@@ -474,20 +474,20 @@ class Logger
   attr_accessor :prefix
   def initialize( prefix, verbosity )
     @verbosity = verbosity
-    @critical = TRUE
+    @critical = true
     case @verbosity
     when "quiet"
-      @info = FALSE
-      @warn = FALSE
-      @debug = FALSE
+      @info = false
+      @warn = false
+      @debug = false
     when "info"
-      @info = TRUE
-      @warn = TRUE
-      @debug = FALSE
+      @info = true
+      @warn = true
+      @debug = false
     when "debug"
-      @info = TRUE
-      @warn = TRUE
-      @debug = TRUE
+      @info = true
+      @warn = true
+      @debug = true
     end
     @prefix = prefix
     @color = Hash.new
@@ -498,16 +498,16 @@ class Logger
     @color[:critical] = '1'
   end
   def info( text )
-    to_console( @color[:info], text ) if @info == TRUE
+    to_console( @color[:info], text ) if @info == true
   end
   def warn( text )
-    to_console( @color[:warn], text ) if @warn == TRUE
+    to_console( @color[:warn], text ) if @warn == true
   end
   def debug( text )
-    to_console( @color[:debug], text ) if @debug == TRUE
+    to_console( @color[:debug], text ) if @debug == true
   end
   def critical( text )
-    to_console( @color[:critical], text ) if @critical == TRUE
+    to_console( @color[:critical], text ) if @critical == true
   end
   def cr( text )
     carriage_return( @color[:info], text ) unless @verbosity == "quiet"
@@ -528,9 +528,9 @@ def check_external( requirements )
   requirements.each do |tool|
     exitstatus = system "which #{ tool } > /dev/null 2>&1"
     case exitstatus
-    when TRUE
+    when true
       available_tools << tool
-    when FALSE
+    when false
       @logger.debug( "Missing: #{ tool }" )
       missing_tools << tool
     end
@@ -573,15 +573,15 @@ def final_report( sequence_frames, fps, transition_and_timing, keep )
   @logger.debug( "#{ sequence_frames } frames intended by numbers (#{ hours_minutes_seconds_verbose( sequence_duration ) })" )
   @logger.debug( "#{ @framecount -1 } frames written" )
   @logger.info( "Cinema Slideshow is #{ hours_minutes_seconds_verbose( ( @framecount - 1 ) / fps ) } long (#{ @source[ :orig_name ].length } image#{ 's' * ( @source[ :orig_name ].length == 1 ? 0 : 1 )} | #{ transition_and_timing.join(',').gsub(' ', '') } | #{ @framecount - 1 } frames | #{ fps } fps)" )
-  @logger.info( "Pick up preview files at #{ @workdir }/" ) if ( keep == TRUE and @output_type != 'dcp' )
-  @logger.info( "Pick up temporary files at #{ @workdir }/" ) if ( keep == TRUE and @output_type == 'dcp' )
+  @logger.info( "Pick up preview files at #{ @workdir }/" ) if ( keep == true and @output_type != 'dcp' )
+  @logger.info( "Pick up temporary files at #{ @workdir }/" ) if ( keep == true and @output_type == 'dcp' )
   @logger.info( "Pick up DCP at #{ @dcpdir }" ) if @output_type == 'dcp'
 end
 
 
 def cleanup_workdir( keep )
   case keep
-  when FALSE
+  when false
     case @output_type
     when 'preview', 'fullpreview'
       @logger.info( "Removing preview files (Say '--keep' to keep them)" )
@@ -667,7 +667,7 @@ def make_black_frame( filename, fps )
   black_asset = File.join( @assetsdir, 'black.' + @output_format )
   asset, todo = check_for_asset( black_asset, @output_format, fps )
   asset_esc = Shellwords.escape asset
-  if todo == TRUE
+  if todo == true
     case @output_type
     when 'preview', 'fullpreview'
       `convert -type TrueColor -size #{ @dimensions } xc:black -depth 8 #{ asset_esc }`
@@ -725,7 +725,7 @@ def fade( image, seconds, fps, initial, final, step )
     level = levels[ i - 1 ]
     @logger.cr( level )
     asset, todo = check_for_asset( image, @output_format, fps, level )
-    if todo == TRUE
+    if todo == true
       convert_apply_level( image, level, asset )
     end
     File.symlink( asset, filename )
@@ -756,7 +756,7 @@ def crossfade( image1, image2, fps, seconds )
     level = levels[ i - 1 ]
     @logger.cr( level )
     asset, todo = check_for_asset( [ image1, image2 ], @output_format, fps, level )
-    if todo == TRUE
+    if todo == true
       composite( image1, level, image2, depth, compress, asset )
     end
     File.symlink( asset, filename )
@@ -861,7 +861,7 @@ end
 #   + dimensions + (level unless jpeg 2000 codestream requested) + (encoder + fps if jpeg 2000 codestream is requested) + suffix
 #
 def build_assetname( id, level, suffix, fps )
-  File.join( @assetsdir, id + "_#{ @dimensions }_#{ @resize == TRUE ? 'r' : 'nr' }#{ level.nil? ? '' : '_' + level.to_s }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' + fps.to_s + '_' : '' : '_pre' }_.#{ suffix }" )
+  File.join( @assetsdir, id + "_#{ @dimensions }_#{ @resize == true ? 'r' : 'nr' }#{ level.nil? ? '' : '_' + level.to_s }#{ @output_type == 'dcp' ? suffix == 'j2c' ? '_' + @encoder_id + '_' + fps.to_s + '_' : '' : '_pre' }_.#{ suffix }" )
 end
 def check_for_crossfade_asset( files, level, suffix, fps )
   level_a = level.to_s
@@ -871,13 +871,13 @@ def check_for_crossfade_asset( files, level, suffix, fps )
   primary_id = [ digest_a, digest_b ].join( '_' )
   primary_level = [ level_a, level_b ].join( '_' )
   an = build_assetname( primary_id, primary_level, suffix, fps )
-  if File.exists?( an )
+  if File.exist?( an )
     return primary_id, primary_level
   else # try the reverse
     secondary_id = [ digest_b, digest_a ].join( '_' )
     secondary_level = [ level_b, level_a ].join( '_' )
     an = build_assetname( secondary_id, secondary_level, suffix, fps )
-    if File.exists?( an )
+    if File.exist?( an )
       return secondary_id, secondary_level
     end
   end
@@ -893,7 +893,7 @@ def check_for_asset( files, suffix, fps, level = nil )
     end
     origin = [ File.basename( files[ 0 ] ), File.basename( files[ 1 ] ) ].join( ' X ' )
   else # not from crossfade
-    if File.exists?( files )
+    if File.exist?( files )
       if File.dirname( files ) != @assetsdir
         id = digest_over_content( files )
       else
@@ -905,11 +905,11 @@ def check_for_asset( files, suffix, fps, level = nil )
     origin = File.basename( files )
   end
   assetname = build_assetname( id, level, suffix, fps )
-  if File.exists?( assetname )
+  if File.exist?( assetname )
     @logger.debug( "Skip: Asset exists (#{ origin } -> #{ File.basename( assetname ) })" )
-    todo = FALSE
+    todo = false
   else
-    todo = TRUE
+    todo = true
   end
   return assetname, todo
 end
@@ -919,7 +919,7 @@ end
 def conform( image, fps )
   @logger.cr( "Conform image: #{ image }" )
   asset, todo = check_for_asset( image, @output_format, fps )
-  if todo == TRUE
+  if todo == true
     convert_resize_extent_color_specs( image, asset )
   end
   return asset
@@ -934,7 +934,7 @@ def convert_resize_extent_color_specs( image, filename )
         -type TrueColor \
         -alpha Off \
         -gamma 0.454545454545455 \
-        #{ @resize == TRUE ? '-resize ' + @dimensions : '' } \
+    #{ @resize == true ? '-resize ' + @dimensions : '' } \
         -background black \
         -gravity center \
         -extent #{ @dimensions } \
@@ -949,11 +949,11 @@ def convert_resize_extent_color_specs( image, filename )
         -type TrueColor \
         -alpha Off \
         -gamma 0.454545454545455 \
-        #{ @resize == TRUE ? '-resize ' + @dimensions : '' } \
+        #{ @resize == true ? '-resize ' + @dimensions : '' } \
         -background black \
         -gravity center \
         -extent #{ @dimensions } \
-        -recolor '#{ SRGB_TO_XYZ }' \
+        -color-matrix '#{ SRGB_TO_XYZ }' \
         -gamma 2.6 \
         -depth 12 \
         -compress none \
@@ -1017,20 +1017,20 @@ end
 
 def confirm_or_create( location )
   testfile = File.join( location, Random.new.rand.to_s )
-  if File.exists?( location )
+  if File.exist?( location )
     begin
       result = FileUtils.touch( testfile )
       File.delete( testfile )
-      return TRUE
+      return true
     rescue Exception => result
-      return FALSE
+      return false
     end
   else
     begin
       result = FileUtils.mkdir_p( location )
-      return TRUE
+      return true
     rescue Exception => result
-      return FALSE
+      return false
     end
   end
 end
@@ -1088,7 +1088,7 @@ class Eta
   end
 
   def percentage_pad
-    "%3s%" % @percentage
+    "%%3s%%" % @percentage
   end
 
   def inner_bar
@@ -1108,7 +1108,7 @@ end # Eta
 
 
 def command_exists?( command )
-  ENV[ 'PATH' ].split( File::PATH_SEPARATOR ).any? { |d| File.exists? File.join( d, command ) }
+  ENV[ 'PATH' ].split( File::PATH_SEPARATOR ).any? { |d| File.exist? File.join( d, command ) }
 end
 
 def detect_terminal_size
@@ -1519,7 +1519,7 @@ class CPL_SMPTE_429_7_2006
                     xml.IntrinsicDuration_ image_meta[ 'ContainerDuration' ]
                     xml.EntryPoint_ 0 # FIXME
                     xml.Duration_ image_meta[ 'ContainerDuration' ] # FIXME
-                    if encrypt == TRUE
+                    if encrypt == true
                       xml.KeyId_ "urn:uuid:#{ image_meta[ 'CryptographicKeyID' ] }"
                       xml.Hash_ asdcp_digest( image_mxf, options )
                     end
@@ -1534,7 +1534,7 @@ class CPL_SMPTE_429_7_2006
                     xml.IntrinsicDuration_ audio_meta[ 'ContainerDuration' ]
                     xml.EntryPoint_ 0 # FIXME
                     xml.Duration_ audio_meta[ 'ContainerDuration' ].to_s.gsub( '/', ' ' ) # FIXME
-                    if encrypt == TRUE
+                    if encrypt == true
                       xml.KeyId_ "urn:uuid:#{ audio_meta[ 'CryptographicKeyID' ] }"
                       xml.Hash_ asdcp_digest( audio_mxfs[ index ], options )
                     end
@@ -1548,7 +1548,7 @@ class CPL_SMPTE_429_7_2006
                     xml.IntrinsicDuration_( image_meta[ 'ContainerDuration' ], 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' )
                     xml.EntryPoint_( 0, 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' ) # FIXME
                     xml.Duration_( image_meta[ 'ContainerDuration' ], 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' ) # FIXME
-                    if encrypt == TRUE
+                    if encrypt == true
                       xml.KeyId_( "urn:uuid:#{ image_meta[ 'CryptographicKeyID' ] }", 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' )
                       xml.Hash_( asdcp_digest( image_mxf, options ), 'xmlns' => 'http://www.smpte-ra.org/schemas/429-7/2006/CPL' )
                     end
@@ -1665,10 +1665,10 @@ class AM_SMPTE_429_9_2007
             if fh_line =~ /^<\?xml version="1.0"/
               doc = Nokogiri::XML::Document.parse( File.read( asset ) )
               if doc.search( "//xmlns:PackingList" ).empty? # FIXME assume CPL
-                packing_list = FALSE
+                packing_list = false
                 asset_uuid = Nokogiri::XML( File.open( asset ) ).xpath( "//xmlns:CompositionPlaylist/xmlns:Id" ).text.split( 'urn:uuid:' ).last
               else
-                packing_list = TRUE
+                packing_list = true
                 asset_uuid = Nokogiri::XML( File.open( asset ) ).xpath( "//xmlns:PackingList/xmlns:Id" ).text.split( 'urn:uuid:' ).last
               end # PackingList?
             else # MXF
@@ -1678,7 +1678,7 @@ class AM_SMPTE_429_9_2007
             
             xml.Asset_ {
               xml.Id_ "urn:uuid:#{ asset_uuid }"
-              if packing_list == TRUE
+              if packing_list == true
                 xml.PackingList_ 'true'
               end
               xml.ChunkList_ {
@@ -1798,16 +1798,16 @@ def signer_cert_thumbprint( doc )
     return thumbprint
   else
     @logger.debug( "Not signed" )
-    return NIL
+    return nil
   end
 end
 
 
 def key_spec_valid?( candidate )
-  if /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:(MDIK|MDAK|MDSK):[0-9a-f]{32}/.match( candidate ) == NIL
-    FALSE
+  if /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:(MDIK|MDAK|MDSK):[0-9a-f]{32}/.match( candidate ) == nil
+    false
   else
-    TRUE
+    true
   end
 end
 
@@ -1847,7 +1847,7 @@ def jpeg2000_encoder_action( options, file_esc, asset_esc, fps, openjpeg_cinema_
     # Do not use opendcp_j2k's colorspace transform (-x), files are X'Y'Z' already (Andrae Steiner)
     `opendcp_j2k -i #{ file_esc } -o #{ asset_esc } -x -r #{ fps }`
   when 'openjpeg'
-    `image_to_j2k -#{ openjpeg_cinema_profile } -i #{ file_esc } -o #{ asset_esc } > /dev/null 2>&1`
+    `opj_compress -#{ openjpeg_cinema_profile } -i #{ file_esc } -o #{ asset_esc } -threads ALL_CPUS > /dev/null 2>&1`
   when 'kakadu'
     `kdu_compress -i #{ file_esc } -o #{ asset_esc } Sprofile=#{ kakadu_cinema_profile } Creslengths=#{ max_bytes_per_image } Creslengths:C0=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C1=#{ max_bytes_per_image },#{ max_bytes_per_component } Creslengths:C2=#{ max_bytes_per_image },#{ max_bytes_per_component }`
   end
@@ -1881,7 +1881,7 @@ if available.empty?
   @logger.warn( 'kmuuidgen (from asdcplib) missing. Check your installation' )
   exit
 end
-if confirm_or_create( @cinemaslidesdir ) == TRUE
+if confirm_or_create( @cinemaslidesdir ) == true
   @logger.debug( "#{ @cinemaslidesdir } is writeable" )
 else
   @logger.critical( "#{ @cinemaslidesdir } is not writeable. Check your mounts or export CINEMASLIDESDIR to point to a writeable location." )
@@ -1891,13 +1891,13 @@ end
 # Filenames with spaces or rogue chars will
 # be attached to temporary safe links in @assetsdir
 @assetsdir = File.join( @cinemaslidesdir, "assets" )
-Dir.mkdir( @assetsdir ) unless File.exists?( @assetsdir )
+Dir.mkdir( @assetsdir ) unless File.exist?( @assetsdir )
 
 UUID_RE = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
 UUID_RFC4122_RE = "^[0-9a-f]{8}-[0-9a-f]{4}-([1-5])[0-9a-f]{3}-[8-9a-b][0-9a-f]{3}-[0-9a-f]{12}$"
 
 ### KDM mode
-if options.kdm == TRUE
+if options.kdm == true
   @logger = Logger.new( prefix = 'kdm *', options.verbosity )
   
   mandatory = [ 'xmlsec1', 'openssl', 'kmuuidgen' ]
@@ -1925,7 +1925,7 @@ if options.kdm == TRUE
   else
     CINEMACERTSTORE = ENV[ 'CINEMACERTSTORE' ]
     @logger.debug( "CINEMACERTSTORE is set to #{ CINEMACERTSTORE }" )
-    if File.exists?( CINEMACERTSTORE ) and File.ftype( Pathname.new( CINEMACERTSTORE ).realpath ) == 'directory'
+    if File.exist?( CINEMACERTSTORE ) and File.ftype( Pathname.new( CINEMACERTSTORE ).realpath ) == 'directory'
       begin
         signer_key_file, signer_cert_file, signer_cert_obj, ca_cert_file, intermediate_cert_file, certchain_text, certchain_objs = signature_context
       rescue Exception => e
@@ -1946,7 +1946,7 @@ if options.kdm == TRUE
   else
     @keysdir = File.join( @cinemaslidesdir, 'keys' )
   end
-  if ( File.exists?( @keysdir ) and File.ftype( Pathname.new( @keysdir ).realpath ) == 'directory' )
+  if ( File.exist?( @keysdir ) and File.ftype( Pathname.new( @keysdir ).realpath ) == 'directory' )
     @logger.debug( "Content keystore at: #{ @keysdir }" )
   else
     @logger.info( "No content keystore found (Looking for #{ @keysdir })" )
@@ -1955,13 +1955,13 @@ if options.kdm == TRUE
   end
   
   # check presence and validity of cpl and referenced content keys
-  if options.kdm_cpl == NIL and options.kdm_cpl_id == NIL
+  if options.kdm_cpl == nil and options.kdm_cpl_id == nil
     @logger.info( "No CPL specified. Use --cpl <CPL file> or --cpl-id <UUID>" )
     kdm_no_go << 'No CPL'
   else
     # Use --cpl-id (requires --keysdir) for the odd experiment to generate a KDM without access to the targeted CPL document
-    if options.kdm_cpl_id and options.kdm_cpl == NIL
-      cpl_content_authenticator = NIL
+    if options.kdm_cpl_id and options.kdm_cpl == nil
+      cpl_content_authenticator = nil
       if options.kdm_cpl_id.match UUID_RFC4122_RE
         cpl_uuid = options.kdm_cpl_id
       else
@@ -1975,7 +1975,7 @@ if options.kdm == TRUE
       end
       cpl_key_ids_types = Array.new
       if options.kdm_keysdir
-        if File.exists?( options.kdm_keysdir ) and File.ftype( Pathname.new( options.kdm_keysdir ).realpath ) == 'directory'
+        if File.exist?( options.kdm_keysdir ) and File.ftype( Pathname.new( options.kdm_keysdir ).realpath ) == 'directory'
           keysdir_files = Dir.glob( File.join( options.kdm_keysdir, '*' ) )
           keysdir_files.each do |kf|
             kf_id, kf_type = File.read( kf ).chomp.split( /:/ )[ 0, 2 ]
@@ -1990,9 +1990,9 @@ if options.kdm == TRUE
         kdm_no_go << 'No keysdir'
       end
     # Get CPL info
-    elsif File.exists?( options.kdm_cpl ) and File.ftype( Pathname.new( options.kdm_cpl ).realpath ) == 'file'
+    elsif File.exist?( options.kdm_cpl ) and File.ftype( Pathname.new( options.kdm_cpl ).realpath ) == 'file'
       xml_obj = Nokogiri::XML( File.read( options.kdm_cpl ) )
-      if xml_obj.root == NIL
+      if xml_obj.root == nil
         @logger.info( "#{ options.kdm_cpl } is not XML" )
         kdm_no_go << 'No CPL'
       else
@@ -2034,7 +2034,7 @@ if options.kdm == TRUE
     keys_missing = 0
     keys_invalid = 0
     cpl_key_ids_types.each do |kit|
-      if File.exists?( File.join( @keysdir, kit.keys.first ) )
+      if File.exist?( File.join( @keysdir, kit.keys.first ) )
         candidate_key = File.read( File.join( @keysdir, kit.keys.first ) )
         if key_spec_valid?( candidate_key )
           @logger.debug( "   Valid: #{ kit.keys.first }" )
@@ -2107,11 +2107,11 @@ if options.kdm == TRUE
   end
 
   # check presence and validity of target certificate
-  if options.kdm_target == NIL
+  if options.kdm_target == nil
     @logger.info( "No target certificate specified. Use --target <certificate>" )
     kdm_no_go << 'No target'
   else
-    if File.exists?( options.kdm_target ) and File.ftype( Pathname.new( options.kdm_target ).realpath ) == 'file'
+    if File.exist?( options.kdm_target ) and File.ftype( Pathname.new( options.kdm_target ).realpath ) == 'file'
       begin
         recipient_cert_obj = OpenSSL::X509::Certificate.new( File.read( options.kdm_target ) )
         @logger.debug( "Target: #{ recipient_cert_obj.inspect }" )
@@ -2248,7 +2248,7 @@ if options.kdm == TRUE
     kdm_formulation_acronym = options.kdm_formulation.split( '-' ).map { |e| e[ 0 ] }.join
   end
   kdm_file = "kdm_#{ kdm_cpl_content_title }_#{ recipient_cn_name }_#{ yyyymmdd( kdm_not_valid_before ) }_#{ yyyymmdd( kdm_not_valid_after ) }_#{ kdm_creation_facility_code }_#{ options.dcp_package_type }_#{ kdm_formulation_acronym }_#{ kdm_message_uuid[0..7] }.xml"
-  if File.exists?( kdm_file )
+  if File.exist?( kdm_file )
     @logger.info( "KDM exists: #{ kdm_file }" )
     @logger.info( "4 bytes UUID collision: #{ kdm_message_uuid }. Not overwriting" )
     exit
@@ -2272,7 +2272,8 @@ case options.output_type
 when 'preview', 'fullpreview'
   mandatory = [ 'convert', 'identify', 'montage', 'display', 'mplayer', 'sox', 'soxi' ]
 when 'dcp'
-  codec_options = [ 'image_to_j2k', 'kdu_compress', 'opendcp_j2k' ]
+  # codec_options = [ 'image_to_j2k', 'kdu_compress', 'opendcp_j2k' ]
+  codec_options = [ 'opj_compress', 'kdu_compress', 'opendcp_j2k' ]
   available_codecs, missing_codecs = check_external( codec_options )
   if available_codecs.empty?
     @logger.warn( "No JPEG 2000 codec available (Needed for DCP creation). Check your installation" )
@@ -2282,16 +2283,16 @@ when 'dcp'
   when 'kakadu'
     missing_exit( 'kdu_compress' ) if missing_codecs.include?( 'kdu_compress' )
   when 'openjpeg'
-    missing_exit( 'image_to_j2k' ) if missing_codecs.include?( 'image_to_j2k' )
+    missing_exit( 'opj_compress' ) if missing_codecs.include?( 'image_to_j2k' )
   when 'openjpeg-tm'
     missing_exit( 'opendcp_j2k' ) if missing_codecs.include?( 'opendcp_j2k' )
   end
   
   mandatory = [ 'convert', 'identify', 'sox', 'soxi', 'asdcp-test', 'kmuuidgen' ]
-  if options.sign == TRUE
+  if options.sign == true
     mandatory << 'xmlsec1'
   end
-  if options.dcp_encrypt == TRUE
+  if options.dcp_encrypt == true
     mandatory << 'kmrandgen'
     mandatory << 'xmlsec1'
   end
@@ -2302,7 +2303,7 @@ available_mandatory += available_codecs unless available_codecs.nil?
 @logger.debug( "Available tools: #{ available_mandatory.sort.join(', ') }" ) unless available_mandatory.empty?
 @logger.info( "Missing tools: #{ missing_mandatory.join( ', ' ) }" ) if ( missing_mandatory && missing_mandatory.size > 0 )
 @logger.info( "Missing tools: #{ missing_codecs.join( ', ' ) }" ) if ( missing_codecs && missing_codecs.size > 0 && available_codecs && available_codecs.size == 0 )
-@logger.debug( "All necessary tools available" ) if ( missing_mandatory.empty? and ( options.output_type == 'dcp' ? missing_codecs.empty? : TRUE ) ) # FIXME
+@logger.debug( "All necessary tools available" ) if ( missing_mandatory.empty? and ( options.output_type == 'dcp' ? missing_codecs.empty? : true ) ) # FIXME
 
 if missing_mandatory.size > 0
   @logger.info( "Check your installation" )
@@ -2322,10 +2323,10 @@ end
 @resize = options.resize
 
 case options.aspect_malformed
-when TRUE
+when true
   @logger.info( "Malformed aspect ratio. Use #{ options.aspect_choices[ 0, options.aspect_choices.size - 1 ].join( ', ' ) } or <width>x<height>" )
   exit
-when FALSE
+when false
   @aspect = options.aspect
   w, h = @aspect.split( 'Custom aspect ratio: ' ).last.match( options.aspect_choices.last ).to_s.split( 'x' )
   if ! h.nil?
@@ -2383,10 +2384,10 @@ if @output_type == "dcp"
   end
 
   # ENV required for signature present?
-  if options.dcp_encrypt == TRUE
-    options.sign = TRUE
+  if options.dcp_encrypt == true
+    options.sign = true
   end
-  if options.sign == TRUE
+  if options.sign == true
     if ENV[ 'CINEMACERTSTORE' ].nil?
       @logger.critical( "CINEMACERTSTORE not set. Cannot locate signer's private key, issuing certificates and certificate chain" )
       exit
@@ -2412,7 +2413,7 @@ if @output_type == "dcp"
       exit
     end
   end
-  if options.output_type == 'dcp' and @dcp_wrap_stereoscopic == TRUE and options.fps != 24
+  if options.output_type == 'dcp' and @dcp_wrap_stereoscopic == true and options.fps != 24
     asdcp_major, asdcp_minor, asdcp_patchlevel = asdcplib_version
     if ( asdcp_major == 1 and asdcp_minor < 8 )
       @logger.info( "asdcplib versions before 1.8.41 do not allow wrapping of stereoscopic essence for framerates higher than 24 (your asdcplib version: #{ [ asdcp_major, asdcp_minor, asdcp_patchlevel ].join('.') })" )
@@ -2456,7 +2457,7 @@ if @output_type == "dcp"
       exit
     end
   else
-    cma_data = NIL
+    cma_data = nil
   end
 
   @logger.debug( "DCP related options ok" )
@@ -2491,7 +2492,7 @@ end
 def safe_link( filename )
   tmp_safe_link = File.join( @assetsdir, 'tmp-safe-link-' + digest_over_name( File.basename( filename ) ) )
   # should be pruned on each run but won't be if we don't reach cleanup_workdir
-  unless File.exists?( tmp_safe_link )
+  unless File.exist?( tmp_safe_link )
     File.symlink( filename, tmp_safe_link ) 
   end
   return tmp_safe_link
@@ -2530,7 +2531,7 @@ def sanitize_fileargs( list )
   not_readable = Array.new
   list.each do |item|
     item = File.expand_path( item )
-    if File.exists?( item )
+    if File.exist?( item )
       real_files = collect_and_safeguard_real_files( item, real_files )
     else
       not_readable << item
@@ -2557,7 +2558,7 @@ end
 # check provided files for readability, type and validity
 # come up with 3 collections: image files, audio files, unusable files
 #
-if options.dont_check == TRUE ####
+if options.dont_check == true ####
   if @source.empty?
     @logger.info( 'No files specified' )
     exit
@@ -2567,7 +2568,7 @@ else # check files
   
   # check type (image/audio)
   no_decode_delegate = Array.new
-  drops = FALSE
+  drops = false
 
   source_tmp = Marshal.load( Marshal.dump @source )
 
@@ -2614,21 +2615,21 @@ else # check files
 
   not_readable.flatten.compact!
   if not_readable.size > 0
-    drops = TRUE
+    drops = true
     @logger.debug( "Not readable: #{ not_readable.join( ', ' ) }" )
   elsif not_readable.size == 0 and source_tmp[ :orig_name ].size > 0
     @logger.debug( "All files readable" )
   end
   if no_decode_delegate.size > 0
-    drops = TRUE
+    drops = true
     @logger.debug( "No decode delegates for #{ no_decode_delegate.join( ', ' ) }" )
   end
   if source_tmp[ :orig_name ].length == 0
-    @logger.info( drops == FALSE ? "No image files specified" : "No useable image files")
+    @logger.info( drops == false ? "No image files specified" : "No useable image files")
     exit
   end
-  if drops == TRUE
-    if options.dont_drop == TRUE
+  if drops == true
+    if options.dont_drop == true
       exit
     else
       @logger.debug( "Dropped some unusable files. Say '--dont-drop' to exit in that case." )
@@ -2637,7 +2638,7 @@ else # check files
   @source = Marshal.load( Marshal.dump source_tmp )
 end
 
-if options.dont_check == TRUE
+if options.dont_check == true
   # quick and dirty version of audio file pickup (which is the whole point of --dont-check)
   @source_audio = { :orig_name => [], :safe_name => [] } 
   source_tmp = @source.clone
@@ -2768,7 +2769,7 @@ end
 @keysdir = File.join( @cinemaslidesdir, 'keys' )
 
 unless @source_audio[ :orig_name ].empty?
-  Dir.mkdir( @assetsdir_audio ) unless File.exists?( @assetsdir_audio )
+  Dir.mkdir( @assetsdir_audio ) unless File.exist?( @assetsdir_audio )
 end
 if options.dcp_user_output_path == nil
   @dcpdir = File.join( @workdir, "dcp" )
@@ -2778,17 +2779,17 @@ end
 case @output_type
 when 'dcp' # silently ignore option.dcp_user_output_path when previewing
   # ask for confirmation to add files if -o | --dcp_out is set and the location already exists and is not empty
-  if options.dcp_user_output_path != nil and File.exists?( @dcpdir ) and Dir.entries( @dcpdir ).size > 2 # platform-agnostic Dir.empty? anyone?
+  if options.dcp_user_output_path != nil and File.exist?( @dcpdir ) and Dir.entries( @dcpdir ).size > 2 # platform-agnostic Dir.empty? anyone?
     if File.writable?( @dcpdir )
       if ENV[ 'HOME' ] == File.join( File.dirname( @dcpdir ), File.basename( @dcpdir ) ) # confirm direct write into HOME
         @logger.critical( "Cluttering HOME" )
-        exit if agree( "Are you sure you want to write DCP files directly into #{ ENV[ 'HOME' ] }? " ) == FALSE
+        exit if agree( "Are you sure you want to write DCP files directly into #{ ENV[ 'HOME' ] }? " ) == false
       else
-        exit if agree( "#{ @dcpdir } already exists. Add current DCP files to it? " ) == FALSE
+        exit if agree( "#{ @dcpdir } already exists. Add current DCP files to it? " ) == false
       end
     end
   end
-  if confirm_or_create( @dcpdir ) == TRUE
+  if confirm_or_create( @dcpdir ) == true
     @logger.debug( "#{ @dcpdir } is writeable" )
   else
     @logger.critical( "#{ @dcpdir } is not writeable. Check your mounts and permissions." )
@@ -2796,8 +2797,8 @@ when 'dcp' # silently ignore option.dcp_user_output_path when previewing
   end
   
   # location of content keys
-  if options.dcp_encrypt == TRUE
-    Dir.mkdir( @keysdir ) unless File.exists?( @keysdir )
+  if options.dcp_encrypt == true
+    Dir.mkdir( @keysdir ) unless File.exist?( @keysdir )
   end
 end
 ###
@@ -2812,7 +2813,7 @@ y = y.to_i / 6 # ...
 
 case @output_type
 when "dcp"
-  @logger.info( "Creating#{ options.sign == TRUE ? ' signed' : '' }#{ options.dcp_encrypt == TRUE ? ' and encrypted' : '' }#{ @dcp_wrap_stereoscopic == TRUE ? ' 3D' : ' 2D' } #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
+  @logger.info( "Creating#{ options.sign == true ? ' signed' : '' }#{ options.dcp_encrypt == true ? ' and encrypted' : '' }#{ @dcp_wrap_stereoscopic == true ? ' 3D' : ' 2D' } #{ @size.upcase } DCP (#{ @aspect } #{ @dimensions } @ #{ fps } fps). Encoder: #{ options.encoder }" )
   @logger.info( "Number of images: #{ @source[ :orig_name ].size }" )
   @logger.info( "Transition specs: #{ options.transition_and_timing.join( ',' ) }" )
   @logger.info( "    Black intermediate: #{ black_intermediate > 0 ? black_intermediate : 'None' }" )
@@ -2821,7 +2822,7 @@ when "dcp"
   @logger.info( "Annotation:       #{ options.annotation }" )
   @logger.info( "Issuer:           #{ options.issuer }" )
   @logger.info( "Kind:             #{ options.dcp_kind }" )
-  if options.sign == TRUE
+  if options.sign == true
     @logger.info( "Signer:           #{ signer_cert_obj.subject.to_s }" )
   end
   # Check for minimum playback length (1 second) right here
@@ -2852,7 +2853,7 @@ end
 def conform_audio( audiofile, samplerate, bps, channelcount )
   @logger.info( "Conform audio: #{ audiofile }" )
   asset, todo = check_for_audio_asset( audiofile, samplerate, bps, channelcount )
-  if todo == TRUE
+  if todo == true
     sox_conform( audiofile, samplerate, bps, channelcount, asset )
   end
   return asset
@@ -2862,11 +2863,11 @@ end
 def check_for_audio_asset( filename, samplerate, bps, channelcount )
   hexdigest = Digest::MD5.hexdigest( File.read( filename ) )
   assetname = File.join( @assetsdir_audio, "#{ hexdigest }_#{ samplerate }_#{ bps }_#{ channelcount }_.wav" )
-  if File.exists?( assetname )
+  if File.exist?( assetname )
     @logger.debug( "Skip: Audio asset exists (#{ filename } -> #{ File.basename( assetname ) })" )
-    todo = FALSE
+    todo = false
   else
-    todo = TRUE
+    todo = true
   end
   return assetname, todo
 end
@@ -2885,7 +2886,7 @@ end
 def silence( seconds, samplerate, bps, channelcount )
   silence_conform = File.join( @assetsdir_audio, 'silence_' + seconds.to_s + '_' + samplerate.to_s + '_' + bps.to_s + '_' + channelcount.to_s + '.wav' )
   silence_conform_esc = Shellwords.escape silence_conform
-  if File.exists?( silence_conform )
+  if File.exist?( silence_conform )
     @logger.debug( "Skip: Silence asset exists (#{ File.basename( silence_conform ) })" )
   else
     # alternatively, use asdcplib's blackwave (blackwave -d <frame_count> output)
@@ -2969,7 +2970,7 @@ unless @source_audio[ :orig_name ].empty?
   `sox #{ conformed_audio_list_esc.join( ' ' ) } #{ sequence_audio_asset_tmp_esc } splice`
 
   # d) trim
-  if File.exists?( sequence_audio_asset )
+  if File.exist?( sequence_audio_asset )
     @logger.debug( "Skip: Trimmed audio asset for image sequence exists (#{ File.basename( sequence_audio_asset ) })" )
   else
     @logger.debug( "Trim final audio to #{ image_sequence_length_hms }" )
@@ -3005,13 +3006,13 @@ end
 ### Process all images
 
 # thumbs and minimontage
-if options.montage == TRUE
-  Dir.mkdir( @thumbsdir ) unless File.exists?( @thumbsdir )
+if options.montage == true
+  Dir.mkdir( @thumbsdir ) unless File.exist?( @thumbsdir )
   @logger.info( "Create thumbnails" )
   thumbs = Array.new
   ( 0..( @source[ :orig_name ].length - 1 ) ).each do |i|
     thumbfile = File.join( @thumbsdir, digest_over_content( @source[ :safe_name ][ i ] ) + "_#{ @thumbs_dimensions }_" + ".jpg" )
-    if File.exists?( thumbfile )
+    if File.exist?( thumbfile )
       @logger.debug( "Skip: #{ File.basename( thumbfile ) } exists" )
       thumbs << thumbfile
       next
@@ -3033,7 +3034,7 @@ if options.montage == TRUE
   # cache montages, using string of all thumbnail filenames (md5 hexdigest and some) to match
   thumbs_asset = File.join( @thumbsdir, Digest::MD5.hexdigest( thumbs ) + '_montage_.jpg' )
   thumbs_asset_esc = Shellwords.escape thumbs_asset
-  if File.exists?( thumbs_asset )
+  if File.exist?( thumbs_asset )
     @logger.debug( "Skip: Montage exists (#{ File.basename( thumbs_asset ) })" )
   else
     tiles_x = Math.sqrt( @source[ :orig_name ].length ).ceil
@@ -3046,17 +3047,17 @@ if options.montage == TRUE
     #{ thumbs_asset_esc }`
   end
   if ENV[ "DISPLAY" ].nil?
-    @logger.warn( "DISPLAY not set. Skipping montage summary. #{ options.keep == TRUE ? nil : 'Say --keep to keep preview files.' }" )
+    @logger.warn( "DISPLAY not set. Skipping montage summary. #{ options.keep == true ? nil : 'Say --keep to keep preview files.' }" )
   else
     @logger.warn( "Montage summary #{ @output_type }. Exit with ESC or 'q'" )
     `display #{ thumbs_asset_esc }`
   end
-  exit if agree( "Continue? " ) == FALSE
+  exit if agree( "Continue? " ) == false
 end # montage
 
 
 ### Create all frames
-Dir.mkdir( @workdir ) unless File.exists?( @workdir )
+Dir.mkdir( @workdir ) unless File.exist?( @workdir )
 Dir.mkdir( @conformdir )
 
 
@@ -3126,17 +3127,8 @@ when "preview", "fullpreview"
   sequence = File.join( "#{ Shellwords.escape @conformdir }", "*.#{ @output_format }" )
   audio = ( @source_audio[ :orig_name ].empty? ? '' : '-audiofile ' + Shellwords.escape( @final_audio ) )
   clear_terminal_line
-  if ENV[ "DISPLAY" ].nil?
-    @logger.warn( "DISPLAY not set. Skipping preview" )
-  else
-    @logger.warn( "Loop #{ @output_type }. Exit with ESC or 'q'" )
-    if OS.mac?
-      mplayer_vo = 'corevideo'
-    else
-      mplayer_vo = ''
-    end
-    `mplayer -really-quiet mf://#{ sequence } #{ audio } -mf fps=#{ fps }:type=#{ @output_format } -loop 0 #{ mplayer_vo } #{ OS.mac? ? '' : "-vf eq2=#{ options.mplayer_gamma }" } > /dev/null 2>&1`
-  end
+  @logger.warn( "Loop #{ @output_type }. Exit with ESC or 'q'" )
+  `mplayer -really-quiet mf://#{ sequence } #{ audio } -mf fps=#{ fps }:type=#{ @output_format } -loop 0 -vf eq2=#{ options.mplayer_gamma } > /dev/null 2>&1`
   final_report( sequence_frames, fps, options.transition_and_timing, options.keep )
   cleanup_workdir( options.keep )
   @logger.info( "Preview done" )
@@ -3155,10 +3147,10 @@ when "dcp"
   files = Dir.glob( filemask ).sort
 
   # openjpeg's cinema profiles imply rate constraints, kakadu's don't
-  max_bytes_per_image, max_bytes_per_component = jpeg2000_dcp_rate_constraints( @dcp_wrap_stereoscopic == TRUE ? fps * 2 : fps )
+  max_bytes_per_image, max_bytes_per_component = jpeg2000_dcp_rate_constraints( @dcp_wrap_stereoscopic == true ? fps * 2 : fps )
   if @size == "2k"
     kakadu_cinema_profile = "CINEMA2K"
-    openjpeg_cinema_profile = "cinema2K #{ @dcp_wrap_stereoscopic == TRUE ? 48 : fps }"
+    openjpeg_cinema_profile = "cinema2K #{ @dcp_wrap_stereoscopic == true ? 48 : fps }"
   elsif @size == "4k"
     kakadu_cinema_profile = "CINEMA4K"
     openjpeg_cinema_profile = "cinema4K"
@@ -3191,7 +3183,7 @@ when "dcp"
         asset, todo = check_for_asset( file_esc, 'j2c', fps )
         asset_esc = Shellwords.escape asset
         previous_asset = asset
-        if todo == TRUE
+        if todo == true
           log_jpeg2000_encoder_action( options, file, files, counter )
           jpeg2000_encoder_action( options, file_esc, asset_esc, fps, openjpeg_cinema_profile, kakadu_cinema_profile, max_bytes_per_image, max_bytes_per_component )
         else
@@ -3213,7 +3205,7 @@ when "dcp"
       asset, todo = check_for_asset( file_esc, 'j2c', fps )
       asset_esc = Shellwords.escape asset
       previous_asset = asset
-      if todo == TRUE
+      if todo == true
         log_jpeg2000_encoder_action( options, file, files, counter )
         jpeg2000_encoder_action( options, file_esc, asset_esc, fps, openjpeg_cinema_profile, kakadu_cinema_profile, max_bytes_per_image, max_bytes_per_component )
       else
@@ -3236,7 +3228,7 @@ when "dcp"
   end
 
   # Generate content keys. Proof-of-concept, ad-hoc, hairy, you name it.
-  if options.dcp_encrypt == TRUE
+  if options.dcp_encrypt == true
     image_key = `kmrandgen -n -s 16`
     image_key_id = `kmuuidgen -n`
     File.open( File.join( @keysdir, image_key_id ), 'w' ) { |f| f.write( image_key_id + ':MDIK:' + image_key ) }
@@ -3256,15 +3248,15 @@ when "dcp"
   # Make image trackfile
   clear_terminal_line
   @logger.info( 'Write image trackfile ...' )
-  if @dcp_wrap_stereoscopic == TRUE
+  if @dcp_wrap_stereoscopic == true
     @logger.info( 'Wrap as stereoscopic essence' )
     # ugh, FIXME, for crying out loud
-    opts_params_args = "-c #{ image_mxf_esc } -L #{ options.dcp_encrypt == TRUE ? ( options.encrypt_headers == TRUE ? '-e ' : '-E ' ) + '-k ' + image_key + ' -j ' + image_key_id : '' } -p #{ fps } -a #{ image_mxf_uuid } -3 #{ @j2cdir_esc } #{ @j2cdir_esc }"
+    opts_params_args = "-c #{ image_mxf_esc } -L #{ options.dcp_encrypt == true ? ( options.encrypt_headers == true ? '-e ' : '-E ' ) + '-k ' + image_key + ' -j ' + image_key_id : '' } -p #{ fps } -a #{ image_mxf_uuid } -3 #{ @j2cdir_esc } #{ @j2cdir_esc }"
   else
-    opts_params_args = "-c #{ image_mxf_esc } -L #{ options.dcp_encrypt == TRUE ? ( options.encrypt_headers == TRUE ? '-e ' : '-E ' ) + '-k ' + image_key + ' -j ' + image_key_id : '' } -p #{ fps } -a #{ image_mxf_uuid } #{ @j2cdir_esc }"
+    opts_params_args = "-c #{ image_mxf_esc } -L #{ options.dcp_encrypt == true ? ( options.encrypt_headers == true ? '-e ' : '-E ' ) + '-k ' + image_key + ' -j ' + image_key_id : '' } -p #{ fps } -a #{ image_mxf_uuid } #{ @j2cdir_esc }"
   end
   write_asdcp_track( opts_params_args )
-  if File.exists?( image_mxf_esc )
+  if File.exist?( image_mxf_esc )
     @logger.debug( "Created MXF #{ image_mxf_esc }" )
   else
     @logger.critical( "Could not create MXF #{ image_mxf_esc }" )
@@ -3275,10 +3267,10 @@ when "dcp"
   # Make audio trackfile
   unless @source_audio[ :orig_name ].empty?
     @logger.info( 'Write audio trackfile ...' )
-    opts_params_args = "-c #{ audio_mxf_esc } -L #{ options.dcp_encrypt == TRUE ? ( options.encrypt_headers == TRUE ? '-e ' : '-E ' ) + '-k ' + audio_key + ' -j ' + audio_key_id : '' } -l #{ SMPTE_AUDIO_LABEL } -p #{ fps } -a #{ audio_mxf_uuid } #{ @final_audio_esc }"
+    opts_params_args = "-c #{ audio_mxf_esc } -L #{ options.dcp_encrypt == true ? ( options.encrypt_headers == true ? '-e ' : '-E ' ) + '-k ' + audio_key + ' -j ' + audio_key_id : '' } -l #{ SMPTE_AUDIO_LABEL } -p #{ fps } -a #{ audio_mxf_uuid } #{ @final_audio_esc }"
     @logger.debug( "Audio trackfile UUID: #{ audio_mxf_uuid }" )
     write_asdcp_track( opts_params_args ) 
-    if File.exists?( audio_mxf_esc )
+    if File.exist?( audio_mxf_esc )
       @logger.debug( "Created MXF #{ audio_mxf_esc }" )
     else
       @logger.critical( "Could not create MXF #{ audio_mxf_esc }" )
@@ -3292,7 +3284,7 @@ when "dcp"
   if options.tkr_base_url
     tkr_base_url = [ options.tkr_base_url.gsub( /\/$/, '' ), cpl_uuid ].join( '/' ) + '/'
   else
-    tkr_base_url = NIL
+    tkr_base_url = nil
   end
   @logger.debug( "CPL UUID:       #{ cpl_uuid }" )
   cpl_file = File.join( @dcpdir, 'cpl_' + cpl_uuid + '_.xml' )
