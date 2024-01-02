@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 #
 # x509_inspect.rb prints information about a chain of X509 certificates
-# Copyright 2012-2017 Wolfgang Woehl
+# Copyright 2012-2023 Wolfgang Woehl
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 AppName = File.basename __FILE__
-AppVersion = 'v0.2017.07.10'
+AppVersion = 'v0.2024.01.02'
 #
 # Usage:  x509_inspect.rb chain_0.pem [chain_1.pem [...]]
 #         x509_inspect.rb chain_*
@@ -33,7 +33,7 @@ class Optparser
   def self.parse( args )
     # defaults
     options = OpenStruct.new
-    options.items = [ 'o', 'ou', 'cn', 'dnq', 'serial' ]
+    options.items = [ 'o', 'ou', 'cn', 'not_before', 'not_after', 'dnq', 'serial' ]
     options.items_all = %w[ file version serial signature_algorithm not_before not_after o ou cn dnq o_issuer ou_issuer cn_issuer dnq_issuer basicConstraints keyUsage authorityKeyIdentifier pubkey exponent ]
     options.detect_chain = true
 
@@ -53,7 +53,7 @@ Default items:
 BANNER
 
       # Options
-      opts.on( '-l', '--list list', Array, "List of items to be displayed (Default: 'o,ou,cn,dnq,serial')" ) do |p|
+      opts.on( '-l', '--list list', Array, "List of items to be displayed (Default: 'o,ou,cn,not_before,not_after,dnq,serial')" ) do |p|
         options.items = p
       end
       opts.on( '-a', '--all' ) do
@@ -91,7 +91,7 @@ def pemfiles_to_obj( list )
       certs << OpenSSL::X509::Certificate.new( open pemfile )
       certs.last.file = pemfile
     rescue Exception => e
-      puts e.inspect
+      puts e.message
     end
   end
   return certs
@@ -184,8 +184,11 @@ Methmap = {
   'exponent' => lambda { |cert| cert.public_key.e },
 }
 Methmap[ 'version' ] = lambda { |cert| ( cert.send 'version' ).to_i + 1 }
-%w( file serial signature_algorithm not_before not_after ).each do |item|
+%w( file signature_algorithm not_before not_after ).each do |item|
   Methmap[ item ] = lambda { |cert| cert.send item }
+end
+%w( serial ).each do |item|
+  Methmap[ item ] = lambda { |cert| (cert.send item).to_i }
 end
 %w( o ou cn dnq o_issuer ou_issuer cn_issuer dnq_issuer ).each do |item|
   Methmap[ item ] = lambda { |cert| name_field( name_fields_canon[ item.split( '_' ).first ], ( item =~ /issuer$/ ? cert.issuer : cert.subject ) ) }
