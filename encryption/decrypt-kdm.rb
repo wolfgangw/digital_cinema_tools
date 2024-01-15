@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
 #
-# kdm_decrypt decrypts Interop/SMPTE KDMs.
-# Copyright 2011 Wolfgang Woehl
+# decrypt_kdm.rb decrypts Interop/SMPTE KDM
+#
+# Wolfgang Woehl 2011-2024
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 AppName = File.basename( __FILE__ )
-AppVersion = 'v0.2013.03.13'
+AppVersion = 'v0.2024.01.12'
 #
 if RUBY_VERSION <= '1.9'
   begin
@@ -36,7 +37,7 @@ class Optparser
   def self.parse( args )
     # defaults
     options = OpenStruct.new
-    options.output_as_keyid_keytype_keydata_triple = FALSE
+    options.output_as_keyid_keytype_keydata_triple = false
 
     opts = OptionParser.new do |opts|
 
@@ -48,7 +49,7 @@ BANNER
 
       # Options
       opts.on( '--as-triple', "Output content keys as <key id>:<key type>:<key data> triple to STDOUT" ) do |p|
-        options.output_as_keyid_keytype_keydata_triple = TRUE
+        options.output_as_keyid_keytype_keydata_triple = true
       end
       opts.on_tail( '-h', '--help', 'Display this screen' ) do
         puts opts
@@ -110,7 +111,7 @@ class KDMCipher
         [:key_data,           16]
       ]
     else
-      raise "#{ decrypted_blob.size } bytes: Plaintext package size does not match Interop or SMPTE specs"
+      raise "#{ decrypted_blob.size } bytes: KDMCipher plaintext package size does not match Interop or SMPTE specs"
     end
 
     pos = 0
@@ -177,7 +178,7 @@ else
     puts kdm_info
   end
 
-  kc = NIL
+  kc = nil
   cipher_values.each do |cvn|
     cv = cvn.text
     kc = KDMCipher.new( cv, pkey )
