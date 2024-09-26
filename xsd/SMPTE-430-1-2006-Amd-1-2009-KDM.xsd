@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.8" encoding="UTF-8"?>
 <xs:schema
   targetNamespace="http://www.smpte-ra.org/schemas/430-1/2006/KDM"
   xmlns:kdm="http://www.smpte-ra.org/schemas/430-1/2006/KDM"
